@@ -1,0 +1,137 @@
+@import "../modules/photon-colors";
+@import "../modules/reddit-colors";
+
+// .comment-wrapper {
+//   display: flex;
+//   flex-direction: column;
+//   .collapse-depth {
+//     @for $i from 1 to 10 {
+//       &[depth="#{$i}"] {
+//         margin-left: $i * 0.5rem;
+//       }
+//     }
+//   }
+// }
+.comment {
+  margin-top: 0.25rem;
+  display: flex;
+  font-size: 0.85rem;
+  background-color: white;
+
+  .votes {
+    padding: 0;
+    button {
+      min-width: unset;
+      padding: 0;
+      height: 1.5em;
+      .feather {
+        height: 1.5em;
+      }
+    }
+    .upvote {
+      border-radius: 0.25rem 0.25rem 0 0;
+    }
+    .downvote {
+      border-radius: 0 0 0.25rem 0.25rem;
+    }
+  }
+
+  .right {
+    // max-width: calc(100% - 1.75rem);
+    flex: 1 1 auto;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .left {
+    width: 1.5rem;
+    margin: 0;
+    text-align: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .expando {
+      display: none;
+      padding: 0.125em;
+      border-width: 0;
+      width: 1.25em;
+      height: 1.25em;
+      &:hover {
+        color: $grey-50;
+      }
+    }
+    .votes {
+      width: 100%;
+    }
+
+    .collapse {
+      height: 100%;
+      width: 1rem;
+      display: flex;
+      justify-content: center;
+
+      &:hover .threadline {
+        background-color: $grey-50;
+      }
+
+      .threadline {
+        background-color: $grey-30;
+        width: 0.125rem;
+        border-radius: 0.5rem;
+        margin-top: 0.25rem;
+        margin-bottom: 0.25rem;
+      }
+    }
+  }
+
+  .actions {
+    color: $grey-60;
+    margin: 0 0.25rem;
+    font-size: 0.75rem;
+    .upvote,
+    .downvote {
+      display: none;
+    }
+  }
+
+  .tagline {
+    margin-left: 0.2rem;
+  }
+
+  &.collapsed {
+    .flair,
+    .context,
+    .actions,
+    .body {
+      display: none;
+    }
+
+    .left {
+      .votes,
+      .collapse {
+        display: none;
+      }
+      .expando {
+        display: block;
+        color: $grey-40;
+        &:hover {
+          color: $grey-60;
+        }
+      }
+    }
+
+    .tagline {
+      color: $grey-40;
+      font-style: italic;
+      // padding-left: 0;
+      .expando {
+        display: inline-block;
+      }
+    }
+  }
+}

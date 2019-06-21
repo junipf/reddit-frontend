@@ -1,0 +1,74 @@
+@import "../modules/photon-colors";
+@import "../modules/reddit-colors";
+
+.votes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  button {
+    cursor: pointer;
+    font-size: inherit;
+    height: 1.25em;
+    line-height: 1.25em;
+    margin: 0;
+    background: none;
+    border: none;
+    border-radius: 0.25em;
+    padding: 0;
+    svg {
+      height: 100%;
+    }
+
+    // background-color: $grey-20;
+    &:hover {
+      background-color: $grey-30;
+    }
+
+    &:active {
+      background-color: $grey-30;
+    }
+    &:focus {
+      outline: transparent;
+      border-color: $blue-50;
+    }
+  }
+  .upvote,
+  .downvote {
+    color: inherit;
+    fill: inherit;
+  }
+  &.upvoted {
+    .upvote,
+    .upvote path {
+      color: $orange;
+      fill: $orange;
+    }
+  }
+  &.downvoted {
+    .downvote,
+    .downvote path {
+      color: $blue;
+      fill: $blue;
+    }
+  }
+
+  .score {
+    font-size: 0.8rem;
+    line-height: 1rem;
+    font-weight: 600;
+    color: inherit;
+  }
+}
+
+.actions .votes {
+  display: inline-block;
+  line-height: inherit;
+  button {
+    width: 2em;
+    height: 2em;
+  }
+  .score {
+    margin: 0 0.5em;
+  }
+}

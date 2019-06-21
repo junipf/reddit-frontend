@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-pin-vertical">
+  <line x1="12" y1="14" x2="12" y2="22"></line>
+  <path d="M16,6.5A6,6,0,0,0,18,2H6A6,6,0,0,0,8,6.5V9.5A6,6,0,0,0,6,14H18a6,6,0,0,0-2-4.5Z"></path>
+</svg>

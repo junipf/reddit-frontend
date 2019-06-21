@@ -1,0 +1,110 @@
+* {
+  box-sizing: inherit;
+}
+
+body {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+svg {
+  color: inherit;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+// @media (max-width: 830px) {
+// .app .columns .column.main {
+// display: none;
+// }
+// }
+
+// @media (max-width: 1280px) {
+//   :root .app .columns .main.column {
+//     & > .post-wrapper {
+//       margin: 0.5rem 0;
+//       border-radius: 0;
+//       border-width: 1px 0;
+//     }
+//   }
+// }
+
+@media (max-width: 720px) {
+  :root .app .columns .main.column {
+    display: none;
+  }
+}
+
+@media (max-width: 1350px) {
+  :root .app .columns .main.column {
+    & > .post-wrapper {
+      margin: 0.5rem 1px 0.5rem 0.5rem;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  :root .app .columns {
+    .column {
+      // padding: 0;
+      // min-width: 50vw;
+      // flex: 1 0 60vw;
+      & > .comment {
+        margin: 0;
+        padding: 0;
+      }
+      .comment {
+        .left {
+          display: none;
+        }
+        .actions {
+          .upvote,
+          .downvote {
+            display: inline-block;
+          }
+        }
+        .tagline .expando {
+          display: inline-block;
+        }
+        .context {
+          margin: 0 0 0 0;
+          & > .comment {
+            border-left: 0.5rem solid #d95b5b;
+            & .context > .comment {
+              border-left-color: #f1712a;
+              & .context > .comment {
+                border-left-color: #f0c419;
+                & .context > .comment {
+                  border-left-color: #4eba6f;
+                  & .context > .comment {
+                    border-left-color: #2d95bf;
+                    & .context > .comment {
+                      border-left-color: #955ba5;
+                      & .context > .comment {
+                        border-left-color: #2d95bf;
+                        & .context > .comment {
+                          border-left-color: #4eba6f;
+                          & .context > .comment {
+                            border-left-color: #f0c419;
+                            & .context > .comment {
+                              border-left-color: #f1712a;
+                              & .context > .comment {
+                                border-left-color: #d95b5b;
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

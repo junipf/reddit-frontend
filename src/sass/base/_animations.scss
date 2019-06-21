@@ -1,0 +1,56 @@
+@import "../modules/photon-colors";
+@import "../modules/reddit-colors";
+
+@mixin loading-delay {
+  @for $i from 1 to 10 {
+    .post:nth-child(#{$i}) {
+      animation-delay: $i * 0.1s;
+    }
+    .comment:nth-child(#{$i}) {
+      animation-delay: $i * 0.1s;
+      @for $j from 1 to 10 {
+        .context .comment:nth-of-type(#{$j}) {
+          animation-delay: ($i * 0.1s) + ($j * 0.05s);
+        }
+      }
+    }
+  }
+}
+
+.listing {
+  @include loading-delay;
+  .comment {
+    opacity: 0;
+    animation: slide-in-right 0.5s ease forwards;
+    // background-color: $grey-30;
+  }
+  .post-wrapper {
+    opacity: 0;
+    animation: slide-in-right 0.5s ease forwards;
+    // background-color: $grey-30;
+  }
+}
+
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(100px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+    // background-color: white;
+  }
+}
+
+@keyframes slide-in-down {
+  0% {
+    transform: translateY(-100%);
+    background-color: $grey-50;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+    background-color: transparent;
+  }
+}
