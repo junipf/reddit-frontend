@@ -13,23 +13,16 @@
 const initialState = {
   refreshToken: undefined,
   user: {},
-  currentPostId: null,
-  currentSubredditName: "frontpage",
   subreddits: { frontpage: {} },
-  postsById: {},
-  hotIdsBySubreddit: {},
-  commentsById: {},
   subscriptionNames: [],
   favoriteNames: [],
   multireddits: [],
+  currentPost: {},
 };
 const store = (state = initialState, action) => {
   var {
     user,
     subreddits,
-    postsById,
-    hotIdsBySubreddit,
-    commentsById,
     lightboxIsOpen,
   } = state;
 
@@ -102,52 +95,46 @@ const store = (state = initialState, action) => {
       return { ...state, subreddits, subscriptionNames, favoriteNames };
     case "SET_MULTIREDDITS":
       return { ...state, multireddits: action.multis };
-    case "SET_CURRENT_POST_ID":
-      return Object.assign({}, state, {
-        currentPostId: action.id,
-      });
-    case "SET_CURRENT_SUBREDDIT_NAME":
-      return Object.assign({}, state, {
-        currentSubredditName: action.subredditName,
-      });
     case "ADD_SUBREDDIT":
       subreddits[action.subredditInfo.display_name] = action.subredditInfo;
       return { ...state, subreddits };
-    case "ADD_POST":
-      const { comments, ...post } = action.post;
-      postsById[post.id] = post;
-      if (comments && comments.length > 0) {
-        commentsById[post.id] = comments;
-      }
-      return { ...state, postsById, commentsById };
-    case "SET_HOT":
-      if (hotIdsBySubreddit[action.subredditName] === undefined) {
-        hotIdsBySubreddit[action.subredditName] = [];
-      }
+    // case "ADD_POST":
+    //   const { comments, ...post } = action.post;
+    //   postsById[post.id] = post;
+    //   if (comments && comments.length > 0) {
+    //     commentsById[post.id] = comments;
+    //   }
+    //   return { ...state, postsById, commentsById };
+    // case "SET_HOT":
+    //   if (hotIdsBySubreddit[action.subredditName] === undefined) {
+    //     hotIdsBySubreddit[action.subredditName] = [];
+    //   }
 
-      action.listing.map(post => {
-        hotIdsBySubreddit[action.subredditName].push(post.id);
-        postsById[post.id] = post;
-      });
+    //   action.listing.map(post => {
+    //     hotIdsBySubreddit[action.subredditName].push(post.id);
+    //     postsById[post.id] = post;
+    //   });
 
-      return { ...state, hotIdsBySubreddit, postsById };
-    case "CLEAR_HOT":
-      hotIdsBySubreddit[action.subredditName] = [];
-      return { ...state, hotIdsBySubreddit };
-    case "ADD_HOT":
-      if (hotIdsBySubreddit[action.subredditName] === undefined) {
-        hotIdsBySubreddit[action.subredditName] = [];
-      }
+    //   return { ...state, hotIdsBySubreddit, postsById };
+    // case "CLEAR_HOT":
+    //   hotIdsBySubreddit[action.subredditName] = [];
+    //   return { ...state, hotIdsBySubreddit };
+    // case "ADD_HOT":
+    //   if (hotIdsBySubreddit[action.subredditName] === undefined) {
+    //     hotIdsBySubreddit[action.subredditName] = [];
+    //   }
 
-      action.listing.map(post => {
-        if (!hotIdsBySubreddit[action.subredditName].includes(post.id)) {
-          hotIdsBySubreddit[action.subredditName].push(post.id);
-        }
-        postsById[post.id] = post;
-      });
-      return { ...state, hotIdsBySubreddit, postsById };
+    //   action.listing.map(post => {
+    //     if (!hotIdsBySubreddit[action.subredditName].includes(post.id)) {
+    //       hotIdsBySubreddit[action.subredditName].push(post.id);
+    //     }
+    //     postsById[post.id] = post;
+    //   });
+    //   return { ...state, hotIdsBySubreddit, postsById };
     case "TOGGLE_LIGHTBOX_IS_OPEN":
       return { ...state, lightboxIsOpen: !lightboxIsOpen };
+    case "SET_CURRENT_POST":
+      return { ...state, currentPost: action.post}
     default:
       return state;
   }

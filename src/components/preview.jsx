@@ -7,8 +7,6 @@ import { toggleLightboxIsOpen } from "../store/actions";
 // import Observer from "@researchgate/react-intersection-observer";
 
 import Button from "./button";
-// import Toggle from "./toggle";
-import { colors } from "../style/color-theme";
 import { Lightbox } from "./lightbox";
 
 const Actions = styled.div`

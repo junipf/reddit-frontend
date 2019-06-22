@@ -9,9 +9,7 @@ import queryString from "query-string";
 
 import {
   addSubreddit,
-  setHot,
-  addHot,
-  setCurrentSubredditName,
+  setCurrentPost,
 } from "../store/actions";
 import Post from "./post";
 // import { Spinner } from "../components/spinner";
@@ -362,5 +360,5 @@ function mapStateToProps(state) {
 
 export default connect(
   mapStateToProps,
-  { addSubreddit, setHot, addHot, setCurrentSubredditName }
+  { addSubreddit, setCurrentPost }
 )(withTheme(PostListing));
