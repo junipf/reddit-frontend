@@ -6,7 +6,7 @@ const SVGWrapepr = styled.div`
   width: 100%;
   height: 100%;
 
-  .spinner {
+  svg {
     z-index: 2;
     position: absolute;
     top: 50%;
@@ -16,7 +16,7 @@ const SVGWrapepr = styled.div`
     height: 1em;
 
     animation: rotate 2s linear infinite;
-    & .path {
+    & circle {
       stroke: currentColor;
       stroke-linecap: round;
       stroke-width: 3px;
@@ -48,14 +48,12 @@ const SVGWrapepr = styled.div`
 
 export const Spinner = props => (
   <SVGWrapepr>
-    <svg class="spinner" viewBox="0 0 50 50">
+    <svg viewBox="0 0 50 50">
       <circle
-        class="path"
         cx="25"
         cy="25"
         r="20"
         fill="none"
-        stroke-width="3"
       />
     </svg>
   </SVGWrapepr>
