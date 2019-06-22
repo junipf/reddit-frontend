@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+
 const Emoji = styled.div.attrs(props => ({
   style: { backgroundImage: "url(" + props.url + ")" },
 }))`
@@ -18,6 +19,7 @@ const Emoji = styled.div.attrs(props => ({
 const Text = styled.span``;
 
 const Flair = styled.span`
+  margin-right: 0.25em;
   display: inline-block;
   padding: ${props =>
     props.backgroundColor === "transparent" ? "0" : "0.25em 0.4em"};
@@ -54,12 +56,12 @@ const ConstructFlair = props => {
     //   ...]
   } = props;
 
-  let content =
+  const content =
     type === "richtext"
       ? richText.map(({ e: type, t: text, u: url, a: emojiText }, i) =>
           type === "emoji" ? (
             <Emoji url={url} data-tip={emojiText} key={i} />
-          ) : type === "text" ? (
+          ) : type === "text" && text !== "" ? (
             <Text key={i}>{text}</Text>
           ) : null
         )

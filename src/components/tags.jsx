@@ -13,6 +13,7 @@ Tag.propTypes = {
 };
 
 const StyledTag = styled.span`
+  margin: 0 0.25em;
   padding: 0.125em 0.25em;
   border-radius: 0.25em;
   color: ${props => props.theme.tag[props.type].fg};

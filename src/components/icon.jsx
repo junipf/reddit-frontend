@@ -51,6 +51,9 @@ import { ReactComponent as Maximize } from "../icons/maximize.svg";
 import { ReactComponent as Moon } from "../icons/moon.svg";
 import { ReactComponent as Sun } from "../icons/sun.svg";
 import { ReactComponent as Menu } from "../icons/menu.svg";
+import { ReactComponent as Flag } from "../icons/flag.svg";
+import { ReactComponent as Heart } from "../icons/heart.svg";
+import { ReactComponent as Debug } from "../icons/terminal.svg";
 
 import { ReactComponent as Logo } from "../icons/logo.svg";
 import { ReactComponent as Popular } from "../icons/trending-up.svg";
@@ -112,6 +115,9 @@ const IconMap = {
   home: <Home />,
   popular: <Popular />,
   all: <All />,
+  flag: <Flag />,
+  heart: <Heart />,
+  debug: <Debug />,
   none: null,
 };
 

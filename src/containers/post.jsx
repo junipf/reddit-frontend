@@ -7,6 +7,7 @@ import Toggle from "../components/toggle";
 import { FormatNumber } from "../utils/format-number";
 
 import Flair from "../components/flair";
+import { Spinner } from "../components/spinner";
 import { Timestamp } from "../components/timestamp";
 import { Votes } from "../components/votes";
 import { Link } from "react-router-dom";
@@ -19,24 +20,55 @@ import Icon from "../components/icon";
 import { genTheme } from "../utils/color";
 import Preview from "../components/preview";
 
-function Thumbnail({ inListing, thumbnail }) {
-  return !inListing ||
-    thumbnail === "self" ||
-    thumbnail === "default" ||
-    thumbnail === "" ? null : (
-    <StyledThumbnail thumbnail={thumbnail} />
-  );
+class Thumbnail extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      loading: true,
+      error: false,
+      thumb: {},
+    };
+  }
+  componentDidMount() {
+    const { images } = this.props.preview;
+    const img = new Image();
+
+    const thumb =
+      images[0].source.width <= 216
+        ? images[0].source
+        : images[0].resolutions[1] || images[0].resolutions[0];
+
+    img.src = thumb.url;
+
+    img.onload = () => {
+      this.setState({
+        loading: false,
+        thumb: {
+          src: thumb.url,
+          width: thumb.width,
+          height: thumb.height,
+        },
+      });
+    };
+    img.onerror = () => {
+      this.setState({ error: true });
+    };
+  }
+  render() {
+    if (this.state.error) {
+      return null;
+    } else if (this.state.loading) {
+      return <Spinner />;
+    } else {
+      return <StyledThumbnail {...this.state.thumb} />;
+    }
+  }
 }
 
-const StyledThumbnail = styled.div.attrs(props => ({
-  style: {
-    backgroundImage: "url(" + props.thumbnail + ")",
-  },
-}))`
-  flex: 0 0 5rem;
-  height: 4rem;
-  width: 5.3rem;
-  margin-right: 0.25rem;
+const StyledThumbnail = styled.img`
+  /* max-width: ${props => props.width}; */
+  /* width: auto; */
+  margin: 0.5rem;
   border: 1px solid ${props => props.theme.container.innerBorder};
   border-radius: 0.25rem;
   background-size: cover;
@@ -113,55 +145,29 @@ const Right = styled.div`
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   font-size: 0.85rem;
 `;
 
-/*
-  <Post>
-    <Left />
-    <Right>
-      <Info>
-        <Tagline>
-          <SubredditName />
-          <Flair />
-          <Author />
-          <Flair />
-          <Timestamp />
-        </Tagline>
-        <Title />
-        <GoTo />
-      </Info>
-      <Preview />
-      <Actions />
-    </Right>
-  </Post>
-*/
-
 const Info = styled.div`
   border-color: ${props => props.theme.container.innerBorder};
-  margin: 0 0.5rem 0.5rem 0.5rem;
+  margin: 0.35rem;
   font-size: 0.9em;
-`;
-const Tagline = styled.span`
-  line-height: 2.35rem;
-  /*
-  .submitter -> color: colors.blue50;
-  .moderator -> color: colors.green60;
-  .moderator -> color: colors.red50;
-  */
-`;
-const PrimaryInfo = styled.div`
-  display: flex;
-  flex-flow: row nowrap;
-`;
-const TitleBox = styled.div`
   display: flex;
   flex-flow: column nowrap;
+`;
+const Tagline = styled.span`
+  margin: 0;
+`;
+const TitleBox = styled.div`
+  /* display: flex;
+  flex-flow: column nowrap;
+  width: 100%; */
 `;
 const SubredditName = styled(Link)`
   font-weight: 600;
   color: ${props => props.theme.container.link};
+  margin-right: 0.25em;
 `;
 const Title = styled(Link)`
   display: block;
@@ -185,10 +191,14 @@ const GoTo = styled.a`
 `;
 const Body = styled.div`
   margin: 1rem 0.5rem;
+  max-height: 20rem;
+  overflow-y: auto;
 `;
 const ActionBar = styled.div`
   margin: 0.5em;
 `;
+
+const Separator = () => <span>•</span>;
 
 class Post extends React.Component {
   constructor(props) {
@@ -204,6 +214,7 @@ class Post extends React.Component {
       LbFullImage: false,
       fullImageCoords: [0, 0],
     };
+    this.post = React.createRef();
     this.navigateToPost = this.navigateToPost.bind(this);
   }
   save = () => {
@@ -233,6 +244,7 @@ class Post extends React.Component {
     const { history, subredditInfo } = this.props;
     history.push("/" + subredditInfo.display_name_prefixed);
   };
+  logPost = () => console.log(this.props.post);
 
   render() {
     const { inListing, post, subredditInfo, inSubreddit, compact } = this.props;
@@ -266,13 +278,12 @@ class Post extends React.Component {
       // removal_reason,
       // report_reasons,
 
-      // is_self,
+      is_self,
       // is_video,
       secure_media: media,
       // media_embed,
       // media_only,
       preview,
-      thumbnail,
       selftext_html,
       crosspost_parent_list,
 
@@ -334,10 +345,28 @@ class Post extends React.Component {
     let displayUrl = url.replace(/https?:\/\/(www.)?/, "");
     if (displayUrl.length > 30) displayUrl = displayUrl.substring(0, 30) + "…";
 
+    const mediaMode = is_self
+      ? null
+      : compact
+      ? preview && preview.images[0]
+        ? "thumbnail"
+        : null
+      : preview && preview.reddit_video_preview
+      ? "video-preview"
+      : media && media.reddit_video
+      ? "video"
+      : media && media.oembed
+      ? "oembed"
+      : preview && preview.enabled
+      ? "image"
+      : preview && preview.images[0]
+      ? "thumbnail"
+      : null;
+
     if (!this.props || author === undefined) return null;
     return (
       <ThemeProvider theme={theme}>
-        <StyledPost id={id}>
+        <StyledPost id={id} ref={this.post}>
           <Left>
             {!inSubreddit ? (
               <SubredditIcon
@@ -367,8 +396,8 @@ class Post extends React.Component {
                   <SubredditName to={"/" + subNamePrefixed}>
                     {subNamePrefixed}
                   </SubredditName>
-                ) : null}{" "}
-                <Flair {...linkFlair} /> {/* <Separator /> */}
+                ) : null}
+                <Flair {...linkFlair} />
                 <Tags
                   spoiler={spoiler}
                   nsfw={nsfw}
@@ -380,31 +409,25 @@ class Post extends React.Component {
                   authorName={authorName}
                   distinguished={distinguished}
                   isCrosspost={isCrosspost}
-                />{" "}
-                <Flair {...authorFlair} />{" "}
-                <Timestamp time={created_utc} to={"#" + id} />
+                />
+                <Flair {...authorFlair} />
+                <Timestamp time={created_utc} />
               </Tagline>
-              <PrimaryInfo>
-                {!preview && !media ? (
-                  <Thumbnail thumbnail={thumbnail} inListing={inListing} />
-                ) : null}
-                <TitleBox>
-                  <Title to={permalink}>{title}</Title>
-                  {isRedditLink ? (
-                    <GoTo href={permalink}>
-                      Go to thread
-                      <Icon icon="chevronRight" />
-                    </GoTo>
-                  ) : (
-                    <GoTo href={url}>
-                      {displayUrl + " "}
-                      <Icon icon="external" />
-                    </GoTo>
-                  )}
-                </TitleBox>
-              </PrimaryInfo>
+              <TitleBox>
+                <Title to={permalink}>{title}</Title>
+                {isRedditLink ? null : (
+                  // <GoTo href={permalink}>
+                  //   Go to thread
+                  //   <Icon icon="chevronRight" />
+                  // </GoTo>
+                  <GoTo href={url}>
+                    {displayUrl + " "}
+                    <Icon icon="external" />
+                  </GoTo>
+                )}
+              </TitleBox>
             </Info>
-            {!compact ? (
+            {mediaMode && mediaMode !== "thumbnail" ? (
               <Preview
                 isRedditLink={isRedditLink}
                 inListing={inListing}
@@ -417,7 +440,7 @@ class Post extends React.Component {
               />
             ) : null}
             {/* <DisplayUrl url={url} permalink={permalink} /> */}
-            {this.state.expand && selftext_html ? (
+            {is_self && selftext_html ? (
               <Body dangerouslySetInnerHTML={{ __html: selftext_html }} />
             ) : null}
             <Crosspost
@@ -468,6 +491,13 @@ class Post extends React.Component {
                 href={"https://www.reddit.com" + permalink}
                 key="7"
               />
+              <Button
+                hideLabel={this.state.hideButtonLabels}
+                label="Log submission object to console"
+                icon="debug"
+                onClick={this.logPost}
+                key="9"
+              />
               <Toggle
                 hideLabel
                 label="toggle button labels"
@@ -479,6 +509,13 @@ class Post extends React.Component {
             </ActionBar>
           </Right>
           {/* <ModBanners isMod={can_mod_post} {...post} /> */}
+          {mediaMode && mediaMode === "thumbnail" ? (
+            <Thumbnail
+              preview={preview}
+              inListing={inListing}
+              parent={this.post}
+            />
+          ) : null}
         </StyledPost>
       </ThemeProvider>
     );

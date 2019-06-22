@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 const User = styled(Link)`
   color: ${props => props.theme.author[props.type] || "inherit"};
   text-decoration: none;
+  margin: 0 0.25em 0 0.5em;
 `;
 
 const ModIcon = styled(Icon)`
