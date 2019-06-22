@@ -1,60 +1,62 @@
 import React from "react";
-
 import styled from "styled-components";
 
-const SpinnerWrapper = styled.div`
-  /* .loader { */
-  box-sizing: content-box;
-  --size: 0.5em;
-  --circumference: 3.14 * 2 * var(--size);
-  --offset: 0.85;
-  --circumference: var(--circumference) * var(--offset);
-  .circle {
-    stroke: blue;
-    fill: none;
-    stroke-width: 3px;
-    stroke-dashoffset: calc(var(--circumference) * -1);
-    stroke-dasharray: var(--circumference);
-    animation: loading5 1.4s linear infinite;
-    transform: rotate(-90deg);
-    transform-origin: 50%;
-    position: relative;
+const SVGWrapepr = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  .spinner {
+    z-index: 2;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -0.5em 0 0 -0.5em;
+    width: 1em;
+    height: 1em;
+
+    animation: rotate 2s linear infinite;
+    & .path {
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-width: 3px;
+      animation: dash 1.5s ease-in-out infinite;
+    }
   }
-  @keyframes loading5 {
-    0% {
-      transform: rotate(0);
-      stroke-dashoffset: var(--circumference);
-    }
-    50% {
-      stroke-dashoffset: 0;
-    }
+
+  @keyframes rotate {
     100% {
       transform: rotate(360deg);
-      stroke-dashoffset: calc(var(--circumference) * -1);
     }
   }
-  /* } */
-`;
 
-const SvgWrapper = styled.div`
-  --size: 0.5em;
-  background: white;
-  width: var(--size) * 3;
-  height: var(--size) * 3;
-  margin: 0 Auto;
-  padding: 5px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @keyframes dash {
+    0% {
+      stroke-dasharray: 1, 150;
+      stroke-dashoffset: 0;
+    }
+    50% {
+      stroke-dasharray: 90, 150;
+      stroke-dashoffset: -35;
+    }
+    100% {
+      stroke-dasharray: 90, 150;
+      stroke-dashoffset: -124;
+    }
+  }
 `;
 
 export const Spinner = props => (
-  <SpinnerWrapper>
-    <SvgWrapper>
-      <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em">
-        <circle cx="0.6em" cy="0.6em" r="0.5em" className="circle" />
-      </svg>
-    </SvgWrapper>
-  </SpinnerWrapper>
+  <SVGWrapepr>
+    <svg class="spinner" viewBox="0 0 50 50">
+      <circle
+        class="path"
+        cx="25"
+        cy="25"
+        r="20"
+        fill="none"
+        stroke-width="3"
+      />
+    </svg>
+  </SVGWrapepr>
 );
