@@ -17,7 +17,6 @@ export default class Toggle extends React.Component {
   handleClick = () => {
     this.setState({ toggled: !this.state.toggled }, this.callback());
   };
-
   render() {
     const {
       onToggleOn,
@@ -26,6 +25,8 @@ export default class Toggle extends React.Component {
       onClick,
       iconOn = "toggleon",
       iconOff = "toggleoff",
+      colorOn,
+      colorOff,
       labelOn,
       labelOff,
       label,
@@ -37,6 +38,9 @@ export default class Toggle extends React.Component {
     return (
       <Button
         type={type}
+        color={
+          toggled ? (colorOn ? colorOn : null) : colorOff ? colorOff : null
+        }
         icon={icon ? icon : toggled ? iconOn : iconOff}
         onClick={this.handleClick}
         label={label ? label : toggled ? labelOn : labelOff}

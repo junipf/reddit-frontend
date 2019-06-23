@@ -8,32 +8,32 @@ const StyledButton = styled.button`
   display: inline-block;
   font-weight: 500;
   font-size: 1em;
-  text-align: ${props => (props.full ? "left" : "center")};
+  text-align: ${props => (props.size === "full" ? "left" : "center")};
   white-space: nowrap;
   vertical-align: middle;
   user-select: none;
-  padding: 0.35em 0.5em;
+  padding: ${props=> props.size === "small" ? "0.1em 0.25em" : "0.35em 0.5em"};
   border: none;
-  border-radius: ${props => (props.full ? "0" : "0.2em")};
-  margin: ${props => (props.full ? "0" : "0.125em 0.25em")};
-  width: ${props => (props.full ? "100%" : null)};
+  border-radius: ${props => (props.size === "full" ? "0" : "0.2em")};
+  margin: ${props => (props.size === "full" ? "0" : props.size === "small" ? "0.0625em 0.125em" : "0.125em 0.25em")};
+  width: ${props => (props.size === "full" ? "100%" : null)};
   margin-left: 0;
   line-height: 1;
   transition: all 0.1s ease;
   text-decoration: none;
-  color: ${props => props.theme.button[props.type].color[0]};
+  color: ${props => props.color || props.theme.button[props.type].color[0]};
   background-color: ${props => props.theme.button[props.type].levels[0]};
   &a {
-    color: ${props => props.theme.button[props.type].color[0]};
+    color: ${props => props.color || props.theme.button[props.type].color[0]};
   }
   &:hover {
     cursor: pointer;
     text-decoration: none;
-    color: ${props => props.theme.button[props.type].color[1]};
+    color: ${props => props.color || props.theme.button[props.type].color[1]};
     background-color: ${props => props.theme.button[props.type].levels[1]};
   }
   &:active {
-    color: ${props => props.theme.button[props.type].color[2]};
+    color: ${props => props.color || props.theme.button[props.type].color[2]};
     background-color: ${props => props.theme.button[props.type].levels[2]};
   }
   &:focus {
@@ -53,13 +53,18 @@ const Span = styled.span.attrs(props => ({ style: { color: props.color } }))`
 
 export default class Button extends React.Component {
   static propTypes = {
-    type: PropTypes.oneOf(["flat", "primary", "button"]),
+    type: PropTypes.oneOf(["flat", "primary", "secondary"]),
+    size: PropTypes.oneOf(["small", "normal", "fit"]),
     label: PropTypes.string,
     hideLabel: PropTypes.bool,
   };
+  static defaultProps = {
+    type: "secondary",
+    size: "normal",
+  }
   render() {
     const {
-      type = "secondary",
+      type,
       hideLabel,
       showTooltip,
       label,
@@ -67,7 +72,7 @@ export default class Button extends React.Component {
       iconAfter,
       children,
       // fromColor = null,
-      // colors,
+      color,
       to,
       href,
       full,
@@ -95,6 +100,7 @@ export default class Button extends React.Component {
 
     const props = {
       type,
+      color,
       "data-tip-disable": !hideLabel && !data_tip,
       "data-tip": data_tip || label,
       children: selectedChildren,
