@@ -1,89 +1,67 @@
 import React from "react";
 import styled, { withTheme } from "styled-components";
 import Icon from "./icon";
-import { Spinner, Throbber } from "./spinner";
+import LazyLoad from "react-lazy-load";
 import { genSubIconColor } from "../utils/color";
 import { meetsContrastGuidelines } from "polished";
 
-class SubredditIcon extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      loading: true,
-      icon: null,
-    };
-  }
-  componentDidMount() {
-    const { community_icon, icon_img, icon_url } = this.props;
-    const icon = new Image();
-    icon.src =
-      community_icon !== ""
-        ? community_icon
-        : icon_img !== ""
-        ? icon_img
-        : icon_url !== ""
-        ? icon_url
-        : null;
-    icon.onload = () => {
-      this.setState({
-        loading: false,
-        icon,
-      });
-    };
-    icon.onerror = () => {
-      this.setState({
-        loading: false,
-      });
-    };
-  }
-  render() {
-    const {
-      primary_color,
-      key_color,
-      banner_background_color,
-      display_name,
-      size,
-      theme,
-    } = this.props;
-    const { icon } = this.state;
+const SubredditIcon = props => {
+  const {
+    primary_color,
+    key_color,
+    banner_background_color,
+    display_name,
+    size,
+    theme,
+    community_icon,
+    icon_img,
+    icon_url,
+  } = props;
 
-    const bgColor =
-      primary_color && primary_color !== ""
-        ? genSubIconColor(primary_color)
-        : key_color && key_color !== ""
-        ? genSubIconColor(key_color)
-        : banner_background_color && banner_background_color !== ""
-        ? genSubIconColor(banner_background_color)
-        : theme.subredditIcon.light;
+  const icon =
+    community_icon !== ""
+      ? community_icon
+      : icon_img !== ""
+      ? icon_img
+      : icon_url !== ""
+      ? icon_url
+      : null;
 
-    const color = bgColor
-      ? meetsContrastGuidelines(bgColor, theme.subredditIcon.dark).AALarge
-        ? theme.subredditIcon.dark
-        : theme.subredditIcon.light
-      : theme.subredditIcon.dark;
+  const bgColor =
+    primary_color && primary_color !== ""
+      ? genSubIconColor(primary_color)
+      : key_color && key_color !== ""
+      ? genSubIconColor(key_color)
+      : banner_background_color && banner_background_color !== ""
+      ? genSubIconColor(banner_background_color)
+      : theme.subredditIcon.light;
 
-    const letter =
-      !icon && display_name ? display_name.charAt(0).toUpperCase() : null;
-      
-    if (this.state.loading)
-      return (
-        <Circle bgColor={bgColor} color={color} size={size}>
-          <Spinner />
-        </Circle>
-      );
-    else
-      return (
-        <Circle
-          icon={icon && "url(" + icon.src + ")"}
-          bgColor={bgColor}
-          color={color}
-          size={size}
-        >
-          {letter}
-        </Circle>
-      );
-  }
-}
+  const color = bgColor
+    ? meetsContrastGuidelines(bgColor, theme.subredditIcon.dark).AALarge
+      ? theme.subredditIcon.dark
+      : theme.subredditIcon.light
+    : theme.subredditIcon.dark;
+
+  const letter =
+    !icon && display_name ? display_name.charAt(0).toUpperCase() : null;
+
+  return (
+    <LazyLoad
+      offset={1000}
+      height={size === "large" ? 36 : 24}
+      debounce={false}
+    >
+      <Circle
+        icon={icon ? "url(" + icon + ")" : null}
+        bgColor={bgColor}
+        color={color}
+        size={size}
+      >
+        {letter}
+      </Circle>
+    </LazyLoad>
+  );
+};
 
 export default withTheme(SubredditIcon);
 
