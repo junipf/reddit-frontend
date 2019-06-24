@@ -56,7 +56,7 @@ class Preview extends React.Component {
         <Embed oembed={media.oembed} />
       ) : preview && preview.images[0] ? (
         preview.images[0].variants.mp4 ? (
-          <Video video={preview.images[0].variants.mp4.source} />
+          <Gif video={preview.images[0].variants.mp4.source} />
         ) : preview.images[0].variants.gif ? (
           <Image
             image={preview.images[0].variants.gif}
@@ -115,6 +115,8 @@ const PreviewWrapper = styled.div`
 
 const Image = props => {
   const { inListing, image, toggleLightbox } = props;
+  // Reddit returns down-sampled resolutions of width:
+  // 0: 108, 1: 216, 2: 320, 3: 640, 4: 960, 5: 1080
   const selectedImage =
     !inListing || image.source.height <= previewMaxHeight
       ? image.source.height
@@ -197,10 +199,33 @@ const Video = ({ video }) => (
       height={video.height}
       width={video.width}
     >
+      <source src={video.url} />
       <source src={video.hls_url} type="application/vnd.apple.mpegURL" />
       <source src={video.dash_url} />
       <source src={video.fallback_url} />
       Video failed to load
+    </StyledVideo>
+  </LazyLoad>
+);
+
+// Gif converted to video, found in post.preview.images[0].variants.mp4
+// Does not come with is_gif and uses different src names
+const Gif = ({ video }) => (
+  <LazyLoad
+    debounce={false}
+    offset={1000}
+    height={video.height > previewMaxHeight ? previewMaxHeight : video.height}
+  >
+    <StyledVideo
+      autoPlay={true}
+      controls={false}
+      preload="auto"
+      loop={true}
+      height={video.height}
+      width={video.width}
+    >
+      <source src={video.url} />
+      Gif failed to load
     </StyledVideo>
   </LazyLoad>
 );
