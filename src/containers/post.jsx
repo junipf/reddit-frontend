@@ -19,7 +19,7 @@ import Icon from "../components/icon";
 import { genTheme } from "../utils/color";
 import Preview from "../components/preview";
 import { Body } from "../components/body";
-import Thumbnail from "./thumbnail";
+import Thumbnail from "../components/thumbnail";
 
 function Crosspost(props) {
   const { crosspost, inListing } = props;
