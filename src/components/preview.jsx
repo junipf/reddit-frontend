@@ -3,7 +3,7 @@ import styled from "styled-components";
 import LazyLoad from "react-lazy-load";
 import { connect } from "react-redux";
 import { toggleLightboxIsOpen } from "../store/actions";
-
+import { Body } from "../components/body";
 import Button from "./button";
 import { Lightbox } from "./lightbox";
 
@@ -44,11 +44,15 @@ class Preview extends React.Component {
       navigateToPost,
       // id,
       backgroundColor,
+      is_self,
+      html,
     } = this.props;
     const { showLightbox, LbFullImage } = this.state;
 
     const displayPreview =
-      media && media.reddit_video ? (
+      is_self && html ? (
+        <Body html={html} />
+      ) : media && media.reddit_video ? (
         <Video video={media.reddit_video} />
       ) : preview && preview.reddit_video_preview ? (
         <Video video={preview.reddit_video_preview} />
@@ -99,17 +103,17 @@ export default connect(
 
 const PreviewWrapper = styled.div`
   grid-area: media;
-  max-height: ${previewMaxHeight}px;
-  min-height: 100px;
   position: relative;
   overflow: hidden;
   max-width: 100%;
+  background: ${props => props.theme.container.levels[1]};
   .LazyLoad {
     max-width: inherit;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: ${props => props.theme.container.levels[2]};
+    max-height: ${previewMaxHeight}px;
+    min-height: 100px;
   }
 `;
 

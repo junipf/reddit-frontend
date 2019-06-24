@@ -18,7 +18,6 @@ import Icon from "../components/icon";
 
 import { genTheme } from "../utils/color";
 import Preview from "../components/preview";
-import { Body } from "../components/body";
 import Thumbnail from "../components/thumbnail";
 
 function Crosspost(props) {
@@ -282,8 +281,12 @@ class Post extends React.Component {
     if (displayUrl.length > 30) displayUrl = displayUrl.substring(0, 30) + "…";
 
     const showThumbnail =
+      is_self ? false :
       (preview && compact) ||
-      (!media && preview && !preview.reddit_video_preview && !preview.enabled);
+        (!media &&
+          preview &&
+          !preview.reddit_video_preview &&
+          !preview.enabled);
 
     if (!this.props || author === undefined) return null;
     return (
@@ -344,6 +347,8 @@ class Post extends React.Component {
           </TitleBox>
           {!showThumbnail ? (
             <Preview
+              is_self={is_self}
+              html={selftext_html}
               isRedditLink={isRedditLink}
               inListing={inListing}
               isCrosspost={isCrosspost}
@@ -355,7 +360,6 @@ class Post extends React.Component {
               nsfw={nsfw}
             />
           ) : null}
-          {is_self && selftext_html ? <Body html={selftext_html} /> : null}
           <Crosspost
             crosspost={crosspost_parent_list || null}
             inListing={inListing}
