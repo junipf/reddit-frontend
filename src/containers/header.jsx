@@ -12,23 +12,24 @@ import NavigationMenu from "../components/navigation-menu";
 import styled from "styled-components";
 
 const HeaderWrapper = styled.div`
-  /* height: 3rem; */
-  height: 100vh;
+  width: 100vw;
+  height: 3rem;
+  /* width: 3rem; */
+  /* height: 100vh; */
   border-right: 1px solid ${props => props.theme.container.border};
   background-color: ${props => props.theme.container.levels[1]};
   color: ${props => props.theme.container.color};
-  width: 3rem;
   display: flex;
-  flex-flow: column nowrap;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
 `;
 
 const Section = styled.div`
   display: flex;
-  flex-flow: inherit;
+  flex-direction: inherit;
   align-items: center;
-  /* height: inherit; */
+  height: inherit;
   margin: 0.25rem;
 `;
 

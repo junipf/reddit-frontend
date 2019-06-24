@@ -168,11 +168,11 @@ class App extends React.Component {
               type={darkTheme ? "light" : "dark"}
             />
             <AppWrapper>
-              <Columns>
-                <Header
+            <Header
                   toggleDarkTheme={this.toggleDarkTheme}
                   darkTheme={darkTheme}
                 />
+              <Columns>
                 <Switch>
                   <Route path="/message/:sort?" component={MessagesPage} />
                   <Route
@@ -199,7 +199,7 @@ class App extends React.Component {
 
 const AppWrapper = styled.div`
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: column nowrap;
 `;
 const Columns = styled.div`
   display: flex;
