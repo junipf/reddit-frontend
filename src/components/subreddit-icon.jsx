@@ -1,7 +1,6 @@
 import React from "react";
 import styled, { withTheme } from "styled-components";
 import Icon from "./icon";
-import LazyLoad from "react-lazy-load";
 import { genSubIconColor } from "../utils/color";
 import { meetsContrastGuidelines } from "polished";
 
@@ -46,11 +45,6 @@ const SubredditIcon = props => {
     !icon && display_name ? display_name.charAt(0).toUpperCase() : null;
 
   return (
-    <LazyLoad
-      offset={1000}
-      height={size === "large" ? 36 : 24}
-      debounce={false}
-    >
       <Circle
         icon={icon ? "url(" + icon + ")" : null}
         bgColor={bgColor}
@@ -59,7 +53,6 @@ const SubredditIcon = props => {
       >
         {letter}
       </Circle>
-    </LazyLoad>
   );
 };
 
