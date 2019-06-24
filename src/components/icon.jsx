@@ -1,5 +1,4 @@
 import React from "react";
-// import PropTypes from "prop-types";
 import styled from "styled-components";
 import { ReactComponent as AlertCircle } from "../icons/alert-circle.svg";
 import { ReactComponent as AlertTriangle } from "../icons/alert-triangle.svg";
@@ -54,6 +53,7 @@ import { ReactComponent as Menu } from "../icons/menu.svg";
 import { ReactComponent as Flag } from "../icons/flag.svg";
 import { ReactComponent as Heart } from "../icons/heart.svg";
 import { ReactComponent as Debug } from "../icons/terminal.svg";
+import { ReactComponent as Search } from "../icons/search.svg";
 
 import { ReactComponent as Logo } from "../icons/logo.svg";
 import { ReactComponent as Popular } from "../icons/trending-up.svg";
@@ -118,28 +118,25 @@ const IconMap = {
   flag: <Flag />,
   heart: <Heart />,
   debug: <Debug />,
+  search: <Search />,
   none: null,
 };
 
 const IconWrapper = styled.span`
-  /* vertical-align: baseline; */
-  /* display: inline-flex; */
-  /* align-self: center; */
   display: inline-block;
-  /* margin: 0 0.125em; */
   width: 1em;
   height: 1em;
-  /* margin: 0.15em; */
   color: inherit;
+  margin-right: ${props => (props.marginRight ? "0.25em" : "0")};
   svg {
+    transform: ${props =>
+      props.rotate ? "rotate(" + props.rotate + ")" : null};
     position: relative;
     bottom: ${props =>
       props.doNotAlignBaseline
         ? "0"
-        : "-0.083em"}; /* Aligns feather icons with text baseline */
+    : "-0.083em"}; /* Aligns icons to center of the font */
     color: inherit;
-    /* color: ${props => props.color}; */
-    /* fill: ${props => props.color}; */
     height: inherit;
     width: inherit;
     stroke-width: ${props => (props.thin ? 1 : 2)};

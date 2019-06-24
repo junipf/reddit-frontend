@@ -7,10 +7,7 @@ import Dropdown from "../components/dropdown";
 import { connect } from "react-redux";
 import queryString from "query-string";
 
-import {
-  addSubreddit,
-  setCurrentPost,
-} from "../store/actions";
+import { addSubreddit, setCurrentPost } from "../store/actions";
 import Post from "./post";
 // import { Spinner } from "../components/spinner";
 import { ProgressOverlay, ProgressUnderline } from "../components/progress-bar";
@@ -261,10 +258,11 @@ class PostListing extends React.Component {
           <SubredditBanner {...subreddits[subredditName]} />
           <ViewSettings>
             <VSContents>
-              <Toggle
-                type="primary"
-                label="Show media"
-                onToggle={this.toggleView}
+              <Toggle label="Compact" onToggle={this.toggleView} />
+              <Button
+                icon="search"
+                hideLabel
+                label={subredditName ? "Search r/" + subredditName : "Search"}
               />
               <Dropdown label={sort}>
                 <Button label="hot" to={this.newPath("")} />

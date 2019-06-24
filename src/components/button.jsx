@@ -92,7 +92,7 @@ export default class Button extends React.Component {
     //     : selectedTheme.button.secondary;
 
     const selectedChildren = [
-      icon && <Icon icon={icon} key="0" />,
+      icon && <Icon icon={icon} marginRight={!hideLabel && label} key="0" />,
       children && <Span key="1">{children}</Span>,
       !hideLabel && label && <Span key="2">{label}</Span>,
       iconAfter && <Icon icon={iconAfter} key="3" />,
