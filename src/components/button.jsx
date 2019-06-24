@@ -12,10 +12,16 @@ const StyledButton = styled.button`
   white-space: nowrap;
   vertical-align: middle;
   user-select: none;
-  padding: ${props=> props.size === "small" ? "0.1em 0.25em" : "0.35em 0.5em"};
+  padding: ${props =>
+    props.size === "small" ? "0.1em 0.25em" : "0.35em 0.5em"};
   border: none;
   border-radius: ${props => (props.size === "full" ? "0" : "0.2em")};
-  margin: ${props => (props.size === "full" ? "0" : props.size === "small" ? "0.0625em 0.125em" : "0.125em 0.25em")};
+  margin: ${props =>
+    props.size === "full"
+      ? "0"
+      : props.size === "small"
+      ? "0.0625em 0.125em"
+      : "0.125em 0.25em"};
   width: ${props => (props.size === "full" ? "100%" : null)};
   margin-left: 0;
   line-height: 1;
@@ -61,7 +67,12 @@ export default class Button extends React.Component {
   static defaultProps = {
     type: "secondary",
     size: "normal",
-  }
+  };
+  handleClick = () => {
+    const { onClick, onSelection, value, label, children } = this.props;
+    if (onSelection) onSelection(value || label || String(children));
+    if (onClick) onClick();
+  };
   render() {
     const {
       type,
@@ -108,6 +119,7 @@ export default class Button extends React.Component {
       href: href ? href : null,
       as: to ? Link : href ? "a" : null,
       full,
+      onClick: this.handleClick,
       ...rest,
     };
     return <StyledButton {...props} />;

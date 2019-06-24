@@ -30,7 +30,6 @@ export default class Dropdown extends React.Component {
     if (this.props.onSelection) this.props.onSelection(value);
     this.closeDropdown();
   };
-
   render() {
     const {
       label,
@@ -89,20 +88,12 @@ class Menu extends React.Component {
     return (
       <StyledMenu position={position} ref={this.node}>
         {React.Children.map(children, child =>
-          React.isValidElement(child) ? (
-            <Item
-              onSelect={this.props.handleSelection}
-              value={
-                child.props.value ||
-                child.props.label ||
-                String(child.props.children)
-              }
-            >
-              {React.cloneElement(child, {
-                full: true,
-                type: "flat",
-              })}
-            </Item>
+          React.isValidElement(child) && child.type.name === "Button" ? (
+            React.cloneElement(child, {
+              size: "full",
+              type: "flat",
+              onSelect: this.props.handleSelection,
+            })
           ) : (
             <span>{child}</span>
           )
@@ -111,13 +102,6 @@ class Menu extends React.Component {
     );
   }
 }
-
-const Item = props => {
-  const handleSelection = () => {
-    props.onSelect(props.value);
-  };
-  return <div onClick={handleSelection} {...props} />;
-};
 
 const Wrapper = styled.div`
   /* width: 0; */
