@@ -75,12 +75,11 @@ const StyledPost = styled.div.attrs(props => ({
   
   display: grid;
   grid-template-columns: min-content auto min-content;
-  grid-template-rows: min-content 2rem min-content auto auto;
+  grid-template-rows: min-content auto auto auto;
   grid-template-areas: "left tagline thumb" 
                        "left title   thumb"
-                       "left title   thumb"
-                       "left media   media"
-                       "left actions blank";
+                       "left media   thumb"
+                       "left actions thumb";
   font-size: 0.85rem;
 `;
 
@@ -89,9 +88,10 @@ const Left = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: ${props => props.theme.container.levels[1]};
+  background-color: ${props => props.theme.container.levels[2]};
   grid-area: left;
-  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  min-width: 2rem;
 `;
 
 const Tagline = styled.span`
@@ -151,6 +151,14 @@ class Post extends React.Component {
     };
     this.post = React.createRef();
     this.navigateToPost = this.navigateToPost.bind(this);
+  }
+  shouldComponentUpdate(nextProps, nextState) {
+    return (
+      this.state !== nextState ||
+      this.props.post !== nextProps ||
+      this.props.compact !== nextProps ||
+      this.props.subredditInfo !== nextProps.subredditInfo
+    );
   }
   save = () => {
     this.setState({ saved: !this.state.saved });
