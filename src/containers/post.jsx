@@ -7,7 +7,6 @@ import Toggle from "../components/toggle";
 import { FormatNumber } from "../utils/format-number";
 
 import Flair from "../components/flair";
-import { Spinner } from "../components/spinner";
 import { Timestamp } from "../components/timestamp";
 import { Votes } from "../components/votes";
 import { Link } from "react-router-dom";
@@ -19,62 +18,8 @@ import Icon from "../components/icon";
 
 import { genTheme } from "../utils/color";
 import Preview from "../components/preview";
-
-class Thumbnail extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      loading: true,
-      error: false,
-      thumb: {},
-    };
-  }
-  componentDidMount() {
-    const { images } = this.props.preview;
-    const img = new Image();
-
-    const thumb =
-      images[0].source.width <= 216
-        ? images[0].source
-        : images[0].resolutions[1] || images[0].resolutions[0];
-
-    img.src = thumb.url;
-
-    img.onload = () => {
-      this.setState({
-        loading: false,
-        thumb: {
-          src: thumb.url,
-          width: thumb.width,
-          height: thumb.height,
-        },
-      });
-    };
-    img.onerror = () => {
-      this.setState({ error: true });
-    };
-  }
-  render() {
-    if (this.state.error) {
-      return null;
-    } else if (this.state.loading) {
-      return <Spinner />;
-    } else {
-      return <StyledThumbnail {...this.state.thumb} />;
-    }
-  }
-}
-
-const StyledThumbnail = styled.img`
-  /* max-width: ${props => props.width}; */
-  /* width: auto; */
-  margin: 0.5rem;
-  border: 1px solid ${props => props.theme.container.innerBorder};
-  border-radius: 0.25rem;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: 50% top;
-`;
+import { Body } from "../components/body";
+import Thumbnail from "./thumbnail";
 
 function Crosspost(props) {
   const { crosspost, inListing } = props;
@@ -123,51 +68,47 @@ const StyledPost = styled.div.attrs(props => ({
   margin: 0.5em 0.5em 0 0.5em;
   transition: outline 0.1s ease;
   outline: 1px solid transparent;
-  display: flex;
-  flex-direction: row;
+  /* display: flex; */
+  /* flex-direction: row; */
   background: ${props => props.theme.container.levels[0]};
   border-color: ${props => props.theme.container.border};
   color: ${props => props.theme.container.color};
-  max-width: 48rem;
-  /* a {
-    color: ${props => props.theme.container.link}; 
-    } */
-`;
-const Left = styled.div`
-  padding: 0.35em;
-  text-align: center;
-  background-color: ${props => props.theme.container.levels[1]};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-const Right = styled.div`
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  justify-content: space-between;
+  
+  display: grid;
+  grid-template-columns: min-content auto min-content;
+  grid-template-rows: min-content 2rem min-content auto auto;
+  grid-template-areas: "left tagline thumb" 
+                       "left title   thumb"
+                       "left title   thumb"
+                       "left media   media"
+                       "left actions blank";
   font-size: 0.85rem;
 `;
 
-const Info = styled.div`
-  border-color: ${props => props.theme.container.innerBorder};
-  margin: 0.35rem;
-  font-size: 0.9em;
+const Left = styled.div`
+  text-align: center;
   display: flex;
-  flex-flow: column nowrap;
+  flex-direction: column;
+  align-items: center;
+  background-color: ${props => props.theme.container.levels[1]};
+  grid-area: left;
+  margin-top: 0.5rem;
 `;
+
 const Tagline = styled.span`
-  margin: 0;
-`;
-const TitleBox = styled.div`
-  /* display: flex;
-  flex-flow: column nowrap;
-  width: 100%; */
+  margin: 0.65rem 0.5rem 0 0.5rem;
+  grid-area: tagline;
+  font-size: 0.75rem;
 `;
 const SubredditName = styled(Link)`
-  font-weight: 600;
+  font-weight: 500;
   color: ${props => props.theme.container.link};
-  margin-right: 0.25em;
+  margin-right: 0.25rem;
+`;
+
+const TitleBox = styled.div`
+  grid-area: title;
+  margin: 0.25rem 0.5rem;
 `;
 const Title = styled(Link)`
   display: block;
@@ -175,9 +116,9 @@ const Title = styled(Link)`
   font-size: 1.2rem;
   font-weight: 400;
   text-decoration: none;
-  margin: 0;
 `;
 const GoTo = styled.a`
+  margin-top: 0.25rem;
   position: relative;
   top: -0.125em;
   display: block;
@@ -189,16 +130,11 @@ const GoTo = styled.a`
     opacity: 1;
   }
 `;
-const Body = styled.div`
-  margin: 1rem 0.5rem;
-  max-height: 20rem;
-  overflow-y: auto;
-`;
-const ActionBar = styled.div`
-  margin: 0.5em;
-`;
 
-const Separator = () => <span>•</span>;
+const ActionBar = styled.div`
+  margin: 0.25rem;
+  grid-area: actions;
+`;
 
 class Post extends React.Component {
   constructor(props) {
@@ -279,11 +215,10 @@ class Post extends React.Component {
       // report_reasons,
 
       is_self,
-      // is_video,
       secure_media: media,
-      // media_embed,
-      // media_only,
       preview,
+      thumbnail_height,
+      thumbnail_width,
       selftext_html,
       crosspost_parent_list,
 
@@ -309,6 +244,7 @@ class Post extends React.Component {
       // key_color,
       // ...rest
     } = post;
+
     const theme =
       link_flair_background_color && link_flair_background_color !== ""
         ? genTheme(link_flair_background_color, this.props.theme.dark)
@@ -345,23 +281,9 @@ class Post extends React.Component {
     let displayUrl = url.replace(/https?:\/\/(www.)?/, "");
     if (displayUrl.length > 30) displayUrl = displayUrl.substring(0, 30) + "…";
 
-    const mediaMode = is_self
-      ? null
-      : compact
-      ? preview && preview.images[0]
-        ? "thumbnail"
-        : null
-      : preview && preview.reddit_video_preview
-      ? "video-preview"
-      : media && media.reddit_video
-      ? "video"
-      : media && media.oembed
-      ? "oembed"
-      : preview && preview.enabled
-      ? "image"
-      : preview && preview.images[0]
-      ? "thumbnail"
-      : null;
+    const showThumbnail =
+      (preview && compact) ||
+      (!media && preview && !preview.reddit_video_preview && !preview.enabled);
 
     if (!this.props || author === undefined) return null;
     return (
@@ -389,131 +311,123 @@ class Post extends React.Component {
               hidden={hidden}
             />
           </Left>
-          <Right>
-            <Info>
-              <Tagline>
-                {!inSubreddit ? (
-                  <SubredditName to={"/" + subNamePrefixed}>
-                    {subNamePrefixed}
-                  </SubredditName>
-                ) : null}
-                <Flair {...linkFlair} />
-                <Tags
-                  spoiler={spoiler}
-                  nsfw={nsfw}
-                  quarantine={quarantine}
-                  oc={oc}
-                />
-                <Author
-                  prefix
-                  authorName={authorName}
-                  distinguished={distinguished}
-                  isCrosspost={isCrosspost}
-                />
-                <Flair {...authorFlair} />
-                <Timestamp time={created_utc} />
-              </Tagline>
-              <TitleBox>
-                <Title to={permalink}>{title}</Title>
-                {isRedditLink ? null : (
-                  // <GoTo href={permalink}>
-                  //   Go to thread
-                  //   <Icon icon="chevronRight" />
-                  // </GoTo>
-                  <GoTo href={url}>
-                    {displayUrl + " "}
-                    <Icon icon="external" />
-                  </GoTo>
-                )}
-              </TitleBox>
-            </Info>
-            {mediaMode && mediaMode !== "thumbnail" ? (
-              <Preview
-                isRedditLink={isRedditLink}
-                inListing={inListing}
-                isCrosspost={isCrosspost}
-                preview={preview}
-                media={media}
-                navigateToPost={this.navigateToPost}
-                url={url}
-                permalink={permalink}
-              />
+          <Tagline>
+            {!inSubreddit ? (
+              <SubredditName to={"/" + subNamePrefixed}>
+                {subNamePrefixed}
+              </SubredditName>
             ) : null}
-            {/* <DisplayUrl url={url} permalink={permalink} /> */}
-            {is_self && selftext_html ? (
-              <Body dangerouslySetInnerHTML={{ __html: selftext_html }} />
-            ) : null}
-            <Crosspost
-              crosspost={crosspost_parent_list || null}
-              inListing={inListing}
+            <Flair {...linkFlair} />
+            <Tags
+              spoiler={spoiler}
+              nsfw={nsfw}
+              quarantine={quarantine}
+              oc={oc}
             />
-            <ActionBar>
-              <Button
-                type="primary"
-                label={numComments}
-                to={permalink}
-                data-tip={numComments !== String(num_comments) && num_comments}
-                icon="message"
-                key="1"
-              />
-              <Button
-                hideLabel={this.state.hideButtonLabels}
-                label="share"
-                icon="share"
-                key="3"
-              />
-              <Toggle
-                hideLabel={this.state.hideButtonLabels}
-                label="save"
-                icon="star"
-                startOn={saved}
-                onToggle={this.save}
-                key="4"
-              />
-              <Toggle
-                hideLabel={this.state.hideButtonLabels}
-                label="hide"
-                icon="trash"
-                startOn={hidden}
-                onToggle={this.hide}
-                key="5"
-              />
-              <Button
-                hideLabel={this.state.hideButtonLabels}
-                label="report"
-                icon="eye"
-                key="6"
-              />
-              <Button
-                hideLabel={this.state.hideButtonLabels}
-                label="view on reddit"
-                icon="external"
-                href={"https://www.reddit.com" + permalink}
-                key="7"
-              />
-              <Button
-                hideLabel={this.state.hideButtonLabels}
-                label="Log submission object to console"
-                icon="debug"
-                onClick={this.logPost}
-                key="9"
-              />
-              <Toggle
-                hideLabel
-                label="toggle button labels"
-                iconOn="chevronleft"
-                iconOff="chevronright"
-                onToggle={this.toggleButtonLabels}
-                key="8"
-              />
-            </ActionBar>
-          </Right>
+            <Author
+              prefix
+              authorName={authorName}
+              distinguished={distinguished}
+              isCrosspost={isCrosspost}
+            />
+            <Flair {...authorFlair} />
+            <Timestamp time={created_utc} />
+          </Tagline>
+          <TitleBox>
+            <Title to={permalink}>{title}</Title>
+            {isRedditLink ? null : (
+              <GoTo href={url}>
+                {displayUrl + " "}
+                <Icon icon="external" />
+              </GoTo>
+            )}
+          </TitleBox>
+          {!showThumbnail ? (
+            <Preview
+              isRedditLink={isRedditLink}
+              inListing={inListing}
+              isCrosspost={isCrosspost}
+              preview={preview}
+              media={media}
+              navigateToPost={this.navigateToPost}
+              url={url}
+              permalink={permalink}
+              nsfw={nsfw}
+            />
+          ) : null}
+          {is_self && selftext_html ? <Body html={selftext_html} /> : null}
+          <Crosspost
+            crosspost={crosspost_parent_list || null}
+            inListing={inListing}
+          />
+          <ActionBar>
+            <Button
+              type="primary"
+              label={numComments}
+              to={permalink}
+              data-tip={numComments !== String(num_comments) && num_comments}
+              icon="message"
+              key="1"
+            />
+            <Button
+              hideLabel={this.state.hideButtonLabels}
+              label="share"
+              icon="share"
+              key="3"
+            />
+            <Toggle
+              hideLabel={this.state.hideButtonLabels}
+              label="save"
+              icon="star"
+              startOn={saved}
+              onToggle={this.save}
+              key="4"
+            />
+            <Toggle
+              hideLabel={this.state.hideButtonLabels}
+              label="hide"
+              icon="trash"
+              startOn={hidden}
+              onToggle={this.hide}
+              key="5"
+            />
+            <Button
+              hideLabel={this.state.hideButtonLabels}
+              label="report"
+              icon="eye"
+              key="6"
+            />
+            <Button
+              hideLabel={this.state.hideButtonLabels}
+              label="view on reddit"
+              icon="external"
+              href={"https://www.reddit.com" + permalink}
+              key="7"
+            />
+            <Button
+              hideLabel={this.state.hideButtonLabels}
+              label="Log submission object to console"
+              icon="debug"
+              onClick={this.logPost}
+              key="9"
+            />
+            <Toggle
+              hideLabel
+              label="toggle button labels"
+              iconOn="chevronleft"
+              iconOff="chevronright"
+              onToggle={this.toggleButtonLabels}
+              key="8"
+            />
+          </ActionBar>
           {/* <ModBanners isMod={can_mod_post} {...post} /> */}
-          {mediaMode && mediaMode === "thumbnail" ? (
+          {showThumbnail ? (
             <Thumbnail
               preview={preview}
               inListing={inListing}
               parent={this.post}
+              width={thumbnail_width}
+              height={thumbnail_height}
             />
           ) : null}
         </StyledPost>

@@ -79,13 +79,13 @@ const Circle = styled.div.attrs(props => {
   width: 1.5em;
   border-radius: 50%;
   /* margin-right: 0.25em; */
-  flex: 0 0 1.5em;
+  flex: 0 0 1.5rem;
   text-align: center;
 
   line-height: 1.4;
   overflow: hidden;
 
-  font-size: ${props => (props.size === "large" ? "1.5em" : "1em")};
+  font-size: ${props => (props.size === "large" ? "1.5rem" : "1rem")};
   font-weight: 100;
   text-align: center;
   background-color: ${props => props.theme.container.levels[2]};
