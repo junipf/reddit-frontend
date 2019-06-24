@@ -5,8 +5,8 @@ const Emoji = styled.div.attrs(props => ({
   style: { backgroundImage: "url(" + props.url + ")" },
 }))`
   padding: 0;
-  width: 1.3125em;
-  height: 1.3125em;
+  width: 1.25em;
+  height: 1.25em;
   display: inline-block;
   background-position: center center;
   background-repeat: no-repeat;
@@ -24,8 +24,8 @@ const Flair = styled.span`
   padding: ${props =>
     props.backgroundColor === "transparent" ? "0" : "0.25em 0.4em"};
   font-size: inherit;
-  font-weight: 500;
-  line-height: 1;
+  font-weight: 400;
+  line-height: 1.25;
   text-align: center;
   white-space: nowrap;
   vertical-align: baseline;
