@@ -11,6 +11,7 @@ const SubredditIcon = props => {
     banner_background_color,
     display_name,
     size,
+    flat,
     theme,
     community_icon,
     icon_img,
@@ -45,14 +46,15 @@ const SubredditIcon = props => {
     !icon && display_name ? display_name.charAt(0).toUpperCase() : null;
 
   return (
-      <Circle
-        icon={icon ? "url(" + icon + ")" : null}
-        bgColor={bgColor}
-        color={color}
-        size={size}
-      >
-        {letter}
-      </Circle>
+    <Circle
+      icon={icon ? "url(" + icon + ")" : null}
+      bgColor={bgColor}
+      color={color}
+      size={size}
+      flat={flat}
+    >
+      {letter}
+    </Circle>
   );
 };
 
@@ -63,7 +65,7 @@ const Circle = styled.div.attrs(props => {
   return {
     style: {
       backgroundImage: props.icon,
-      backgroundColor: props.bgColor,
+      backgroundColor: props.flat ? "transparent" : props.bgColor,
       color: props.color,
     },
   };
@@ -72,27 +74,23 @@ const Circle = styled.div.attrs(props => {
   width: 1.5em;
   border-radius: 50%;
   /* margin-right: 0.25em; */
-  flex: 0 0 1.5rem;
+  flex: 0 0 1.5em;
   text-align: center;
 
   line-height: 1.4;
   overflow: hidden;
 
-  font-size: ${props => (props.size === "large" ? "1.5rem" : "1rem")};
+  font-size: ${props =>
+    props.size === "xl" ? "5rem" : props.size === "large" ? "1.5rem" : "1rem"};
   font-weight: 100;
   text-align: center;
-  background-color: ${props => props.theme.container.levels[2]};
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: scroll;
   background-size: 100% auto;
-  background-origin: padding-box;
+  background-origin: border-box;
   background-clip: border-box;
-  transition: box-shadow 0.1s ease;
-  border: 1px solid ${props => props.theme.container.innerBorder};
-  &:hover {
-    box-shadow: 0 0 0 3px ${props => props.theme.button.primary.focus};
-  }
+  /* border: 0.0625em solid ${props => props.theme.container.innerBorder}; */
   &.square {
     border-radius: 0;
   }

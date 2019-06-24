@@ -25,6 +25,11 @@ const IconLink = styled(Link)`
   text-decoration: none;
   color: inherit;
   margin-bottom: 0.5em;
+  transition: box-shadow 0.1s ease;
+  border-radius: 50%;
+  &:hover {
+    box-shadow: 0 0 0 3px ${props => props.theme.button.primary.focus};
+  }
 `;
 
 export const QuickNavigation = ({ favorites }) => (
