@@ -5,7 +5,7 @@ import ReactTooltip from "react-tooltip";
 // import Button from "./button";
 import SubredditIcon from "./subreddit-icon";
 import { Requester } from "./requester";
-import Helper from "./helper";
+import Icon from "./icon";
 import Dropdown, { LinkEntry, Search, Input, CategoryTitle } from "./dropdown";
 
 import { ReactComponent as Popular } from "../icons/trending-up.svg";
@@ -162,7 +162,7 @@ class NavigationMenu extends React.Component {
         {filteredFavorites.length > 0 ? (
           <CategoryTitle>
             Favorites
-            <Helper label="Subreddits you have favorited" />
+            <Icon label="Subreddits you have favorited" />
           </CategoryTitle>
         ) : null}
 
@@ -170,7 +170,7 @@ class NavigationMenu extends React.Component {
         {filteredMultireddits.length > 0 ? (
           <CategoryTitle>
             Collections
-            <Helper label="Your collections" />
+            <Icon label="Your collections" />
           </CategoryTitle>
         ) : null}
 
@@ -178,14 +178,14 @@ class NavigationMenu extends React.Component {
         {filteredSubscriptions.length > 0 ? (
           <CategoryTitle>
             Subscriptions
-            <Helper label="Your subscriptions" />
+            <Icon label="Your subscriptions" />
           </CategoryTitle>
         ) : null}
         {filteredSubscriptions}
         {filteredSearchResults.length > 0 ? (
           <CategoryTitle>
             Search
-            <Helper label="Search results returned from reddit. These " />
+            <Icon label="Search results returned from reddit. These " />
           </CategoryTitle>
         ) : null}
         {filteredSearchResults}
@@ -194,7 +194,7 @@ class NavigationMenu extends React.Component {
         filteredSearchResults.length === 0 ? (
           <CategoryTitle>
             No results
-            <Helper data-tip="No results found from reddit's search - did you mistype something?" />
+            <Icon data-tip="No results found from reddit's search - did you mistype something?" />
           </CategoryTitle>
         ) : null}
       </>

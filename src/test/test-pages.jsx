@@ -1,6 +1,5 @@
 import React from "react";
 import styled from "styled-components";
-import Helper from "../components/helper";
 import Icon from "../components/icon";
 import Button from "../components/button";
 import { Banner } from "../components/banners";
@@ -116,17 +115,6 @@ export const ComponentTestPage = () => (
           <Button onClick={handleClick}>Item 3!</Button>
           Text item!
         </Dropdown>
-      </SectionCard>
-      <SectionCard>
-        <Title>Helper</Title>
-        <Helper icon="info" data-tip="!" data-delay-show={0} />
-        <Helper icon="info" data-tip="This is a tip!" data-delay-show={0} />
-        <Helper
-          icon="alert"
-          data-tip="Reddit video doesn't support audio!"
-          data-delay-show={0}
-        />
-        <Helper icon="info" data-tip="!" data-delay-show={0} />
       </SectionCard>
       <SectionCard>
         <Title>Buttons</Title>
