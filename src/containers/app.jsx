@@ -21,10 +21,27 @@ import { ComponentTestPage } from "../test/test-pages";
 
 import { Spinner } from "../components/spinner";
 
+// Setting up API constants
 const snoowrap = require("snoowrap");
-const clientId = "f6izM-6-3NbhKQ";
+
+console.log(
+  "environment: ", 
+  process.env,
+  "REACT_APP_CLIENT_ID: ",
+  process.env.REACT_APP_CLIENT_ID,
+  "REACT_APP_REDIRECT_URI: ",
+  process.env.REACT_APP_REDIRECT_URI
+  );
+if (!process.env.REACT_APP_CLIENT_ID) {
+  console.error("No CLIENT_ID environment variable found.")
+}
+if (!process.env.REACT_APP_REDIRECT_URI) {
+  console.error("No REDIRECT_URI environment variable found.")
+}
+
+const clientId = process.env.REACT_APP_CLIENT_ID;
 const clientSecret = "";
-const redirectUri = "http://localhost:3000/";
+const redirectUri = process.env.REACT_APP_REDIRECT_URI;
 const scope = [
   "creddits",
   "modcontributors",
