@@ -58,32 +58,7 @@ const AllEntry = ({ onClick }) => (
   </LinkEntry>
 );
 
-export default class extends React.Component {
-  render() {
-    // const { currentSubreddit, currentSubredditName } = this.props;
-    // const frontpage = currentSubredditName === "frontpage";
-    // const multireddit = currentSubreddit.curator !== undefined;
-    return (
-      <Dropdown
-        iconAfter="menu"
-        // toggle={
-        //   <Brand iconAfter="chevronDown">
-        //     {frontpage ? <LogoIcon /> : <SubredditIcon {...currentSubreddit} />}
-        //     {frontpage
-        //       ? "frontpage"
-        //       : multireddit
-        //       ? "m/" + currentSubreddit.display_name
-        //       : "r/" + currentSubreddit.display_name}
-        //   </Brand>
-        // }
-      >
-        <NavigationMenu {...this.props} />
-      </Dropdown>
-    );
-  }
-}
-
-class NavigationMenu extends React.Component {
+export default class NavigationMenu extends React.Component {
   static contextType = Requester;
   constructor(props) {
     super(props);
@@ -92,6 +67,14 @@ class NavigationMenu extends React.Component {
       searchResults: [],
     };
     this.handleInput = this.handleInput.bind(this);
+  }
+  shouldComponentUpdate(nextProps, nextState) {
+    return (
+      nextState !== this.state ||
+      nextProps.subscriptions !== this.props.subscriptions ||
+      nextProps.favorites !== this.props.favorites ||
+      nextProps.multireddits !== this.props.multireddits
+    );
   }
   handleInput(e) {
     if (this.state.filter !== "") {
@@ -104,15 +87,24 @@ class NavigationMenu extends React.Component {
   componentDidUpdate() {
     ReactTooltip.rebuild();
   }
-  filterList = (list, filter) =>
-    list.reduce((filtered, sub) => {
-      if (sub && sub.display_name.toLowerCase().includes(filter)) {
-        filtered.push(
-          <SubredditEntry {...sub} key={sub.id} onClick={this.toggleDropdown} />
-        );
-      }
-      return filtered;
-    }, []);
+  filterList = (list, filter) => {
+    if (filter && filter !== "") {
+      return list.reduce((filtered, sub) => {
+        if (sub && sub.display_name.toLowerCase().includes(filter)) {
+          filtered.push(
+            <SubredditEntry
+              {...sub}
+              key={sub.id}
+            />
+          );
+        }
+        return filtered;
+      }, []);
+    }
+    return list.map(sub => (
+      <SubredditEntry {...sub} key={sub.id} />
+    ));
+  };
   render() {
     const { subscriptions, favorites, multireddits } = this.props;
     const { filter, searchResults } = this.state;
@@ -143,7 +135,13 @@ class NavigationMenu extends React.Component {
     }
 
     return (
-      <>
+      <Dropdown
+        icon="menu"
+        placeholder={
+          this.props.match ? this.props.match.params.subredditName : "Frontpage"
+        }
+        Select
+      >
         <Search>
           <Input
             placeholder="Search"
@@ -197,7 +195,7 @@ class NavigationMenu extends React.Component {
             <Icon data-tip="No results found from reddit's search - did you mistype something?" />
           </CategoryTitle>
         ) : null}
-      </>
+      </Dropdown>
     );
   }
 }
