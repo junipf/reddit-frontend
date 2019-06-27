@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import ReactTooltip from "react-tooltip";
 
+import UniqueId from "../utils/unique-id";
 // import Button from "./button";
 import SubredditIcon from "./subreddit-icon";
 import { Requester } from "./requester";
@@ -102,7 +103,7 @@ export default class NavigationMenu extends React.Component {
       }, []);
     }
     return list.map(sub => (
-      <SubredditEntry {...sub} key={sub.id} />
+      <SubredditEntry {...sub} key={UniqueId(sub.id)} />
     ));
   };
   render() {
@@ -125,7 +126,7 @@ export default class NavigationMenu extends React.Component {
           filtered.push(
             <SubredditEntry
               {...sub}
-              key={sub.id}
+              key={UniqueId(sub.id)}
               onClick={this.toggleDropdown}
             />
           );
@@ -158,41 +159,41 @@ export default class NavigationMenu extends React.Component {
           </>
         ) : null}
         {filteredFavorites.length > 0 ? (
-          <CategoryTitle>
+          <CategoryTitle key="favorites">
             Favorites
-            <Icon label="Subreddits you have favorited" />
+            <Icon icon="info" label="Subreddits you have favorited" />
           </CategoryTitle>
         ) : null}
 
         {filteredFavorites}
         {filteredMultireddits.length > 0 ? (
-          <CategoryTitle>
+          <CategoryTitle key="collections">
             Collections
-            <Icon label="Your collections" />
+            <Icon icon="info" label="Your collections" />
           </CategoryTitle>
         ) : null}
 
         {filteredMultireddits}
         {filteredSubscriptions.length > 0 ? (
-          <CategoryTitle>
+          <CategoryTitle key="subscriptions">
             Subscriptions
-            <Icon label="Your subscriptions" />
+            <Icon icon="info" label="Your subscriptions" />
           </CategoryTitle>
         ) : null}
         {filteredSubscriptions}
         {filteredSearchResults.length > 0 ? (
-          <CategoryTitle>
+          <CategoryTitle key="searchresults">
             Search
-            <Icon label="Search results returned from reddit. These " />
+            <Icon icon="info" label="Search results returned from reddit. These " />
           </CategoryTitle>
         ) : null}
         {filteredSearchResults}
         {filteredSubscriptions.length === 0 &&
         filteredFavorites.length === 0 &&
         filteredSearchResults.length === 0 ? (
-          <CategoryTitle>
+          <CategoryTitle key="noresults">
             No results
-            <Icon data-tip="No results found from reddit's search - did you mistype something?" />
+            <Icon icon="info" data-tip="No results found from reddit's search - did you mistype something?" />
           </CategoryTitle>
         ) : null}
       </Dropdown>
