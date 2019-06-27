@@ -61,8 +61,8 @@ export class Body extends React.Component {
       <Wrapper>
         <Text
           ref={this.body}
-          overflow={overflow}
-          showAll={showAll}
+          overflow={overflow ? "true" : null}
+          showAll={showAll ? "true" : null}
           dangerouslySetInnerHTML={{ __html: this.props.html }}
         />
         {this.state.overflow ? (
