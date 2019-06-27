@@ -1,28 +1,10 @@
-@import "./base/layout";
-@import "./base/typography";
-@import "./base/animations";
+// @import "./base/layout";
+// @import "./base/typography";
+// @import "./base/animations";
 
-@import "./components/comment";
-@import "./components/header";
-@import "./components/votes";
+// @import "./components/comment";
+// @import "./components/header";
+// @import "./components/votes";
 
 // @import "./bootstrap/bootstrap";
-@import "./containers/app";
-
-a {
-  text-decoration: none;
-}
-// react-tooltip style customization.
-// !important required per docs
-.tooltip {
-  .multi-line {
-    text-align: left !important;
-    &:first-child {
-      font-size: 0.9rem;
-    }
-    &:not(:first-child) {
-      font-size: 0.75rem;
-      font-style: italic;
-    }
-  }
-}
+// @import "./containers/app";

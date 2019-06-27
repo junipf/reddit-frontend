@@ -1,42 +1,104 @@
-import { hot } from "react-hot-loader";
 import React from "react";
+import styled, { ThemeProvider, createGlobalStyle } from "styled-components";
+import { hot } from "react-hot-loader";
 import { connect } from "react-redux";
 import { Route, Switch } from "react-router-dom";
 import ReactTooltip from "react-tooltip";
-import styled, { ThemeProvider } from "styled-components";
-
-import Button from "../components/button";
 import queryString from "query-string";
 
+// Import API-related
 import { Requester } from "../components/requester";
 import { setRefreshToken } from "../store/actions";
-import { themes } from "../style/color-theme";
 
-// import CommentListing from "./CommentListing";
+// Import containers and components
 import PostListing from "./post-listing";
 import SubscriptionsPage from "./subscriptions-page";
 import MessagesPage from "./messages-page";
 import Header from "./header";
 import { ComponentTestPage } from "../test/test-pages";
-
+import Button from "../components/button";
 import { Spinner } from "../components/spinner";
+
+// Import Styles and Fonts
+import { themes } from "../style/color-theme";
+import "normalize.css";
+import "@ibm/plex/scss/ibm-plex.scss";
+
+// Global Style
+const GlobalStyle = createGlobalStyle`
+  @import "node_modules/@ibm/plex/scss/ibm-plex.scss";
+  body {
+    font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeSpeed;
+    word-wrap: break-word;
+    box-sizing: border-box;
+    margin: 0;
+  }
+  
+  :root,
+  html,
+  body,
+  #root,
+  .app {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  a {
+  text-decoration: none;
+  }
+  
+  * {
+  box-sizing: inherit;
+  }
+
+  svg {
+    color: inherit;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* react-tooltip */
+  .tooltip {
+  .multi-line {
+    text-align: left !important;
+    &:first-child {
+      font-size: 0.9rem;
+    }
+    &:not(:first-child) {
+      font-size: 0.75rem;
+      font-style: italic;
+      }
+    }
+  }
+  /* Markdown bodies returned from reddit */
+  .md {
+    p {
+      margin: 0.25em 0;
+    }
+  }
+`;
 
 // Setting up API constants
 const snoowrap = require("snoowrap");
 
 console.log(
-  "environment: ", 
+  "environment: ",
   process.env,
   "REACT_APP_CLIENT_ID: ",
   process.env.REACT_APP_CLIENT_ID,
   "REACT_APP_REDIRECT_URI: ",
   process.env.REACT_APP_REDIRECT_URI
-  );
+);
 if (!process.env.REACT_APP_CLIENT_ID) {
-  console.error("No CLIENT_ID environment variable found.")
+  console.error("No CLIENT_ID environment variable found.");
 }
 if (!process.env.REACT_APP_REDIRECT_URI) {
-  console.error("No REDIRECT_URI environment variable found.")
+  console.error("No REDIRECT_URI environment variable found.");
 }
 
 const clientId = process.env.REACT_APP_CLIENT_ID;
@@ -176,6 +238,7 @@ class App extends React.Component {
       return (
         <ThemeProvider theme={darkTheme ? themes.dark : themes.light}>
           <Requester.Provider value={requester}>
+            <GlobalStyle />
             <ReactTooltip
               effect="solid"
               place={"bottom"}
@@ -185,10 +248,10 @@ class App extends React.Component {
               type={darkTheme ? "light" : "dark"}
             />
             <AppWrapper>
-            <Header
-                  toggleDarkTheme={this.toggleDarkTheme}
-                  darkTheme={darkTheme}
-                />
+              <Header
+                toggleDarkTheme={this.toggleDarkTheme}
+                darkTheme={darkTheme}
+              />
               <Columns>
                 <Switch>
                   <Route path="/message/:sort?" component={MessagesPage} />
