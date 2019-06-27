@@ -8,21 +8,21 @@ const StyledButton = styled.button`
   display: inline-block;
   font-weight: 500;
   font-size: 1em;
-  text-align: ${props => (props.size === "full" ? "left" : "center")};
+  text-align: ${props => (props.align)};
   white-space: nowrap;
   vertical-align: middle;
   user-select: none;
   padding: ${props =>
     props.size === "small" ? "0.1em 0.25em" : "0.35em 0.5em"};
   border: none;
-  border-radius: ${props => (props.size === "full" ? "0" : "0.2em")};
+  border-radius: ${props => (props.size === "fill" ? "0" : "0.2em")};
   margin: ${props =>
-    props.size === "full"
+    props.nomargin
       ? "0"
       : props.size === "small"
       ? "0.0625em 0.125em"
       : "0.125em 0.25em"};
-  width: ${props => (props.size === "full" ? "100%" : null)};
+  width: ${props => (props.size === "fill" ? "100%" : null)};
   margin-left: 0;
   line-height: 1;
   transition: all 0.1s ease;
@@ -60,7 +60,7 @@ const Span = styled.span.attrs(props => ({ style: { color: props.color } }))`
 export default class Button extends React.Component {
   static propTypes = {
     type: PropTypes.oneOf(["flat", "primary", "secondary"]),
-    size: PropTypes.oneOf(["small", "normal", "fit"]),
+    size: PropTypes.oneOf(["small", "normal", "fill"]),
     label: PropTypes.string,
     hideLabel: PropTypes.bool,
   };
@@ -86,21 +86,11 @@ export default class Button extends React.Component {
       color,
       to,
       href,
-      full,
       "data-tip": data_tip,
+      noMargin,
+      align,
       ...rest
     } = this.props;
-
-    // const selectedTheme = fromColor
-    //   ? { button: generateButtonColors(fromColor) }
-    //   : this.props.theme;
-
-    // const selectedColors =
-    //   type === "primary"
-    //     ? selectedTheme.button.primary
-    //     : type === "flat"
-    //     ? selectedTheme.button.flat
-    //     : selectedTheme.button.secondary;
 
     const selectedChildren = [
       icon && <Icon icon={icon} marginRight={!hideLabel && label} key="0" />,
@@ -118,7 +108,8 @@ export default class Button extends React.Component {
       to: to ? to : null,
       href: href ? href : null,
       as: to ? Link : href ? "a" : null,
-      full,
+      nomargin: noMargin ? "true" : this.props.size === "fill" ? "true" : null,
+      align: align || this.props.size === "fill" ? "left" : "center",
       onClick: this.handleClick,
       ...rest,
     };

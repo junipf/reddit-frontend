@@ -15,7 +15,8 @@ export const Votes = ({ mod, score, upvote, downvote, showDot, ...props }) => (
     <Button
       onClick={upvote}
       icon="chevronUp"
-      size="small"
+      type="flat"
+      noMargin
       color={mod === 1 ? "orange" : null}
     />
     {score ? (
@@ -26,7 +27,8 @@ export const Votes = ({ mod, score, upvote, downvote, showDot, ...props }) => (
     <Button
       onClick={downvote}
       icon="chevronDown"
-      size="small"
+      type="flat"
+      noMargin
       color={mod === -1 ? "blue" : null}
     />
   </VotesWrapper>

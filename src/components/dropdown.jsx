@@ -90,8 +90,9 @@ class Menu extends React.Component {
         {React.Children.map(children, child =>
           React.isValidElement(child) && child.type.name === "Button" ? (
             React.cloneElement(child, {
-              size: "full",
+              size: "fill",
               type: "flat",
+              align: "left",
               onSelect: this.props.handleSelection,
             })
           ) : (
