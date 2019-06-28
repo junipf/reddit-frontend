@@ -33,7 +33,6 @@ export default class Dropdown extends React.Component {
       Select,
       sub,
       size,
-      topWrapper,
     } = this.props;
     const { selection } = this.state;
     const toggleProps = {
@@ -66,7 +65,6 @@ export default class Dropdown extends React.Component {
             reposition={this.reposition}
             sub={sub}
             wrapper={this.wrapper}
-            topWrapper={sub ? topWrapper : this.wrapper}
           />
         )}
       </Wrapper>
@@ -97,25 +95,27 @@ class Menu extends React.Component {
       width,
       height,
     } = this.props.wrapper.current.getBoundingClientRect();
+    
+    const overflowRight = left + width + menuWidth > bodyWidth
 
     if (sub) {
-      if (left + width + menuWidth > bodyWidth) {
+      if (overflowRight) {
         this.setState({
           position: {
             x: -menuWidth,
-            y: top - menuHeight,
+            y: top - height,
           },
         });
       } else {
         this.setState({
           position: {
             x: width,
-            y: top - menuHeight,
+            y: top - height,
           },
         });
       }
     } else {
-      if (left + width + menuWidth > bodyWidth) {
+      if (overflowRight) {
         this.setState({
           position: {
             x: left - menuWidth + width,
@@ -143,15 +143,15 @@ class Menu extends React.Component {
     this.props.closeDropdown();
   };
   render() {
-    const { children, setSelection, topWrapper } = this.props;
+    const { children, setSelection, sub } = this.props;
     return (
-      <StyledMenu position={this.state.position} ref={this.menu}>
+      <StyledMenu position={this.state.position} sub={sub} ref={this.menu}>
         {React.Children.map(children, child => {
           if (React.isValidElement(child)) {
             if (child.type.name === "Button") {
               return React.cloneElement(child, {
                 size: "fill",
-                type: "flat",
+                type: child.props.type || "flat",
                 align: "left",
                 setSelection: setSelection,
               });
@@ -159,11 +159,11 @@ class Menu extends React.Component {
             if (child.type.name === "Dropdown") {
               return React.cloneElement(child, {
                 size: "fill",
-                type: "flat",
+                type: child.props.type || "flat",
                 align: "left",
                 sub: true,
                 setSelection: setSelection,
-                topWrapper,
+                hideLabel: false,
               });
             }
           }
@@ -218,8 +218,8 @@ export const LinkEntry = styled(Link)`
 
 export const StyledMenu = styled.div.attrs(props => ({
   style: {
-    left: props.position.x || 0,
-    top: props.position.y || 0,
+    left: props.sub ? -1 : props.position.x || 0,
+    top: props.sub ? -1 : props.position.y || 0,
   },
 }))`
   z-index: 100;
@@ -228,13 +228,15 @@ export const StyledMenu = styled.div.attrs(props => ({
   padding: 0;
   margin: 0;
   list-style: none;
-  background-color: white;
+  background-color: inherit;
   background-clip: padding-box;
   background: ${props => props.theme.container.levels[1]};
   color: ${props => props.theme.container.color[1]};
   border: 1px solid ${props => props.theme.container.border};
   border-radius: 0.25rem;
   position: absolute;
+  /* width: ${props=>props.sub ? "100%" : "unset"}; */
+  /* height: ${props=>props.sub ? "100%" : "unset"}; */
   max-height: calc(100vh - 3rem);
   /* overflow-y: auto; */
   /* overflow-x: show; */

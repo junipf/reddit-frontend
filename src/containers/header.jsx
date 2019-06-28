@@ -6,11 +6,10 @@ import ReactTooltip from "react-tooltip";
 import { setSubscriptions, setMultireddits, setUser } from "../store/actions";
 import { Requester } from "../components/requester";
 
-import Button from "../components/button";
 import { QuickNavigation } from "../components/quick-navigation";
 import NavigationMenu from "../components/navigation-menu";
 // import UserMenu from "../components/user-menu";
-import ThemeSelector from "../components/theme-selector";
+import PrefMenu from "../components/pref-menu";
 
 const HeaderWrapper = styled.div`
   width: 100vw;
@@ -63,7 +62,10 @@ class Header extends React.Component {
           <QuickNavigation favorites={rest.favorites} />
         </Section>
         <Section>
-          <ThemeSelector />
+          {/* <Dropdown label="User menu"> */}
+            {/* <Button label="Userpage" to="/u/me" /> */}
+            <PrefMenu />
+          {/* </Dropdown> */}
           {/* <UserMenu user={this.props.user} /> */}
         </Section>
       </HeaderWrapper>
