@@ -98,26 +98,8 @@ class Menu extends React.Component {
       height,
     } = this.props.wrapper.current.getBoundingClientRect();
 
-    console.log(
-      "left: " +
-        left +
-        "\nwidth: " +
-        width +
-        "\nmenuWidth: " +
-        menuWidth +
-        "\n= " +
-        (left + width + menuWidth) +
-        "\nbodyWidth: " +
-        bodyWidth +
-        "\ntop: " +
-        top +
-        "\nheight: " +
-        height
-    );
-
     if (sub) {
       if (left + width + menuWidth > bodyWidth) {
-        console.log("Sub & overflow");
         this.setState({
           position: {
             x: -menuWidth,
@@ -125,7 +107,6 @@ class Menu extends React.Component {
           },
         });
       } else {
-        console.log("Sub");
         this.setState({
           position: {
             x: width,
@@ -135,7 +116,6 @@ class Menu extends React.Component {
       }
     } else {
       if (left + width + menuWidth > bodyWidth) {
-        console.log("Overflow");
         this.setState({
           position: {
             x: left - menuWidth + width,
@@ -143,7 +123,6 @@ class Menu extends React.Component {
           },
         });
       } else {
-        console.log("Plain");
         this.setState({
           position: {
             x: left,
