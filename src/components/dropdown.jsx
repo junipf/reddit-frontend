@@ -126,7 +126,6 @@ class Menu extends React.Component {
         this.setState({
           position: {
             x: left,
-            y: top + height,
           },
         });
       }
@@ -219,7 +218,7 @@ export const LinkEntry = styled(Link)`
 export const StyledMenu = styled.div.attrs(props => ({
   style: {
     left: props.sub ? -1 : props.position.x || 0,
-    top: props.sub ? -1 : props.position.y || 0,
+    top: props.sub ? -1 : props.position.y,
   },
 }))`
   z-index: 100;
