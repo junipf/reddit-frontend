@@ -134,7 +134,9 @@ const store = (state = initialState, action) => {
     case "TOGGLE_LIGHTBOX_IS_OPEN":
       return { ...state, lightboxIsOpen: !lightboxIsOpen };
     case "SET_CURRENT_POST":
-      return { ...state, currentPost: action.post}
+      return { ...state, currentPost: action.post};
+    case "SET_PREF_DARKTHEME":
+      return { ...state, prefDarkTheme: action.bool};
     default:
       return state;
   }

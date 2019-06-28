@@ -57,3 +57,5 @@ export const addSubreddit = subredditInfo => ({
 export const toggleLightboxIsOpen = () => ({ type: "TOGGLE_LIGHTBOX_IS_OPEN" });
 
 export const setCurrentPost = (post) => ({ type: "SET_CURRENT_POST", post});
+
+export const setPrefDarkTheme = (bool) => ({ type: "SET_PREF_DARKTHEME", bool});

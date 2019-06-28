@@ -2,8 +2,8 @@ import React from "react";
 import { connect } from "react-redux";
 import { setPrefDarkTheme } from "../store/actions";
 
-import Dropdown from "../components/dropdown";
-import Button from "../components/button";
+import Dropdown from "./dropdown";
+import Button from "./button";
 
 class ThemeSelector extends React.Component {
   constructor(props) {
