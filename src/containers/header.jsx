@@ -1,15 +1,16 @@
 import React from "react";
-// import { setUser } from "../store/actions";
+import styled from "styled-components";
 import { connect } from "react-redux";
 import ReactTooltip from "react-tooltip";
-import Button from "../components/button";
+
 import { setSubscriptions, setMultireddits, setUser } from "../store/actions";
 import { Requester } from "../components/requester";
 
+import Button from "../components/button";
 import { QuickNavigation } from "../components/quick-navigation";
 import NavigationMenu from "../components/navigation-menu";
 // import UserMenu from "../components/user-menu";
-import styled from "styled-components";
+import ThemeSelector from "./ThemeSelector";
 
 const HeaderWrapper = styled.div`
   width: 100vw;
@@ -69,6 +70,7 @@ class Header extends React.Component {
             label={darkTheme ? "Light mode" : "Dark mode"}
             hideLabel
           />
+          <ThemeSelector />
           {/* <UserMenu user={this.props.user} /> */}
         </Section>
       </HeaderWrapper>

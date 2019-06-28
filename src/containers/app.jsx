@@ -85,15 +85,6 @@ const GlobalStyle = createGlobalStyle`
 
 // Setting up API constants
 const snoowrap = require("snoowrap");
-
-console.log(
-  "environment: ",
-  process.env,
-  "REACT_APP_CLIENT_ID: ",
-  process.env.REACT_APP_CLIENT_ID,
-  "REACT_APP_REDIRECT_URI: ",
-  process.env.REACT_APP_REDIRECT_URI
-);
 if (!process.env.REACT_APP_CLIENT_ID) {
   console.error("No CLIENT_ID environment variable found.");
 }
@@ -162,6 +153,7 @@ const Wrapper = styled.div`
   justify-content: center;
 `;
 
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -174,12 +166,10 @@ class App extends React.Component {
             clientSecret,
             refreshToken,
           })
-        : null,
-      darkTheme: false,
+        : null
     };
     this.state.requester.config({ debug: true });
   }
-
   componentDidMount() {
     const { refreshToken, location, history, setRefreshToken } = this.props;
     // if (this.state.requester !== null)
@@ -211,7 +201,6 @@ class App extends React.Component {
       history.replace(values.state);
     }
   }
-
   componentDidUpdate(prevProps) {
     const { refreshToken } = this.props;
     if (refreshToken && refreshToken !== prevProps.refreshToken) {
@@ -226,17 +215,14 @@ class App extends React.Component {
     }
     this.state.requester.config({ debug: true });
   }
-  toggleDarkTheme = () => {
-    this.setState({ darkTheme: !this.state.darkTheme });
-  };
   render() {
-    const { refreshToken, location } = this.props;
-    const { darkTheme, requester } = this.state;
+    const { refreshToken, location, prefDarkTheme } = this.props;
+    const { requester } = this.state;
     if (refreshToken === undefined)
       return <LoginPrompt state={location.pathname} />;
     if (requester) {
       return (
-        <ThemeProvider theme={darkTheme ? themes.dark : themes.light}>
+        <ThemeProvider theme={prefDarkTheme ? themes.dark : themes.light}>
           <Requester.Provider value={requester}>
             <GlobalStyle />
             <ReactTooltip
@@ -245,12 +231,12 @@ class App extends React.Component {
               clickable={true}
               delayShow={250}
               className="tooltip"
-              type={darkTheme ? "light" : "dark"}
+              type={prefDarkTheme ? "light" : "dark"}
             />
             <AppWrapper>
               <Header
                 toggleDarkTheme={this.toggleDarkTheme}
-                darkTheme={darkTheme}
+                darkTheme={prefDarkTheme}
               />
               <Columns>
                 <Switch>
@@ -298,8 +284,8 @@ const SplitListings = props => {
 };
 
 function mapStateToProps(state) {
-  const { refreshToken } = state;
-  return { refreshToken };
+  const { refreshToken, prefDarkTheme } = state;
+  return { refreshToken, prefDarkTheme };
 }
 
 export default connect(
