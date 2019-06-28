@@ -9,42 +9,46 @@ export default class Dropdown extends React.Component {
     this.state = {
       showDropdown: false,
       selection: props.placeholder,
-      position: { x: 0, y: 0 },
     };
     this.wrapper = React.createRef();
   }
   openDropdown = () => {
-    this.setState({
-      showDropdown: true,
-      position: {
-        x: this.wrapper.current.offsetLeft,
-        y: this.wrapper.current.offsetTop + this.wrapper.current.clientHeight,
-      },
-    });
+    this.setState({ showDropdown: true });
   };
   closeDropdown = () => {
     this.setState({ showDropdown: false });
   };
-  handleSelection = value => {
+  setSelection = value => {
     this.setState({ selection: value });
-    if (this.props.onSelection) this.props.onSelection(value);
     this.closeDropdown();
   };
   render() {
     const {
       label,
       children,
+      icon,
       iconAfter,
       toggle,
       hideLabel,
       Select,
+      sub,
+      size,
+      topWrapper,
     } = this.props;
     const { selection } = this.state;
     const toggleProps = {
       label: Select ? selection || label : label,
       hideLabel: hideLabel,
       onClick: this.state.showDropdown ? this.closeDropdown : this.openDropdown,
-      iconAfter: iconAfter ? iconAfter : hideLabel ? "more" : "chevronDown",
+      icon: icon ? icon : null,
+      iconAfter: iconAfter
+        ? iconAfter
+        : sub
+        ? "chevronRight"
+        : hideLabel
+        ? "more"
+        : "chevronDown",
+      size: sub ? "fill" : size,
     };
     return (
       <Wrapper ref={this.wrapper}>
@@ -56,10 +60,13 @@ export default class Dropdown extends React.Component {
 
         {this.state.showDropdown && (
           <Menu
-            position={this.state.position}
             children={children}
             closeDropdown={this.closeDropdown}
-            handleSelection={this.handleSelection}
+            setSelection={this.setSelection}
+            reposition={this.reposition}
+            sub={sub}
+            wrapper={this.wrapper}
+            topWrapper={sub ? topWrapper : this.wrapper}
           />
         )}
       </Wrapper>
@@ -70,8 +77,81 @@ export default class Dropdown extends React.Component {
 class Menu extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
-    this.node = React.createRef();
+    this.state = {
+      position: { x: 0, y: 0 },
+    };
+    this.menu = React.createRef();
+  }
+  componentDidMount() {
+    // Wrapper (contains dropdown toggle button)
+    // Menu (the actual menu being positioned)
+    const { sub } = this.props;
+    const {
+      clientWidth: menuWidth,
+      clientHeight: menuHeight,
+    } = this.menu.current;
+    const bodyWidth = document.body.clientWidth;
+    const {
+      left,
+      top,
+      width,
+      height,
+    } = this.props.wrapper.current.getBoundingClientRect();
+
+    console.log(
+      "left: " +
+        left +
+        "\nwidth: " +
+        width +
+        "\nmenuWidth: " +
+        menuWidth +
+        "\n= " +
+        (left + width + menuWidth) +
+        "\nbodyWidth: " +
+        bodyWidth +
+        "\ntop: " +
+        top +
+        "\nheight: " +
+        height
+    );
+
+    if (sub) {
+      if (left + width + menuWidth > bodyWidth) {
+        console.log("Sub & overflow");
+        this.setState({
+          position: {
+            x: -menuWidth,
+            y: top - menuHeight,
+          },
+        });
+      } else {
+        console.log("Sub");
+        this.setState({
+          position: {
+            x: width,
+            y: top - menuHeight,
+          },
+        });
+      }
+    } else {
+      if (left + width + menuWidth > bodyWidth) {
+        console.log("Overflow");
+        this.setState({
+          position: {
+            x: left - menuWidth + width,
+            y: top + height,
+          },
+        });
+      } else {
+        console.log("Plain");
+        this.setState({
+          position: {
+            x: left,
+            y: top + height,
+          },
+        });
+      }
+    }
   }
   componentWillMount() {
     document.addEventListener("mousedown", this.handleClick, false);
@@ -80,25 +160,36 @@ class Menu extends React.Component {
     document.removeEventListener("mousedown", this.handleClick, false);
   }
   handleClick = e => {
-    if (this.node.current.contains(e.target)) return;
-    else this.props.closeDropdown();
+    if (this.menu.current.contains(e.target)) return;
+    this.props.closeDropdown();
   };
   render() {
-    const { position, children } = this.props;
+    const { children, setSelection, topWrapper } = this.props;
     return (
-      <StyledMenu position={position} ref={this.node}>
-        {React.Children.map(children, child =>
-          React.isValidElement(child) && child.type.name === "Button" ? (
-            React.cloneElement(child, {
-              size: "fill",
-              type: "flat",
-              align: "left",
-              onSelect: this.props.handleSelection,
-            })
-          ) : (
-            <span>{child}</span>
-          )
-        )}
+      <StyledMenu position={this.state.position} ref={this.menu}>
+        {React.Children.map(children, child => {
+          if (React.isValidElement(child)) {
+            if (child.type.name === "Button") {
+              return React.cloneElement(child, {
+                size: "fill",
+                type: "flat",
+                align: "left",
+                setSelection: setSelection,
+              });
+            }
+            if (child.type.name === "Dropdown") {
+              return React.cloneElement(child, {
+                size: "fill",
+                type: "flat",
+                align: "left",
+                sub: true,
+                setSelection: setSelection,
+                topWrapper,
+              });
+            }
+          }
+          return <span>{child}</span>;
+        })}
       </StyledMenu>
     );
   }
@@ -166,8 +257,8 @@ export const StyledMenu = styled.div.attrs(props => ({
   border-radius: 0.25rem;
   position: absolute;
   max-height: calc(100vh - 3rem);
-  overflow-y: auto;
-  overflow-x: hidden;
+  /* overflow-y: auto; */
+  /* overflow-x: show; */
   scrollbar-width: thin;
   padding: 0.5em 0;
   display: flex;

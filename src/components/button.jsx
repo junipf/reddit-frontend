@@ -44,7 +44,7 @@ const StyledButton = styled.button`
   }
   &:focus {
     outline: 0;
-    box-shadow: 0 0 0 3px ${props => props.theme.button[props.type].focus};
+    box-shadow: inset 0 0 0 2px ${props => props.theme.button[props.type].focus};
   }
   &:disabled {
     opacity: 0.65;
@@ -69,9 +69,14 @@ export default class Button extends React.Component {
     size: "normal",
   };
   handleClick = () => {
-    const { onClick, onSelection, value, label, children } = this.props;
-    if (onSelection) onSelection(value || label || String(children));
-    if (onClick) onClick();
+    const { onClick, value, setSelection } = this.props;
+    if (onClick) {
+      if (value) onClick(value);
+      else onClick();
+    }
+    if (setSelection && value) {
+      setSelection(value);
+    }
   };
   render() {
     const {
@@ -89,6 +94,9 @@ export default class Button extends React.Component {
       "data-tip": data_tip,
       noMargin,
       align,
+      onClick,
+      value,
+      setSelection,
       ...rest
     } = this.props;
 
