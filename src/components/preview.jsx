@@ -46,9 +46,9 @@ class Preview extends React.Component {
       backgroundColor,
       is_self,
       html,
+      // isCrosspost,
     } = this.props;
     const { showLightbox, LbFullImage } = this.state;
-
     const displayPreview =
       is_self && html ? (
         <Body html={html} />
@@ -56,7 +56,7 @@ class Preview extends React.Component {
         <Video video={media.reddit_video} />
       ) : preview && preview.reddit_video_preview ? (
         <Video video={preview.reddit_video_preview} />
-      ) : media && media.oembed ? (
+      ) : media && media.oembed && media.type === "youtube.com" ? (
         <Embed oembed={media.oembed} />
       ) : preview && preview.images[0] ? (
         preview.images[0].variants.mp4 ? (
@@ -76,7 +76,8 @@ class Preview extends React.Component {
             toggleLightbox={this.toggleLightbox}
           />
         )
-      ) : null;
+      ) : media && media.oembed ? (
+        <Embed oembed={media.oembed} />) : null;
     if (displayPreview === null) {
       return null;
     } else {
@@ -123,7 +124,7 @@ const Image = props => {
   // 0: 108, 1: 216, 2: 320, 3: 640, 4: 960, 5: 1080
   const selectedImage =
     !inListing || image.source.height <= previewMaxHeight
-      ? image.source.height
+      ? image.source
       : image.resolutions[3]
       ? image.resolutions[3]
       : image.resolutions[2]
@@ -181,7 +182,7 @@ const Embed = ({ oembed }) => (
 
 const StyledEmbed = styled.div`
   height: ${props => props.height}px;
-  width: inherit;
+  width: ${props=>props.width}px;
   max-height: ${previewMaxHeight}px;
   iframe {
     width: inherit;
@@ -212,7 +213,7 @@ const Video = ({ video }) => (
   </LazyLoad>
 );
 
-// Gif converted to video, found in post.preview.images[0].variants.mp4
+// Gif converted to video (post.preview.images[0].variants.mp4)
 // Does not come with is_gif and uses different src names
 const Gif = ({ video }) => (
   <LazyLoad

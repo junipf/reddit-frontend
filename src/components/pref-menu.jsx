@@ -19,7 +19,7 @@ class PrefMenu extends React.Component {
     DarkSystemTheme.addListener(this.handleSystemThemeChange);
   }
   componentWillUnmount() {
-    window.matchMedia("(prefers-color-scheme: dark)").removeListener();
+    window.matchMedia("(prefers-color-scheme: dark)").removeListener(this.handleSystemThemeChange);
   }
   handleSystemThemeChange = e => {
     this.setState({ darkSystem: e.matches });

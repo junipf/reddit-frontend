@@ -19,45 +19,7 @@ import Icon from "../components/icon";
 import { genTheme } from "../utils/color";
 import Preview from "../components/preview";
 import Thumbnail from "../components/thumbnail";
-
-function Crosspost(props) {
-  const { crosspost, inListing } = props;
-  if (inListing || crosspost === null) {
-    return null;
-  }
-  const {
-    url,
-    title,
-    permalink,
-    preview,
-    media,
-    // subreddit,
-    // author_flair_background_color,
-    // author_flair_text_color,
-    // author_flair_richtext,
-    // author_flair_template_id,
-    // author_flair_text,
-    // author_flair_type,
-    // authorName,
-    // id,
-    // distinguished,
-    // crosspost_parent_list,
-    // created_utc,
-  } = crosspost[0];
-  return (
-    <StyledCrosspost>
-      <Title url={url} permalink={permalink} title={title} />
-      <Preview preview={preview} media={media} />
-    </StyledCrosspost>
-  );
-}
-
-const StyledCrosspost = styled.div`
-  border: 1px solid ${props => props.theme.container.innerBorder};
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-  margin-top: 0.25em;
-`;
+import Crosspost from "./crosspost";
 
 const StyledPost = styled.div.attrs(props => ({
   id: props.id,
@@ -135,7 +97,7 @@ const ActionBar = styled.div`
   grid-area: actions;
 `;
 
-class Post extends React.Component {
+export class Post extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -156,7 +118,6 @@ class Post extends React.Component {
     return (
       this.state !== nextState ||
       this.props.post !== nextProps ||
-      this.props.compact !== nextProps ||
       this.props.subredditInfo !== nextProps.subredditInfo
     );
   }
@@ -180,8 +141,7 @@ class Post extends React.Component {
     this.setState({ mod: _mod });
   };
   navigateToPost() {
-    const { history, post } = this.props;
-    history.push(post.permalink);
+    this.props.setCurrentPost(this.props.post);
   }
   navigateToSubreddit = () => {
     const { history, subredditInfo } = this.props;
@@ -194,7 +154,7 @@ class Post extends React.Component {
     const {
       title,
       url,
-      author,
+      author: { name: authorName},
       subreddit_name_prefixed: subNamePrefixed,
       // subreddit,
       id,
@@ -275,10 +235,7 @@ class Post extends React.Component {
       type: link_flair_type,
     };
 
-    const authorName = author.name; //avoids undefined error
-
     const isCrosspost = crosspost_parent_list !== undefined;
-
     const isRedditLink =
       url === permalink ||
       /https?:\/\/(i)?(v)?(www)?\.redd(\.it)?(it\.com)?\//.test(url);
@@ -290,17 +247,16 @@ class Post extends React.Component {
 
     const showThumbnail =
       is_self ? false :
-      (preview && compact) ||
         (!media &&
           preview &&
           !preview.reddit_video_preview &&
           !preview.enabled);
 
-    if (!this.props || author === undefined) return null;
+    if (!this.props || authorName === undefined) return null;
     return (
       <ThemeProvider theme={theme}>
         <StyledPost id={id} ref={this.post}>
-          <Left>
+          {!compact && <Left>
             {!inSubreddit ? (
               <SubredditIcon
                 {...subredditInfo}
@@ -321,7 +277,7 @@ class Post extends React.Component {
               locked={locked}
               hidden={hidden}
             />
-          </Left>
+          </Left>}
           <Tagline>
             {!inSubreddit ? (
               <SubredditName to={"/" + subNamePrefixed}>
@@ -353,7 +309,7 @@ class Post extends React.Component {
               </GoTo>
             )}
           </TitleBox>
-          {!showThumbnail ? (
+          {!showThumbnail && !isCrosspost ? (
             <Preview
               is_self={is_self}
               html={selftext_html}
@@ -372,11 +328,24 @@ class Post extends React.Component {
             crosspost={crosspost_parent_list || null}
             inListing={inListing}
           />
+          {compact ? 
           <ActionBar>
+            <Button
+              type="flat"
+              label={numComments}
+              to={permalink}
+              onClick={this.navigateToPost}
+              data-tip={numComments !== String(num_comments) && num_comments}
+              icon="message"
+              key="1"
+            />
+          </ActionBar>
+            : <ActionBar>
             <Button
               type="primary"
               label={numComments}
               to={permalink}
+              onClick={this.navigateToPost}
               data-tip={numComments !== String(num_comments) && num_comments}
               icon="message"
               key="1"
@@ -397,8 +366,10 @@ class Post extends React.Component {
             />
             <Toggle
               hideLabel={this.state.hideButtonLabels}
-              label="hide"
-              icon="trash"
+              labelOn="show"
+              labelOff="hide"
+              iconOn="eye"
+              iconOff="eyeOff"
               startOn={hidden}
               onToggle={this.hide}
               key="5"
@@ -406,7 +377,7 @@ class Post extends React.Component {
             <Button
               hideLabel={this.state.hideButtonLabels}
               label="report"
-              icon="eye"
+              icon="flag"
               key="6"
             />
             <Button
@@ -431,7 +402,7 @@ class Post extends React.Component {
               onToggle={this.toggleButtonLabels}
               key="8"
             />
-          </ActionBar>
+          </ActionBar>}
           {/* <ModBanners isMod={can_mod_post} {...post} /> */}
           {showThumbnail ? (
             <Thumbnail

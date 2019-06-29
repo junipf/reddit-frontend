@@ -4,19 +4,20 @@ import Button from "./button";
 import { SimplifyNumber } from "./simplify-number";
 
 const VotesWrapper = styled.div`
-  padding: 0.25em;
+  padding: ${props=>props.size === "small" ? "0" : "0.25em"};
   display: flex;
   flex-direction: column;
   align-items: center;
 `;
 
-export const Votes = ({ mod, score, upvote, downvote, showDot, ...props }) => (
-  <VotesWrapper {...props}>
+export const Votes = ({ size, mod, score, upvote, downvote, showDot, ...props }) => (
+  <VotesWrapper size={size} {...props}>
     <Button
       onClick={upvote}
       icon="chevronUp"
       type="flat"
       noMargin
+      size={size}
       color={mod === 1 ? "orange" : null}
     />
     {score ? (
@@ -29,6 +30,7 @@ export const Votes = ({ mod, score, upvote, downvote, showDot, ...props }) => (
       icon="chevronDown"
       type="flat"
       noMargin
+      size={size}
       color={mod === -1 ? "blue" : null}
     />
   </VotesWrapper>

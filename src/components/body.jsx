@@ -75,7 +75,8 @@ export class Body extends React.Component {
               hideLabel
               onToggle={this.toggleShowAll}
               size="fill"
-              type="secondary"
+              type="flat"
+              align="center"
             />
           </Actions>
         ) : null}

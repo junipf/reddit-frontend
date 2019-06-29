@@ -6,7 +6,7 @@ import { FormatNumber } from "../utils/format-number";
 export const SimplifyNumber = props => {
   const { number, label, ...rest } = props;
   return (
-    <span {...rest} data-tip={number}>
+    <span {...rest} data-tip={String(number)}>
       {FormatNumber(number, label)}
     </span>
   );

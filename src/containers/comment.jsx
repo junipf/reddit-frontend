@@ -1,35 +1,79 @@
 import React from "react";
 import styled from "styled-components";
-import { colors } from "../components/color-theme";
 
 import Flair from "../components/flair";
 import { Votes } from "../components/votes";
 import { Timestamp } from "../components/timestamp";
 import { SimplifyNumber } from "../components/simplify-number";
-import { FormatNumber } from "../components/format-number";
-import { ActionBar } from "../components/action-bar";
-// import { Banner } from "./banners";
+import { FormatNumber } from "../utils/format-number";
+import Button from "../components/button";
 import { Author } from "../components/author";
-// import Button from "./icon-button";
-// import ReactTooltip from "react-tooltip";
 
-import { ReactComponent as Expand } from "../icons/plus-square.svg";
 
 const Score = ({ score, mod, score_hidden }) => {
-  return score_hidden ? (
-    <span className="score">[score hidden]</span>
+  return score_hidden || isNaN(score) || isNaN(mod) ? (
+    <span data-tip="score hidden">(?) </span>
   ) : (
-    <SimplifyNumber number={score + mod} className="score" label="point" />
+    <SimplifyNumber number={score + mod} label="point" />
   );
 };
 
-// const Scorey = styled.span``;
-
-const Separator = styled.span`
-  color: ${colors.grey30};
-  after: {
-    content: "•";
-    margin: 0 0.35em;
+const StyledComment = styled.div`
+  /* margin-top: 0.25rem; */
+  display: flex;
+  margin-top: 1rem;
+`;
+const Left = styled.div`
+  width: 1.5rem;
+  margin-right: 0.5rem;
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+const Collapse = styled.div`
+  height: 100%;
+  width: 1rem;
+  display: flex;
+  justify-content: center;
+  :hover > * {
+    opacity: 0.5;
+  }
+`;
+const Threadline = styled.div`
+  background-color: currentColor;
+  opacity: 0.3;
+  width: 0.125rem;
+  border-radius: 0.5rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+`;
+const Right = styled.div`
+  flex: 1 1 auto;
+  max-width: 100%;
+`;
+const Tagline = styled.div`
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+`;
+const Context = styled.div`
+  
+`;
+const Actions = styled.div`
+  opacity: 0.8;
+  margin: 0 0.25rem 0 -0.25rem;
+  font-size: 0.75rem;
+`;
+const Body = styled.div`
+  font-size: 0.9rem;
+  margin: 0.25rem 0;
+  blockquote {
+    border-color: ${props => props.theme.container.innerBorder};
+  }
+  a {
+    color: ${props => props.theme.container.link};
   }
 `;
 
@@ -40,9 +84,9 @@ export default class Comment extends React.Component {
       depth: 0,
       mod: 0,
       collapse: props.collapse,
-      className: "comment",
       numChildren: 0,
       hideButtonLabels: true,
+      compact: false,
     };
   }
   upvote = () => {
@@ -71,9 +115,9 @@ export default class Comment extends React.Component {
     const {
       permalink,
       id,
-      primary_color,
-      key_color,
-      author,
+      // primary_color,
+      // key_color,
+      author: { name: authorName },
       depth,
       score,
       edited,
@@ -90,31 +134,39 @@ export default class Comment extends React.Component {
       author_flair_text_color,
       author_flair_background_color,
     } = this.props;
-    const { collapse, mod, hideButtonLabels } = this.state;
+    const { collapse, mod } = this.state;
 
-    let _className = collapse ? "collapsed comment" : "comment";
-
-    if (author.name === "automoderator") {
-      _className += " automoderator";
-    }
     return (
-      <div className={_className} id={id}>
-        <div className="left">
-          {/* <Button
-            icon={collapse ? "Expand" : "Collapse"}
-            onClick={this.toggleCollapse}
-            className="expando"
-          /> */}
-          <Expand className="expando" onClick={this.toggleCollapse} />
-          <Votes mod={mod} upvote={this.upvote} downvote={this.downvote} />
-          <div className="collapse" onClick={this.toggleCollapse}>
-            <div className="threadline" />
-          </div>
-        </div>
-        <div className="right">
-          <div className="tagline">
+      <StyledComment id={id}>
+        <Left>
+          {collapse ? (
+            <Button
+              size="small"
+              type="flat"
+              icon={collapse ? "plus" : "minus"}
+              label={collapse ? "Expand" : "Collapse"}
+              hideLabel
+              noMargin
+              onClick={this.toggleCollapse}
+            />
+          ) : (
+            <>
+              <Votes
+                mod={mod}
+                upvote={this.upvote}
+                downvote={this.downvote}
+                size="small"
+              />
+              <Collapse onClick={this.toggleCollapse}>
+                <Threadline />
+              </Collapse>
+            </>
+          )}
+        </Left>
+        <Right>
+          <Tagline>
             <Author
-              authorName={author.name}
+              authorName={authorName}
               distinguished={distinguished}
               is_submitter={is_submitter}
             />
@@ -127,9 +179,7 @@ export default class Comment extends React.Component {
               text={author_flair_text}
               type={author_flair_type}
             />
-            <Separator />
             <Score>{FormatNumber(score + mod, "point")}</Score>
-            <Separator />
             <Timestamp time={created_utc} to={"#" + id} />
             {edited ? (
               <Timestamp
@@ -139,31 +189,39 @@ export default class Comment extends React.Component {
                 label="*"
               />
             ) : null}
-          </div>
-          <div
-            className="body"
-            dangerouslySetInnerHTML={{
-              __html: body_html,
-            }}
-          />
-          <ActionBar
-            hideLabels={hideButtonLabels}
-            id={id}
-            permalink={permalink}
-            color={primary_color || key_color}
-            toggleButtonLabels={this.toggleButtonLabels}
-            showVoteButtons
-            mod={mod}
-            upvote={this.upvote}
-            downvote={this.downvote}
-          />
-          <div className={"context depth-" + depth}>
-            {replies.map(child => (
-              <Comment {...child} key={child["id"]} />
-            ))}
-          </div>
-        </div>
-      </div>
+          </Tagline>
+          {!collapse && (
+            <>
+              <Body
+                dangerouslySetInnerHTML={{
+                  __html: body_html,
+                }}
+              />
+              <Actions>
+                <Button
+                  type="flat"
+                  label="reply"
+                  icon="reply"
+                  key="2"
+                />
+                <Button
+                  hideLabel
+                  type="flat"
+                  label="view on reddit"
+                  icon="external"
+                  href={"https://www.reddit.com" + permalink}
+                  key="3"
+                />
+              </Actions>
+              <Context depth={depth}>
+                {replies.map(child => (
+                  <Comment {...child} key={child["id"]} />
+                ))}
+              </Context>
+            </>
+          )}
+        </Right>
+      </StyledComment>
     );
   }
 }

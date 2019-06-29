@@ -161,8 +161,8 @@ const dark = {
   container: {
     color: colors.grey10,
     titleColor: colors.white100,
-    border: colors.grey70,
-    innerBorder: colors.grey60,
+    border: colors.grey60,
+    innerBorder: colors.grey70,
     link: colors.blue40,
     levels: [colors.grey80, colors.grey70, colors.grey60],
   },
@@ -184,7 +184,7 @@ const dark = {
     },
     flat: {
       color: [colors.grey10, colors.grey10, colors.grey10],
-      levels: ["transparent", colors.ink90, colors.ink80],
+      levels: ["transparent", colors.grey60, colors.grey80],
       focus: colors.blue50a30,
     },
   },

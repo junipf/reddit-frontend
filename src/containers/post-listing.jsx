@@ -1,37 +1,42 @@
 import React from "react";
-import styled, { ThemeProvider, withTheme } from "styled-components";
-import { genSimpleTheme } from "../utils/color";
-import Button from "../components/button";
-import Toggle from "../components/toggle";
-import Dropdown from "../components/dropdown";
+import { withRouter } from "react-router-dom";
 import { connect } from "react-redux";
-import queryString from "query-string";
-
-import { addSubreddit, setCurrentPost } from "../store/actions";
-import Post from "./post";
-// import { Spinner } from "../components/spinner";
-import { ProgressOverlay, ProgressUnderline } from "../components/progress-bar";
 import { Requester } from "../components/requester";
+import {
+  addSubreddit,
+  setCurrentPost,
+  addSubredditTheme,
+} from "../store/actions";
+import styled, { ThemeProvider, withTheme } from "styled-components";
+// import queryString from "query-string";
+
+import Post from "./post";
+import Button from "../components/button";
+// import Toggle from "../components/toggle";
+import Dropdown from "../components/dropdown";
+import SubredditIcon from "../components/subreddit-icon";
+import { ProgressOverlay, ProgressUnderline } from "../components/progress-bar";
+import { genSubredditTheme } from "../utils/color";
 
 const SubredditBanner = styled.div.attrs(props => ({
   style: {
     backgroundColor: props.banner_background_color,
     backgroundImage: "url(" + props.banner_background_image + ")",
-    height: props.banner_background_image ? "12rem" : "2.5rem",
+    height: props.display_name ? "12rem" : "2.5rem", // Detects frontpage/popular/all
   },
 }))`
-  height: 8rem;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background-color: ${props => props.theme.container.levels[1]};
   border-top-right-radius: inherit;
   border-top-left-radius: inherit;
+  padding-bottom: 2.5rem;
 `;
-
 const StyledListing = styled.div`
   max-width: 48rem;
   margin: 0 auto;
@@ -53,7 +58,6 @@ class Listing extends React.Component {
       listing,
       subreddits,
       subredditName,
-      compact,
       fetching,
     } = this.props;
     return fetching || listing === [] || listing === undefined ? null : (
@@ -64,13 +68,13 @@ class Listing extends React.Component {
           }
           return (
             <Post
-              compact={compact}
               subredditInfo={subreddits[post.subreddit.display_name]}
               inSubreddit={subredditName === post.subreddit.display_name}
               post={post}
               key={i}
               inListing
               id={post.id}
+              setCurrentPost={this.props.setCurrentPost}
             />
           );
         })}
@@ -87,39 +91,51 @@ class PostListing extends React.Component {
       fetching: true,
       fetchingMore: false,
       listing: [],
-      compact: false,
+      sort: "hot",
+      sortTime: null,
+      subredditName: null,
     };
     this.fetchMore = this.fetchMore.bind(this);
     this.fetchSubreddit = this.fetchSubreddit.bind(this);
     this.setSubreddit = this.setSubreddit.bind(this);
   }
-  toggleView = () => {
-    this.setState({ compact: !this.state.compact });
-  };
   componentDidMount() {
-    const { subredditName } = this.props.match.params;
-    this.setSubreddit(subredditName);
-    this.fetchListing(subredditName);
+    const { subredditName, id } = this.props.match.params;
+    if (!id) {
+      this.setSubreddit(subredditName);
+      this.fetchListing(subredditName);
+    }
   }
+  // shouldComponentUpdate(nextProps) {
+  // return nextProps.match.params.id ? false : true;
+  // }
   componentDidUpdate(prevProps, prevState) {
-    const { subredditName, sort, sortTime } = this.props.match.params;
-    const {
-      subredditName: prevSubredditName,
-      sort: prevSort,
-      sortTime: prevSortTime,
-    } = prevProps.match.params;
-    if (subredditName !== prevSubredditName) {
+    const { subredditName, id } = this.props.match.params;
+    const { sort, sortTime } = this.state;
+    const { sort: prevSort, sortTime: prevSortTime } = prevState;
+
+    if (!id && subredditName !== this.state.subredditName) {
       document.title = subredditName ? "r/" + subredditName : "Frontpage";
       this.setSubreddit(subredditName);
       this.fetchListing(subredditName);
     }
-    if (sort !== prevSort || sortTime !== prevSortTime) {
-      this.fetchListing(subredditName);
+    if (
+      this.state.subredditName === prevState.subredditName &&
+      (sort !== prevSort || sortTime !== prevSortTime)
+    ) {
+      this.fetchListing(this.state.subredditName);
     }
   }
-  // Sets the post-listing to use this subreddit,
-  // and fetches subreddit info.
+  // Fetches subreddit info, updates favicon and tab title,
+  // and generates subreddit theme.
   setSubreddit(subredditName) {
+    this.setState({ subredditName });
+    const {
+      // subreddits,
+      addSubreddit,
+      // themesBySubreddit,
+      addSubredditTheme,
+    } = this.props;
     if (
       subredditName &&
       subredditName !== "frontpage" &&
@@ -130,14 +146,27 @@ class PostListing extends React.Component {
         .getSubreddit(subredditName)
         .refresh()
         .then(
-          result => {
-            document.title = result.display_name_prefixed;
+          subreddit => {
+            // Stores subreddit info.
+            addSubreddit(subreddit);
+
+            // Sets favicon and tab title.
+            document.title = subreddit.display_name_prefixed;
             document.querySelector('link[rel="shortcut icon"]').href =
-              result.community_icon ||
-              result.icon_img ||
-              result.icon_url ||
+              subreddit.community_icon ||
+              subreddit.icon_img ||
+              subreddit.icon_url ||
               "favicon.ico";
-            this.props.addSubreddit(result);
+
+            // If needed, generates subreddit theme.
+            // if (themesBySubreddit[subreddit.display_name] === undefined)
+            if (subreddit.primary_color === "")
+              addSubredditTheme(subreddit.display_name, null);
+            else
+              addSubredditTheme(
+                subreddit.display_name,
+                genSubredditTheme(subreddit.primary_color)
+              );
           },
           error => console.error(error)
         );
@@ -159,22 +188,22 @@ class PostListing extends React.Component {
         );
     }
   }
-  fetchListing = () => {
-    const { subredditName, sort, sortTime } = this.props.match.params;
+  fetchListing = subredditName => {
+    const { sort, sortTime } = this.state;
+    this.setState({ fetching: true });
 
     const get =
       sort === "hot" || sort === undefined
-        ? this.context.getHot(subredditName, { time: sortTime })
+        ? this.context.getHot(subredditName)
         : sort === "new"
-        ? this.context.getNew(subredditName, { time: sortTime })
+        ? this.context.getNew(subredditName)
         : sort === "rising"
-        ? this.context.getRising(subredditName, { time: sortTime })
+        ? this.context.getRising(subredditName)
         : sort === "controversial"
         ? this.context.getControversial(subredditName, { time: sortTime })
         : sort === "top"
         ? this.context.getTop(subredditName, { time: sortTime })
         : null;
-    if (get) this.setState({ fetching: true });
     get.then(
       result => this.setState({ fetching: false, listing: result }),
       error => console.error(error)
@@ -205,49 +234,47 @@ class PostListing extends React.Component {
       }
     }
   };
-  newPath = (sort, sortTime) => {
-    const {
-      match: {
-        params: { subredditName },
-      },
-    } = this.props;
-    let newPath = subredditName ? "/r/" + subredditName : "";
-    newPath += sort ? "/" + sort : "";
-    newPath += sortTime ? "?t=" + sortTime : "";
-    return newPath;
+  setSort = (sort, sortTime) => {
+    const { subredditName } = this.state;
+    this.setState({
+      subredditName,
+      sort,
+      sortTime,
+    });
+    if (!this.props.match.params.id) {
+      let url = subredditName ? "/r/" + subredditName : "";
+      url += sort ? "/" + sort : "";
+      url +=
+        (sort === "controversial" || sort === "top") && sortTime
+          ? "?t=" + sortTime
+          : "";
+      this.props.history.push(url);
+    }
   };
   render() {
+    if (this.state.subredditName === null) return null;
     const {
       subreddits,
-      match: { params: { subredditName, sort = "hot" } = {} },
-      location,
+      theme: { dark: useDark },
+      theme: inheritedTheme,
+      themesBySubreddit,
       lightboxIsOpen,
     } = this.props;
-    const searchValues = queryString.parse(location.search);
-    const sortTime = searchValues.t;
-    const { compact, listing, fetching, fetchingMore } = this.state;
+    const {
+      listing,
+      fetching,
+      fetchingMore,
+      subredditName,
+      sort = "hot",
+      sortTime,
+    } = this.state;
 
-    let theme = this.props.theme;
-
-    if (subreddits[subredditName] && subreddits[subredditName].primary_color) {
-      const simpleTheme = genSimpleTheme(
-        subreddits[subredditName].primary_color,
-        this.props.theme.dark
-      );
-      theme = {
-        ...this.props.theme,
-        container: {
-          ...this.props.theme.container,
-          ...simpleTheme.container,
-        },
-        button: {
-          ...this.props.theme.button,
-          primary: simpleTheme.button.primary,
-        },
-        column: simpleTheme.column,
-      };
+    let theme = inheritedTheme;
+    if (themesBySubreddit[subredditName]) {
+      theme = useDark
+        ? themesBySubreddit[subredditName].dark
+        : themesBySubreddit[subredditName].light;
     }
-
     return (
       <ThemeProvider theme={theme}>
         <Column
@@ -255,56 +282,121 @@ class PostListing extends React.Component {
           onScroll={this.handleScroll}
           lightboxIsOpen={lightboxIsOpen}
         >
-          <SubredditBanner {...subreddits[subredditName]} />
+          <SubredditBanner {...subreddits[subredditName]}>
+            <SubredditIcon {...subreddits[subredditName]} size="xl" flat />
+          </SubredditBanner>
           <ViewSettings>
             <VSContents>
-              <Toggle label="Compact" onToggle={this.toggleView} />
-              <Button
-                icon="search"
-                hideLabel
-                label={subredditName ? "Search r/" + subredditName : "Search"}
-              />
-              <Dropdown label={sort}>
-                <Button label="hot" to={this.newPath("")} />
-                <Button label="new" to={this.newPath("new")} />
-                <Button label="rising" to={this.newPath("rising")} />
-                <Button
-                  label="controversial"
-                  to={this.newPath("controversial", "all")}
-                />
-                <Button label="top" to={this.newPath("top", "all")} />
-              </Dropdown>
-              {(sort === "top" || sort === "controversial") && (
-                <Dropdown label={sortTime}>
-                  <Button label="hour" to={this.newPath(sort, "hour")} />
-                  <Button label="day" to={this.newPath(sort, "day")} />
-                  <Button label="week" to={this.newPath(sort, "week")} />
-                  <Button label="month" to={this.newPath(sort, "month")} />
-                  <Button label="year" to={this.newPath(sort, "year")} />
-                  <Button
-                    label="all time"
-                    value="all"
-                    to={this.newPath(sort, "all")}
-                  />
-                </Dropdown>
-              )}
               <Button
                 label="Refresh"
                 hideLabel
                 icon="refresh"
                 onClick={this.fetchListing}
               />
+              <Dropdown label={sort}>
+                <Button label="hot" onClick={() => this.setSort("")} />
+                <Button label="new" onClick={() => this.setSort("new")} />
+                <Button label="rising" onClick={() => this.setSort("rising")} />
+                <Dropdown label="controversial">
+                  <Button
+                    label="hour"
+                    onClick={() => this.setSort("controversial", "hour")}
+                  />
+                  <Button
+                    label="day"
+                    onClick={() => this.setSort("controversial", "day")}
+                  />
+                  <Button
+                    label="week"
+                    onClick={() => this.setSort("controversial", "week")}
+                  />
+                  <Button
+                    label="month"
+                    onClick={() => this.setSort("controversial", "month")}
+                  />
+                  <Button
+                    label="year"
+                    onClick={() => this.setSort("controversial", "year")}
+                  />
+                  <Button
+                    label="all time"
+                    value="all"
+                    onClick={() => this.setSort("controversial", "all")}
+                  />
+                </Dropdown>
+                <Dropdown label="top">
+                  <Button
+                    label="hour"
+                    onClick={() => this.setSort("top", "hour")}
+                  />
+                  <Button
+                    label="day"
+                    onClick={() => this.setSort("top", "day")}
+                  />
+                  <Button
+                    label="week"
+                    onClick={() => this.setSort("top", "week")}
+                  />
+                  <Button
+                    label="month"
+                    onClick={() => this.setSort("top", "month")}
+                  />
+                  <Button
+                    label="year"
+                    onClick={() => this.setSort("top", "year")}
+                  />
+                  <Button
+                    label="all time"
+                    value="all"
+                    onClick={() => this.setSort("top", "all")}
+                  />
+                </Dropdown>
+              </Dropdown>
+              {(sort === "top" || sort === "controversial") && (
+                <Dropdown label={sortTime}>
+                  <Button
+                    label="hour"
+                    onClick={() => this.setSort(sort, "hour")}
+                  />
+                  <Button
+                    label="day"
+                    onClick={() => this.setSort(sort, "day")}
+                  />
+                  <Button
+                    label="week"
+                    onClick={() => this.setSort(sort, "week")}
+                  />
+                  <Button
+                    label="month"
+                    onClick={() => this.setSort(sort, "month")}
+                  />
+                  <Button
+                    label="year"
+                    onClick={() => this.setSort(sort, "year")}
+                  />
+                  <Button
+                    label="all time"
+                    value="all"
+                    onClick={() => this.setSort(sort, "all")}
+                  />
+                </Dropdown>
+              )}
+              <Button
+                icon="search"
+                hideLabel
+                label={subredditName ? "Search r/" + subredditName : "Search"}
+              />
             </VSContents>
             {fetching || fetchingMore ? <ProgressUnderline /> : null}
           </ViewSettings>
           <ScrollWrapper>
             <Listing
-              compact={compact}
               listing={listing}
               subreddits={subreddits}
               subredditName={subredditName}
               fetching={fetching}
               fetchSubreddit={this.fetchSubreddit}
+              setCurrentPost={this.props.setCurrentPost}
             />
           </ScrollWrapper>
           {fetching || fetchingMore ? <ProgressOverlay /> : null}
@@ -348,15 +440,21 @@ const VSContents = styled.div`
 `;
 
 function mapStateToProps(state) {
-  const { currentPostId, subreddits, lightboxIsOpen } = state;
+  const {
+    currentPostId,
+    subreddits,
+    lightboxIsOpen,
+    themesBySubreddit,
+  } = state;
   return {
     currentPostId,
     subreddits,
     lightboxIsOpen,
+    themesBySubreddit,
   };
 }
 
 export default connect(
   mapStateToProps,
-  { addSubreddit, setCurrentPost }
-)(withTheme(PostListing));
+  { addSubreddit, setCurrentPost, addSubredditTheme }
+)(withTheme(withRouter(PostListing)));

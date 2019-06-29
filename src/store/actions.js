@@ -56,6 +56,18 @@ export const addSubreddit = subredditInfo => ({
 
 export const toggleLightboxIsOpen = () => ({ type: "TOGGLE_LIGHTBOX_IS_OPEN" });
 
-export const setCurrentPost = (post) => ({ type: "SET_CURRENT_POST", post});
+export const setCurrentPost = post => ({ type: "SET_CURRENT_POST", post });
 
-export const setPrefDarkTheme = (bool) => ({ type: "SET_PREF_DARKTHEME", bool});
+export const setPrefDarkTheme = bool => ({ type: "SET_PREF_DARKTHEME", bool });
+
+export const addSubredditTheme = (subredditName, theme) => ({
+  type: "ADD_SUBREDDIT_THEME",
+  subredditName,
+  theme,
+});
+
+export const addColorTheme = (color, theme) => ({
+  type: "ADD_COLOR_THEME",
+  color,
+  theme,
+});

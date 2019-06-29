@@ -17,14 +17,12 @@ const initialState = {
   subscriptionNames: [],
   favoriteNames: [],
   multireddits: [],
-  currentPost: {},
+  currentPost: null,
+  themesBySubreddit: {},
+  themesByColor: {},
 };
 const store = (state = initialState, action) => {
-  var {
-    user,
-    subreddits,
-    lightboxIsOpen,
-  } = state;
+  var { user, subreddits, lightboxIsOpen, themesBySubreddit, themesByColor } = state;
 
   // console.log("REDUCER ACTION: ", action);
   switch (action.type) {
@@ -134,9 +132,15 @@ const store = (state = initialState, action) => {
     case "TOGGLE_LIGHTBOX_IS_OPEN":
       return { ...state, lightboxIsOpen: !lightboxIsOpen };
     case "SET_CURRENT_POST":
-      return { ...state, currentPost: action.post};
+      return { ...state, currentPost: action.post };
     case "SET_PREF_DARKTHEME":
-      return { ...state, prefDarkTheme: action.bool};
+      return { ...state, prefDarkTheme: action.bool };
+    case "ADD_SUBREDDIT_THEME":
+      themesBySubreddit[action.subredditName] = action.theme;
+      return { ...state, themesBySubreddit};
+    case "ADD_COLOR_THEME":
+      themesByColor[action.color] = action.theme;
+      return { ...state, themesByColor };
     default:
       return state;
   }

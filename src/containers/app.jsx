@@ -12,6 +12,7 @@ import { setRefreshToken } from "../store/actions";
 
 // Import containers and components
 import PostListing from "./post-listing";
+import CommentListing from "./comment-listing";
 import SubscriptionsPage from "./subscriptions-page";
 import MessagesPage from "./messages-page";
 import Header from "./header";
@@ -79,6 +80,15 @@ const GlobalStyle = createGlobalStyle`
   .md {
     p {
       margin: 0.25em 0;
+    }
+    blockquote {
+      margin: 0.5em;
+      border-left: 0.25em solid grey;
+      & > p {
+        margin {
+          margin: 0.25em 0.25em;
+        }
+      }
     }
   }
 `;
@@ -153,7 +163,6 @@ const Wrapper = styled.div`
   justify-content: center;
 `;
 
-
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -166,7 +175,7 @@ class App extends React.Component {
             clientSecret,
             refreshToken,
           })
-        : null
+        : null,
     };
     this.state.requester.config({ debug: true });
   }
@@ -247,9 +256,12 @@ class App extends React.Component {
                     component={SubscriptionsPage}
                   />
                   <Route exact path="/test" component={ComponentTestPage} />
-                  <Route exact path="/:sort?" component={PostListing} />
                   <Route
-                    path="/r/:subredditName/:sort?/:id?/:title?"
+                    path={[
+                      "/r/:subredditName/comments/:id/:title/:commentId?",
+                      "/r/:subredditName/:sort?/",
+                      "/:sort?",
+                    ]}
                     component={SplitListings}
                   />
                 </Switch>
@@ -277,9 +289,19 @@ const Columns = styled.div`
 const SplitListings = props => {
   return (
     <>
-      <PostListing {...props} />
-      {/* <CommentListing {...props}/> */}
+      <Route
+        path={["/r/:subredditName/:sort?/:id?", "/:sort?/:id?"]}
+        component={PostListing}
+      />
+      <Route
+        path="/r/:subredditName/comments/:id/:title/:commentId?"
+        component={CommentListing}
+      />
     </>
+    // <>
+    //   <PostListing {...props} />
+    //   <CommentListing {...props} />
+    // </>
   );
 };
 

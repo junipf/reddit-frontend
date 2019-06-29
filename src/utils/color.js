@@ -1,17 +1,12 @@
 import {
-  // darken,
   transparentize,
-  // readableColor,
   hsl,
-  rgba,
   parseToHsl,
-  // setSaturation,
   saturate,
   meetsContrastGuidelines,
-  // complement,
   adjustHue,
 } from "polished";
-import { inheritables } from "../style/color-theme";
+import { themes, inheritables } from "../style/color-theme";
 
 export const genSubIconColor = color => saturate(0.3, color);
 
@@ -19,10 +14,10 @@ const pickContrastingColor = (background, light = "#fff", dark = "#000") => {
   if (meetsContrastGuidelines(background, light).AALarge) return light;
   if (meetsContrastGuidelines(background, "#fff").AALarge) return "#fff";
   if (meetsContrastGuidelines(background, dark).AALarge) return dark;
-  if (meetsContrastGuidelines(background, "#000").AALarge) return "#000";
+  return "#000";
 };
 
-export function genButtonColors(color, dark) {
+export function genButtonColors(color, dark, container) {
   if (!color || color === "") {
     return {
       levels: [],
@@ -70,15 +65,15 @@ export function genButtonColors(color, dark) {
     pickContrastingColor(secondary.levels[1], lightText, darkText),
     pickContrastingColor(secondary.levels[2], lightText, darkText),
   ];
-
+  
   let flat = {
     levels: ["transparent", secondary.levels[0], secondary.levels[1]],
     focus: focus,
   };
   flat.color = [
-    pickContrastingColor(flat.levels[0], lightText, darkText),
-    pickContrastingColor(flat.levels[1], lightText, darkText),
-    pickContrastingColor(flat.levels[2], lightText, darkText),
+    pickContrastingColor(container.levels[0], lightText, darkText),
+    secondary.color[1],
+    secondary.color[2],
   ];
 
   return { primary, secondary, flat };
@@ -90,53 +85,98 @@ export function genTheme(color, dark) {
   }
   const { hue, saturation } = parseToHsl(color);
   const modFg = dark ? 0.65 : 0;
-  return {
-    dark,
-    main: color,
-    container: {
-      color: hsl(hue, 0.8, modFg + 0.15),
+  const container = {
+    color: hsl(hue, 0.8, modFg + 0.15),
       titleColor: hsl(hue, saturation, modFg + 0.25),
       border: transparentize(0.6, color),
       innerBorder: transparentize(0.7, color),
       link: hsl(hue, 0.8, modFg + 0.25),
       levels: [
-        "radial-gradient(circle at top left, " +
-          hsl(hue, saturation, dark ? 0.1 : 0.8) +
-          " 75%, " +
-          adjustHue(22.5, hsl(hue, saturation, dark ? 0.1 : 0.8)) +
-          " 100%)",
-        rgba(0, 0, 0, 0.05),
-        rgba(0, 0, 0, 0.1),
-        // transparentize(0.7, hsl(hue, saturation, dark ? 0.125 : 0.96)),
-        // transparentize(0.7, hsl(hue, saturation, dark ? 0.15 : 0.94)),
+        adjustHue(11.25, hsl(hue, dark ? 0.075 : 0.75, dark ? 0.16 : 0.95)),
+        adjustHue(11.25, hsl(hue, dark ? 0.075 : 0.75, dark ? 0.14 : 0.90)),
+        adjustHue(11.25, hsl(hue, dark ? 0.075 : 0.75, dark ? 0.12 : 0.85)),
       ],
-    },
-    button: genButtonColors(color, dark),
+  }
+  const button = genButtonColors(color, dark, container);
+  return {
+    dark,
+    main: color,
+    container,
+    button,
     highlight: hsl(hue, saturation, modFg + 0.4),
     ...inheritables,
   };
 }
 
-export function genSimpleTheme(color, dark) {
-  if (!color || color === "" || color === "transparent") {
-    return null;
-  }
+const genSubThemeLight = (color) => {
   const { hue, saturation } = parseToHsl(color);
-  const modFg = dark ? 0.5 : 0;
+  const container = {
+    ...themes.light.container,
+    border: transparentize(0.6, color),
+    innerBorder: transparentize(0.7, color),
+    link: hsl(hue, 0.8, 0.35),
+    levels: [
+      adjustHue(11.25, hsl(hue, 0.75, 0.95)),
+      adjustHue(11.25, hsl(hue, 0.75, 0.90)),
+      adjustHue(11.25, hsl(hue,  0.75, 0.85)),
+    ],
+  };
+  const button = genButtonColors(color, false, container);
   return {
-    container: {
-      border: transparentize(0.6, color),
-      innerBorder: transparentize(0.7, color),
-      link: hsl(hue, 0.8, modFg + 0.35),
-    },
-    button: genButtonColors(color, dark),
-    highlight: hsl(hue, saturation, modFg + 0.4),
+    ...themes.light,
+    main: color,
+    dark: false,
+    container,
+    button,
+    highlight: hsl(hue, saturation, 0.4),
     column: {
       background: hsl(
         hue,
-        dark ? saturation / 2 : saturation,
-        dark ? 0.1 : 0.9
+        saturation,
+        0.975
       ),
     },
+    ...inheritables,
   };
+}
+
+const genSubThemeDark = (color) => {
+  const { hue, saturation } = parseToHsl(color);
+  const container = {
+    ...themes.dark.container,
+    border: transparentize(0.6, color),
+    innerBorder: transparentize(0.7, color),
+    link: hsl(hue, 0.8, 0.85),
+    levels: [
+      adjustHue(11.25, hsl(hue, 0.075, 0.16)),
+      adjustHue(11.25, hsl(hue, 0.075, 0.14)),
+      adjustHue(11.25, hsl(hue, 0.075, 0.12)),
+    ],
+  };
+  const button = genButtonColors(color, false, container);
+  return {
+    ...themes.dark,
+    main: color,
+    dark: true,
+    container,
+    button,
+    highlight: hsl(hue, saturation, 0.4),
+    column: {
+      background: hsl(
+        hue,
+        saturation,
+        0.05
+      ),
+    },
+    ...inheritables,
+  };
+}
+
+export function genSubredditTheme(color) {
+  if (!color || color === "" || color === "transparent") return null;
+  return {
+    color: color,
+    light: genSubThemeLight(color),
+    dark: genSubThemeDark(color),
+  }
 }
