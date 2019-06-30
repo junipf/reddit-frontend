@@ -54,12 +54,7 @@ class Listing extends React.Component {
     else return false;
   }
   render() {
-    const {
-      listing,
-      subreddits,
-      subredditName,
-      fetching,
-    } = this.props;
+    const { listing, subreddits, subredditName, fetching } = this.props;
     return fetching || listing === [] || listing === undefined ? null : (
       <StyledListing>
         {listing.map((post, i) => {
@@ -92,48 +87,52 @@ class PostListing extends React.Component {
       fetchingMore: false,
       listing: [],
       sort: "hot",
-      sortTime: null,
+      time: "all",
       subredditName: null,
     };
-    this.fetchMore = this.fetchMore.bind(this);
-    this.fetchSubreddit = this.fetchSubreddit.bind(this);
-    this.setSubreddit = this.setSubreddit.bind(this);
   }
   componentDidMount() {
     const { subredditName, id } = this.props.match.params;
     if (!id) {
       this.setSubreddit(subredditName);
-      this.fetchListing(subredditName);
     }
   }
-  // shouldComponentUpdate(nextProps) {
-  // return nextProps.match.params.id ? false : true;
-  // }
   componentDidUpdate(prevProps, prevState) {
-    const { subredditName, id } = this.props.match.params;
-    const { sort, sortTime } = this.state;
-    const { sort: prevSort, sortTime: prevSortTime } = prevState;
+    const { sort, time } = this.state;
+    const { sort: prevSort, time: prevTime } = prevState;
+    const { params } = this.props.match;
 
-    if (!id && subredditName !== this.state.subredditName) {
-      document.title = subredditName ? "r/" + subredditName : "Frontpage";
-      this.setSubreddit(subredditName);
-      this.fetchListing(subredditName);
+    // We take the subredditName from the URL, but only if there is no ID.
+    // (e.g. we take /r/firefox, but not /r/firefox/comments/c6xrwv/...)
+    // This allows normal navigation (clicking links) to update the listing.
+    if (!params.id && params.subredditName !== this.state.subredditName) {
+      document.title = params.subredditName
+        ? "r/" + params.subredditName
+        : "Frontpage";
+      this.setSubreddit(params.subredditName);
     }
+
+    // If the subreddit name, sort, or sort time - in state - updates, we
+    // fetch the new listing. This means that there is an update when we get
+    // the subredditName from the URL, then another after it's set to state -
+    // so it's important to prevent re-renders.
     if (
       this.state.subredditName === prevState.subredditName &&
-      (sort !== prevSort || sortTime !== prevSortTime)
+      (sort !== prevSort || time !== prevTime)
     ) {
       this.fetchListing(this.state.subredditName);
     }
+
+    // If the ID vanishes, we now have control of the URL.
+    if (this.props.match.params.id !== prevProps.match.params.id)
+      this.setSort("hot");
   }
-  // Fetches subreddit info, updates favicon and tab title,
-  // and generates subreddit theme.
-  setSubreddit(subredditName) {
+  setSubreddit = subredditName => {
     this.setState({ subredditName });
+    this.fetchListing(subredditName);
     const {
-      // subreddits,
       addSubreddit,
-      // themesBySubreddit,
+      themesBySubreddit,
       addSubredditTheme,
     } = this.props;
     if (
@@ -158,11 +157,15 @@ class PostListing extends React.Component {
               subreddit.icon_url ||
               "favicon.ico";
 
-            // If needed, generates subreddit theme.
-            // if (themesBySubreddit[subreddit.display_name] === undefined)
-            if (subreddit.primary_color === "")
-              addSubredditTheme(subreddit.display_name, null);
-            else
+            // Generate a new subredditTheme if there isn't one, or if
+            // the subreddit has updated their primary_color. Additionally,
+            // we set the theme to null if they don't have one ("")
+            if (
+              (themesBySubreddit[subreddit.display_name] === undefined &&
+                subreddit.primary_color !== "") ||
+              themesBySubreddit[subreddit.display_name].color !==
+                subreddit.primary_color
+            )
               addSubredditTheme(
                 subreddit.display_name,
                 genSubredditTheme(subreddit.primary_color)
@@ -171,8 +174,9 @@ class PostListing extends React.Component {
           error => console.error(error)
         );
     }
-  }
-  fetchSubreddit(subredditName) {
+  };
+  fetchSubreddit = subredditName => {
+    // Passed to descendents.
     if (
       subredditName &&
       subredditName !== "frontpage" &&
@@ -187,25 +191,21 @@ class PostListing extends React.Component {
           error => console.error(error)
         );
     }
-  }
-  fetchListing = subredditName => {
-    const { sort, sortTime } = this.state;
+  };
+  fetchListing = (passedSubName = null) => {
+    const {
+      subredditName: stateSubName,
+      sort = "hot",
+      time = "all",
+    } = this.state;
+    const subredditName = passedSubName ? passedSubName : stateSubName;
+    const t = sort === "controversial" || sort === "top" ? time : null;
     this.setState({ fetching: true });
-
-    const get =
-      sort === "hot" || sort === undefined
-        ? this.context.getHot(subredditName)
-        : sort === "new"
-        ? this.context.getNew(subredditName)
-        : sort === "rising"
-        ? this.context.getRising(subredditName)
-        : sort === "controversial"
-        ? this.context.getControversial(subredditName, { time: sortTime })
-        : sort === "top"
-        ? this.context.getTop(subredditName, { time: sortTime })
-        : null;
-    get.then(
-      result => this.setState({ fetching: false, listing: result }),
+    this.context._getSortedFrontpage(sort, subredditName, { t }).then(
+      result => {
+        console.log(result);
+        this.setState({ fetching: false, listing: result });
+      },
       error => console.error(error)
     );
   };
@@ -234,19 +234,22 @@ class PostListing extends React.Component {
       }
     }
   };
-  setSort = (sort, sortTime) => {
+
+  // Passes sort & time to state, and, if we control the URL,
+  // we build and update it.
+  setSort = (sort, time) => {
     const { subredditName } = this.state;
     this.setState({
       subredditName,
       sort,
-      sortTime,
+      time,
     });
     if (!this.props.match.params.id) {
       let url = subredditName ? "/r/" + subredditName : "";
-      url += sort ? "/" + sort : "";
+      url += sort && sort !== "hot" ? "/" + sort : "";
       url +=
-        (sort === "controversial" || sort === "top") && sortTime
-          ? "?t=" + sortTime
+        (sort === "controversial" || sort === "top") && time
+          ? "?t=" + time
           : "";
       this.props.history.push(url);
     }
@@ -266,7 +269,7 @@ class PostListing extends React.Component {
       fetchingMore,
       subredditName,
       sort = "hot",
-      sortTime,
+      time,
     } = this.state;
 
     let theme = inheritedTheme;
@@ -294,7 +297,8 @@ class PostListing extends React.Component {
                 onClick={this.fetchListing}
               />
               <Dropdown label={sort}>
-                <Button label="hot" onClick={() => this.setSort("")} />
+                <Button label="hot" onClick={() => this.setSort("hot")} />
+                <Button label="best" onClick={() => this.setSort("best")} />
                 <Button label="new" onClick={() => this.setSort("new")} />
                 <Button label="rising" onClick={() => this.setSort("rising")} />
                 <Dropdown label="controversial">
@@ -353,7 +357,7 @@ class PostListing extends React.Component {
                 </Dropdown>
               </Dropdown>
               {(sort === "top" || sort === "controversial") && (
-                <Dropdown label={sortTime}>
+                <Dropdown label={time}>
                   <Button
                     label="hour"
                     onClick={() => this.setSort(sort, "hour")}
