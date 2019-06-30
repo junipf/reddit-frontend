@@ -3,9 +3,9 @@ import React from "react";
 import { connect } from "react-redux";
 import SubredditIcon from "./subreddit-icon";
 import { overlayTextColor } from "./color";
+import { formatNumber } from "../utils/format-number";
 // import { Link } from "react-router-dom";
 // import Time from "./Timestamp";
-import { SimplifyNumber } from "./simplify-number";
 
 // function DefaultIcon(props) {
 //   return (
@@ -117,7 +117,7 @@ class SubredditHeader extends React.Component {
       key_color,
       id,
       subscribers,
-      // accounts_active,
+      accounts_active,
     } = this.props;
     if (id) {
       let bgColor = primary_color || key_color || null;
@@ -142,12 +142,8 @@ class SubredditHeader extends React.Component {
           </div>
           <div className="description">
             <div className="actions">
-              <SimplifyNumber
-                number={subscribers}
-                label="user"
-                className="subscribe-count"
-              />
-              {/* <SimplifyNumber number={accounts_active} label="active user" /> */}
+              <span>{formatNumber(subscribers, "user")}</span>
+              <span>{formatNumber(accounts_active, "active user")}</span>
               <button
                 className={
                   this.state.subscribed ? "button leave" : "button join"

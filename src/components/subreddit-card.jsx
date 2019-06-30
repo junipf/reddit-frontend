@@ -3,8 +3,8 @@ import Button from "./button";
 import SubredditIcon from "./subreddit-icon";
 import { Link } from "react-router-dom";
 import { Timestamp } from "./timestamp";
-import { SimplifyNumber } from "./simplify-number";
 import styled from "styled-components";
+import { formatNumber } from "../utils/format-number";
 
 const Body = styled.div``;
 
@@ -63,13 +63,9 @@ export default class SubredditCard extends React.Component {
             <Link to={url} className="subreddit-name">
               {display_name_prefixed}
             </Link>
-            <SimplifyNumber
-              number={subscribers}
-              label="user"
-              className="subscribe-count"
-            />
+            <span>{formatNumber(subscribers, "user")}</span>
             {accounts_active !== null ? (
-              <SimplifyNumber number={accounts_active} label="active user" />
+              <span>{formatNumber(accounts_active, "active user")}</span>
             ) : null}
             {/* <span
                 className="body"

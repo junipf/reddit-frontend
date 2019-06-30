@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import Button from "./button";
-import { SimplifyNumber } from "./simplify-number";
+import { formatNumber } from "../utils/format-number";
 
 const VotesWrapper = styled.div`
   padding: ${props=>props.size === "small" ? "0" : "0.25em"};
@@ -21,7 +21,7 @@ export const Votes = ({ size, mod, score, upvote, downvote, showDot, ...props })
       color={mod === 1 ? "orange" : null}
     />
     {score ? (
-      <SimplifyNumber number={score} />
+      <span>{formatNumber(score)}</span>
     ) : showDot ? (
       <span>•</span>
     ) : null}

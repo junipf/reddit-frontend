@@ -4,19 +4,9 @@ import styled from "styled-components";
 import Flair from "../components/flair";
 import { Votes } from "../components/votes";
 import { Timestamp } from "../components/timestamp";
-import { SimplifyNumber } from "../components/simplify-number";
-import { FormatNumber } from "../utils/format-number";
 import Button from "../components/button";
 import { Author } from "../components/author";
-
-
-const Score = ({ score, mod, score_hidden }) => {
-  return score_hidden || isNaN(score) || isNaN(mod) ? (
-    <span data-tip="score hidden">(?) </span>
-  ) : (
-    <SimplifyNumber number={score + mod} label="point" />
-  );
-};
+import { formatNumber } from "./../utils/format-number";
 
 const StyledComment = styled.div`
   /* margin-top: 0.25rem; */
@@ -179,7 +169,13 @@ export default class Comment extends React.Component {
               text={author_flair_text}
               type={author_flair_type}
             />
-            <Score>{FormatNumber(score + mod, "point")}</Score>
+            {score_hidden ? (
+              <span data-tip="score hidden">(?) </span>
+            ) : (
+              <span data-tip={score + mod}>
+                {formatNumber(score + mod, "point")}
+              </span>
+            )}
             <Timestamp time={created_utc} to={"#" + id} />
             {edited ? (
               <Timestamp

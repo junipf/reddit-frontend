@@ -4,7 +4,7 @@ import { withRouter } from "react-router";
 
 import Button from "../components/button";
 import Toggle from "../components/toggle";
-import { FormatNumber } from "../utils/format-number";
+import { formatNumber } from "../utils/format-number";
 
 import Flair from "../components/flair";
 import { Timestamp } from "../components/timestamp";
@@ -147,8 +147,6 @@ export class Post extends React.Component {
     const { history, subredditInfo } = this.props;
     history.push("/" + subredditInfo.display_name_prefixed);
   };
-  logPost = () => console.log(this.props.post);
-
   render() {
     const { inListing, post, subredditInfo, inSubreddit, compact } = this.props;
     const {
@@ -240,7 +238,7 @@ export class Post extends React.Component {
       url === permalink ||
       /https?:\/\/(i)?(v)?(www)?\.redd(\.it)?(it\.com)?\//.test(url);
 
-    const numComments = FormatNumber(num_comments);
+    const numComments = formatNumber(num_comments);
 
     let displayUrl = url.replace(/https?:\/\/(www.)?/, "");
     if (displayUrl.length > 30) displayUrl = displayUrl.substring(0, 30) + "…";
@@ -346,7 +344,8 @@ export class Post extends React.Component {
               label={numComments}
               to={permalink}
               onClick={this.navigateToPost}
-              data-tip={numComments !== String(num_comments) && num_comments}
+              data-tip={num_comments}
+              data-tip-disabled={String(numComments) === String(num_comments)}
               icon="message"
               key="1"
             />
@@ -391,7 +390,7 @@ export class Post extends React.Component {
               hideLabel={this.state.hideButtonLabels}
               label="Log submission object to console"
               icon="debug"
-              onClick={this.logPost}
+              onClick={() => console.log(this.props.post)}
               key="9"
             />
             <Toggle
