@@ -47,18 +47,20 @@ const Right = styled.div`
 const Tagline = styled.div`
   font-size: 0.75rem;
   margin-top: 0.25rem;
+  opacity: 0.8;
+  & > * {
+    margin-right: 0.5rem;
+  }
 `;
-const Context = styled.div`
-  
-`;
+const Context = styled.div``;
 const Actions = styled.div`
   opacity: 0.8;
   margin: 0 0.25rem 0 -0.25rem;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
 `;
 const Body = styled.div`
   font-size: 0.9rem;
-  margin: 0.25rem 0;
+  margin: 0.5rem 0.125rem;
   blockquote {
     border-color: ${props => props.theme.container.innerBorder};
   }
@@ -110,6 +112,7 @@ export default class Comment extends React.Component {
       author: { name: authorName },
       depth,
       score,
+      score_hidden,
       edited,
       created_utc,
       body_html,
@@ -125,7 +128,6 @@ export default class Comment extends React.Component {
       author_flair_background_color,
     } = this.props;
     const { collapse, mod } = this.state;
-
     return (
       <StyledComment id={id}>
         <Left>
@@ -195,18 +197,30 @@ export default class Comment extends React.Component {
               />
               <Actions>
                 <Button
+                  label="Reply"
+                  // hideLabel
                   type="flat"
-                  label="reply"
+                  size="small"
                   icon="reply"
-                  key="2"
+                  key="0"
                 />
                 <Button
+                  label="view on reddit"
                   hideLabel
                   type="flat"
-                  label="view on reddit"
+                  size="small"
                   icon="external"
                   href={"https://www.reddit.com" + permalink}
-                  key="3"
+                  key="1"
+                />
+                <Button
+                  label="Log submission object to console"
+                  type="flat"
+                  size="small"
+                  hideLabel
+                  icon="debug"
+                  onClick={() => console.log(this.props)}
+                  key="2"
                 />
               </Actions>
               <Context depth={depth}>
