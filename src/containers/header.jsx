@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { connect } from "react-redux";
 import ReactTooltip from "react-tooltip";
 
-import { setSubscriptions, setMultireddits, setUser } from "../store/actions";
+import { setSubscriptions, setMultireddits, setUser, setUserPrefs } from "../store/actions";
 import { Requester } from "../components/requester";
 
 import { QuickNavigation } from "../components/quick-navigation";
@@ -48,6 +48,11 @@ class Header extends React.Component {
     }
     if (this.props.user.name === undefined) {
       this.context.getMe().then(user => this.props.setUser(user));
+    }
+    if (this.props.userPrefs === undefined) {
+      this.context.getPreferences().then(prefs => {
+        this.props.setUserPrefs(prefs);
+      });
     }
   }
   componentDidUpdate() {
@@ -110,13 +115,12 @@ function mapStateToProps(state) {
   };
 }
 
-const actions = {
-  setSubscriptions,
-  setMultireddits,
-  setUser,
-};
-
 export default connect(
   mapStateToProps,
-  actions
+  {
+    setSubscriptions,
+    setMultireddits,
+    setUser,
+    setUserPrefs,
+  }
 )(Header);

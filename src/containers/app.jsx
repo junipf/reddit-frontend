@@ -224,13 +224,13 @@ class App extends React.Component {
     this.state.requester.config({ debug: true });
   }
   render() {
-    const { refreshToken, location, prefDarkTheme } = this.props;
+    const { refreshToken, location, darkTheme } = this.props;
     const { requester } = this.state;
     if (refreshToken === undefined)
       return <LoginPrompt state={location.pathname} />;
     if (requester) {
       return (
-        <ThemeProvider theme={prefDarkTheme ? themes.dark : themes.light}>
+        <ThemeProvider theme={darkTheme ? themes.dark : themes.light}>
           <Requester.Provider value={requester}>
             <GlobalStyle />
             <ReactTooltip
@@ -239,12 +239,12 @@ class App extends React.Component {
               clickable={true}
               delayShow={250}
               className="tooltip"
-              type={prefDarkTheme ? "light" : "dark"}
+              type={darkTheme ? "light" : "dark"}
             />
             <AppWrapper>
               <Header
                 toggleDarkTheme={this.toggleDarkTheme}
-                darkTheme={prefDarkTheme}
+                darkTheme={darkTheme}
               />
               <Columns>
                 <Switch>
@@ -281,7 +281,7 @@ const AppWrapper = styled.div`
 const Columns = styled.div`
   display: flex;
   flex-flow: row nowrap;
-  height: calc(100vh - 3rem);
+  height: calc(100vh - 3rem + 1px);
   width: 100vw;
 `;
 
@@ -305,8 +305,8 @@ const SplitListings = props => {
 };
 
 function mapStateToProps(state) {
-  const { refreshToken, prefDarkTheme } = state;
-  return { refreshToken, prefDarkTheme };
+  const { refreshToken, userPrefs } = state;
+  return { refreshToken, darkTheme: userPrefs.nightmode };
 }
 
 export default connect(

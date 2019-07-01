@@ -1,16 +1,17 @@
 import React from "react";
 import { connect } from "react-redux";
-import { setPrefDarkTheme } from "../store/actions";
+import { setUseSystemTheme, setUserPrefs } from "../store/actions";
+import { Requester } from "../components/requester";
 
 import Dropdown from "./dropdown";
 import Button from "./button";
 
 class PrefMenu extends React.Component {
+  static contextType = Requester;
   constructor(props) {
     super(props);
     this.state = {
       darkSystem: false,
-      useSystemPref: true,
     };
   }
   componentWillMount() {
@@ -19,50 +20,56 @@ class PrefMenu extends React.Component {
     DarkSystemTheme.addListener(this.handleSystemThemeChange);
   }
   componentWillUnmount() {
-    window.matchMedia("(prefers-color-scheme: dark)").removeListener(this.handleSystemThemeChange);
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .removeListener(this.handleSystemThemeChange);
   }
   handleSystemThemeChange = e => {
+    const {
+      setUserPrefs,
+      useSystemTheme,
+    } = this.props;
+    
     this.setState({ darkSystem: e.matches });
-    if (this.state.useSystemPref) this.props.setPrefDarkTheme(e.matches);
+    if (useSystemTheme) 
+      this.context
+        .updatePreferences({ nightmode: e.matches })
+        .then(result => setUserPrefs(result));
   };
   handleUserThemeChange = value => {
-    if (value === "system") this.props.setPrefDarkTheme(this.state.darkSystem);
-    if (value === "light") this.props.setPrefDarkTheme(false);
-    if (value === "dark") this.props.setPrefDarkTheme(true);
-
-    this.setState({ useSystemPref: value === "system" });
+    const {
+      setUseSystemTheme,
+      setUserPrefs,
+      useSystemTheme,
+      userPrefs,
+    } = this.props;
+    
+    if (value === "system") {
+      if (!useSystemTheme) setUseSystemTheme(true);
+    } else {
+      if (useSystemTheme) setUseSystemTheme(false);
+    }
+    
+    const nightmode = value === "dark" || (value === "system" && this.state.darkSystem);
+    if (userPrefs.nightmode !== nightmode)
+      this.context
+          .updatePreferences({ nightmode })
+          .then(result => setUserPrefs(result));
   };
   render() {
-    const { prefDarkTheme } = this.props;
-    const { darkSystem, useSystemPref } = this.state;
+    const { useSystemTheme, userPrefs: { nightmode } = {}} = this.props;
+    const { darkSystem } = this.state;
     return (
       <Dropdown label="Preferences">
-        <Button
-          label="Messages"
-          icon="mail"
-          to="/messages/"
-        />
-        <Button
-          label="Profile"
-          icon="user"
-          to="/user/me"
-        />
-        <Button
-          label="Hexagon"
-          icon="hexagon"
-        />
-        <Button
-          label="Coffee"
-          icon="coffee"
-        />
-        <Button
-          label="Pin"
-          icon="pin"
-        />
+        <Button label="Messages" icon="mail" to="/messages/" />
+        <Button label="Profile" icon="user" to="/user/me" />
+        <Button label="Hexagon" icon="hexagon" />
+        <Button label="Coffee" icon="coffee" />
+        <Button label="Pin" icon="pin" />
         <Dropdown
           select
           label="Theme"
-          icon={prefDarkTheme ? "moon" : "sun"}
+          icon={nightmode ? "moon" : "sun"}
           {...this.props}
         >
           <Button
@@ -70,14 +77,14 @@ class PrefMenu extends React.Component {
             value="light"
             label="Light"
             icon="sun"
-            type={!prefDarkTheme && !useSystemPref ? "primary" : "flat"}
+            type={!useSystemTheme && !nightmode  ? "primary" : "flat"}
           />
           <Button
             onClick={this.handleUserThemeChange}
             value="dark"
             label="Dark"
             icon="moon"
-            type={prefDarkTheme && !useSystemPref ? "primary" : "flat"}
+            type={!useSystemTheme && nightmode ? "primary" : "flat"}
           />
           <Button
             onClick={this.handleUserThemeChange}
@@ -85,27 +92,24 @@ class PrefMenu extends React.Component {
             label="System"
             icon="cog"
             iconAfter={darkSystem ? "moon" : "sun"}
-            type={useSystemPref ? "primary" : "flat"}
+            type={useSystemTheme ? "primary" : "flat"}
           />
         </Dropdown>
-        <Button
-          label="Log out"
-          icon="logout"
-        />
+        <Button label="Log out" icon="logout" />
       </Dropdown>
     );
   }
 }
 
 function mapStateToProps(state) {
-  const { prefDarkTheme } = state;
-
+  const { useSystemTheme, userPrefs } = state;
   return {
-    prefDarkTheme,
+    useSystemTheme,
+    userPrefs,
   };
 }
 
 export default connect(
   mapStateToProps,
-  { setPrefDarkTheme }
+  { setUseSystemTheme, setUserPrefs }
 )(PrefMenu);

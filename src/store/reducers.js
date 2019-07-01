@@ -22,7 +22,13 @@ const initialState = {
   themesByColor: {},
 };
 const store = (state = initialState, action) => {
-  var { user, subreddits, lightboxIsOpen, themesBySubreddit, themesByColor } = state;
+  var {
+    user,
+    subreddits,
+    lightboxIsOpen,
+    themesBySubreddit,
+    themesByColor,
+  } = state;
 
   // console.log("REDUCER ACTION: ", action);
   switch (action.type) {
@@ -74,6 +80,8 @@ const store = (state = initialState, action) => {
         has_subscribed,
       };
       return { ...state, user };
+    case "SET_USER_PREFS":
+      return { ...state, userPrefs: action.prefs };
     case "SET_SUBSCRIPTIONS":
       let favoriteNames = [];
       const subscriptionNames = action.subscriptions.reduce(
@@ -133,11 +141,11 @@ const store = (state = initialState, action) => {
       return { ...state, lightboxIsOpen: !lightboxIsOpen };
     case "SET_CURRENT_POST":
       return { ...state, currentPost: action.post };
-    case "SET_PREF_DARKTHEME":
-      return { ...state, prefDarkTheme: action.bool };
+    case "SET_USE_SYSTEM_THEME":
+      return { ...state, useSystemTheme: action.bool };
     case "ADD_SUBREDDIT_THEME":
       themesBySubreddit[action.subredditName] = action.theme;
-      return { ...state, themesBySubreddit};
+      return { ...state, themesBySubreddit };
     case "ADD_COLOR_THEME":
       themesByColor[action.color] = action.theme;
       return { ...state, themesByColor };
