@@ -106,14 +106,14 @@ class Menu extends React.Component {
         this.setState({
           rect: {
             left: -width,
-            top: "calc(" + this.props.wrapper.current.offsetTop + "px - 0.5em)",
+            top: "calc(" + this.props.wrapper.current.offsetTop + "px - 0.5em - 2px)",
           },
         });
       } else {
         this.setState({
           rect: {
             left: width,
-            top: "calc(" + this.props.wrapper.current.offsetTop + "px - 0.5em)",
+            top: "calc(" + this.props.wrapper.current.offsetTop + "px - 0.5em - 2px)",
           },
         });
       }
