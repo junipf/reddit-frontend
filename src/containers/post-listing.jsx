@@ -124,8 +124,8 @@ class PostListing extends React.Component {
     }
 
     // If the ID vanishes, we now have control of the URL.
-    if (this.props.match.params.id !== prevProps.match.params.id)
-      this.setSort("hot");
+    if (prevProps.match.params.id && !this.props.match.params.id)
+      this.setSort({ subredditName: this.props.match.params.subredditName });
   }
   setSubreddit = subredditName => {
     this.setState({ subredditName });
@@ -237,13 +237,22 @@ class PostListing extends React.Component {
 
   // Passes sort & time to state, and, if we control the URL,
   // we build and update it.
-  setSort = (sort, time) => {
-    const { subredditName } = this.state;
-    this.setState({
-      subredditName,
-      sort,
-      time,
-    });
+  setSort = ({
+    subredditName = this.state.subredditName,
+    sort = this.state.sort,
+    time = this.state.time,
+  }) => {
+    if (
+      this.state.subredditName !== subredditName ||
+      this.state.sort !== sort ||
+      this.state.time !== time
+    ) {
+      this.setState({
+        subredditName,
+        sort,
+        time,
+      });
+    }
     if (!this.props.match.params.id) {
       let url = subredditName ? "/r/" + subredditName : "";
       url += sort && sort !== "hot" ? "/" + sort : "";
