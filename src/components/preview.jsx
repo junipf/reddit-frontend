@@ -51,7 +51,7 @@ class Preview extends React.Component {
     const { showLightbox, LbFullImage } = this.state;
     const displayPreview =
       is_self && html ? (
-        <Body html={html} />
+        <Body html={html} inListing={inListing} />
       ) : media && media.reddit_video ? (
         <Video video={media.reddit_video} />
       ) : preview && preview.reddit_video_preview ? (

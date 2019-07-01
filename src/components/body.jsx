@@ -50,7 +50,10 @@ export class Body extends React.Component {
     this.body = React.createRef();
   }
   componentDidMount() {
-    this.setState({ overflow: this.body.current.clientHeight >= 130 });
+    if (this.props.inListing)
+      this.setState({ overflow: this.body.current.clientHeight >= 130 });
+    else
+      this.setState({ showAll: true });
   }
   toggleShowAll = () => {
     this.setState({ showAll: !this.state.showAll });
