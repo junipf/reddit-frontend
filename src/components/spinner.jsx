@@ -58,3 +58,17 @@ export const Spinner = props => (
     </svg>
   </SVGWrapepr>
 );
+
+export const SpinnerPage = props => (
+  <Page>
+    <Spinner />
+  </Page>
+);
+
+const Page = styled.div`
+  margin: auto auto;
+  position: relative;
+  top: 20%;
+  font-size: 1.5rem;
+  color ${props => props.theme.container.color};
+`;
