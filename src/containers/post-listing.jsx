@@ -12,7 +12,7 @@ import styled, { ThemeProvider, withTheme } from "styled-components";
 
 import Post from "./post";
 import Button from "../components/button";
-// import Toggle from "../components/toggle";
+import { SpinnerPage } from "../components/spinner";
 import Dropdown from "../components/dropdown";
 import SubredditIcon from "../components/subreddit-icon";
 import { ProgressOverlay, ProgressUnderline } from "../components/progress-bar";
@@ -46,16 +46,21 @@ class Listing extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      newSubreddit: true,
+      // visiblePosts: [],
     };
+    this.listing = React.createRef();
   }
-  shouldComponentUpdate(nextProps) {
-    if (this.props !== nextProps) return true;
+  handleIntersection = e => {
+    // this.setState({ visiblePosts: e.map(entry => entry.target.id)})
+  };
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.state !== nextState || this.props !== nextProps) return true;
     else return false;
   }
   render() {
-    const { listing, subreddits, subredditName, fetching } = this.props;
-    return fetching || listing === [] || listing === undefined ? null : (
+    const { visiblePosts } = this.state;
+    const { listing, subreddits, subredditName, setCurrentPost } = this.props;
+    return listing ? (
       <StyledListing>
         {listing.map((post, i) => {
           if (subreddits[post.subreddit.display_name] === undefined) {
@@ -69,12 +74,12 @@ class Listing extends React.Component {
               key={i}
               inListing
               id={post.id}
-              setCurrentPost={this.props.setCurrentPost}
+              setCurrentPost={setCurrentPost}
             />
           );
         })}
       </StyledListing>
-    );
+    ) : null;
   }
 }
 
@@ -130,11 +135,7 @@ class PostListing extends React.Component {
   setSubreddit = subredditName => {
     this.setState({ subredditName });
     this.fetchListing(subredditName);
-    const {
-      addSubreddit,
-      themesBySubreddit,
-      addSubredditTheme,
-    } = this.props;
+    const { addSubreddit, themesBySubreddit, addSubredditTheme } = this.props;
     if (
       subredditName &&
       subredditName !== "frontpage" &&
@@ -203,7 +204,6 @@ class PostListing extends React.Component {
     this.setState({ fetching: true });
     this.context._getSortedFrontpage(sort, subredditName, { t }).then(
       result => {
-        console.log(result);
         this.setState({ fetching: false, listing: result });
       },
       error => console.error(error)
@@ -222,9 +222,6 @@ class PostListing extends React.Component {
       );
   };
   handleScroll = e => {
-    // console.log(
-    //   e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight
-    // );
     if (!this.state.fetchingMore) {
       const bottom =
         e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight <=
@@ -291,7 +288,7 @@ class PostListing extends React.Component {
       <ThemeProvider theme={theme}>
         <Column
           ref={this.parentColumn}
-          onScroll={this.handleScroll}
+          // onScroll={this.handleScroll}
           lightboxIsOpen={lightboxIsOpen}
         >
           <SubredditBanner {...subreddits[subredditName]}>
@@ -306,62 +303,86 @@ class PostListing extends React.Component {
                 onClick={this.fetchListing}
               />
               <Dropdown label={sort}>
-                <Button label="hot" onClick={() => this.setSort("hot")} />
-                <Button label="best" onClick={() => this.setSort("best")} />
-                <Button label="new" onClick={() => this.setSort("new")} />
-                <Button label="rising" onClick={() => this.setSort("rising")} />
+                <Button
+                  label="hot"
+                  onClick={() => this.setSort({ sort: "hot" })}
+                />
+                <Button
+                  label="best"
+                  onClick={() => this.setSort({ sort: "best" })}
+                />
+                <Button
+                  label="new"
+                  onClick={() => this.setSort({ sort: "new" })}
+                />
+                <Button
+                  label="rising"
+                  onClick={() => this.setSort({ sort: "rising" })}
+                />
                 <Dropdown label="controversial">
                   <Button
                     label="hour"
-                    onClick={() => this.setSort("controversial", "hour")}
+                    onClick={() =>
+                      this.setSort({ sort: "controversial", time: "hour" })
+                    }
                   />
                   <Button
                     label="day"
-                    onClick={() => this.setSort("controversial", "day")}
+                    onClick={() =>
+                      this.setSort({ sort: "controversial", time: "day" })
+                    }
                   />
                   <Button
                     label="week"
-                    onClick={() => this.setSort("controversial", "week")}
+                    onClick={() =>
+                      this.setSort({ sort: "controversial", time: "week" })
+                    }
                   />
                   <Button
                     label="month"
-                    onClick={() => this.setSort("controversial", "month")}
+                    onClick={() =>
+                      this.setSort({ sort: "controversial", time: "month" })
+                    }
                   />
                   <Button
                     label="year"
-                    onClick={() => this.setSort("controversial", "year")}
+                    onClick={() =>
+                      this.setSort({ sort: "controversial", time: "year" })
+                    }
                   />
                   <Button
                     label="all time"
                     value="all"
-                    onClick={() => this.setSort("controversial", "all")}
+                    onClick={() =>
+                      this.setSort({ sort: "controversial", time: "all" })
+                    }
                   />
                 </Dropdown>
                 <Dropdown label="top">
                   <Button
                     label="hour"
-                    onClick={() => this.setSort("top", "hour")}
+                    onClick={() => this.setSort({ sort: "top", time: "hour" })}
                   />
                   <Button
                     label="day"
-                    onClick={() => this.setSort("top", "day")}
+                    onClick={() => this.setSort({ sort: "top", time: "day" })}
                   />
                   <Button
                     label="week"
-                    onClick={() => this.setSort("top", "week")}
+                    onClick={() => this.setSort({ sort: "top", time: "week" })}
                   />
                   <Button
                     label="month"
-                    onClick={() => this.setSort("top", "month")}
+                    onClick={() => this.setSort({ sort: "top", time: "month" })}
                   />
                   <Button
                     label="year"
-                    onClick={() => this.setSort("top", "year")}
+                    onClick={() => this.setSort({ sort: "top", time: "year" })}
                   />
                   <Button
                     label="all time"
                     value="all"
-                    onClick={() => this.setSort("top", "all")}
+                    onClick={() => this.setSort({ sort: "top", time: "all" })}
                   />
                 </Dropdown>
               </Dropdown>
@@ -369,28 +390,28 @@ class PostListing extends React.Component {
                 <Dropdown label={time}>
                   <Button
                     label="hour"
-                    onClick={() => this.setSort(sort, "hour")}
+                    onClick={() => this.setSort({ sort, time: "hour" })}
                   />
                   <Button
                     label="day"
-                    onClick={() => this.setSort(sort, "day")}
+                    onClick={() => this.setSort({ sort, time: "day" })}
                   />
                   <Button
                     label="week"
-                    onClick={() => this.setSort(sort, "week")}
+                    onClick={() => this.setSort({ sort, time: "week" })}
                   />
                   <Button
                     label="month"
-                    onClick={() => this.setSort(sort, "month")}
+                    onClick={() => this.setSort({ sort, time: "month" })}
                   />
                   <Button
                     label="year"
-                    onClick={() => this.setSort(sort, "year")}
+                    onClick={() => this.setSort({ sort, time: "year" })}
                   />
                   <Button
                     label="all time"
                     value="all"
-                    onClick={() => this.setSort(sort, "all")}
+                    onClick={() => this.setSort({ sort, time: "all" })}
                   />
                 </Dropdown>
               )}
@@ -402,16 +423,19 @@ class PostListing extends React.Component {
             </VSContents>
             {fetching || fetchingMore ? <ProgressUnderline /> : null}
           </ViewSettings>
-          <ScrollWrapper>
-            <Listing
-              listing={listing}
-              subreddits={subreddits}
-              subredditName={subredditName}
-              fetching={fetching}
-              fetchSubreddit={this.fetchSubreddit}
-              setCurrentPost={this.props.setCurrentPost}
-            />
-          </ScrollWrapper>
+          {fetching ? (
+            <SpinnerPage />
+          ) : (
+            <ScrollWrapper>
+              <Listing
+                listing={listing}
+                subreddits={subreddits}
+                subredditName={subredditName}
+                fetchSubreddit={this.fetchSubreddit}
+                setCurrentPost={this.props.setCurrentPost}
+              />
+            </ScrollWrapper>
+          )}
           {fetching || fetchingMore ? <ProgressOverlay /> : null}
         </Column>
       </ThemeProvider>
@@ -421,7 +445,11 @@ class PostListing extends React.Component {
 
 // Prevents page contents from shifting when scrollbar disappears
 // due to lightbox being open.
-const ScrollWrapper = styled.div``;
+const ScrollWrapper = styled.div`
+  overflow-y: ${props => (props.lightboxIsOpen ? "scroll" : "show")};
+  color: ${props => props.theme.container.color};
+  height: 100%;
+`;
 
 const Column = styled.div`
   scroll-behavior: smooth;
