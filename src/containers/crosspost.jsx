@@ -6,16 +6,12 @@ const StyledCrosspost = styled.div`
   grid-area: media;
 `;
 
-const Crosspost = props => {
-  const { crosspost, inListing } = props;
-  if (inListing || crosspost === null) {
-    return null;
-  }
-  return (
+const Crosspost = ({ crosspost, ...props }) =>
+  crosspost &&
+  crosspost[0] && (
     <StyledCrosspost>
-      <Post post={crosspost[0]} compact />
+      <Post {...props} post={crosspost[0]} compact />
     </StyledCrosspost>
   );
-};
 
 export default Crosspost;

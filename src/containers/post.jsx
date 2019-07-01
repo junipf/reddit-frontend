@@ -243,12 +243,9 @@ export class Post extends React.Component {
     let displayUrl = url.replace(/https?:\/\/(www.)?/, "");
     if (displayUrl.length > 30) displayUrl = displayUrl.substring(0, 30) + "…";
 
-    const showThumbnail =
-      is_self ? false :
-        (!media &&
-          preview &&
-          !preview.reddit_video_preview &&
-          !preview.enabled);
+    const showThumbnail = is_self || isCrosspost
+      ? false
+      : !media && preview && !preview.reddit_video_preview && !preview.enabled;
 
     if (!this.props || authorName === undefined) return null;
     return (
@@ -324,7 +321,7 @@ export class Post extends React.Component {
           ) : null}
           <Crosspost
             crosspost={crosspost_parent_list || null}
-            inListing={inListing}
+            setCurrentPost={this.props.setCurrentPost}
           />
           {compact ? 
           <ActionBar>
