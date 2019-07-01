@@ -3,8 +3,10 @@ import styled from "styled-components";
 import { ReactComponent as AlertCircle } from "../icons/alert-circle.svg";
 import { ReactComponent as AlertTriangle } from "../icons/alert-triangle.svg";
 import { ReactComponent as Archive } from "../icons/archive.svg";
-import { ReactComponent as ArrowDown } from "../icons/arrow-down-circle.svg";
-import { ReactComponent as ArrowUp } from "../icons/arrow-up-circle.svg";
+import { ReactComponent as ArrowUpCircle } from "../icons/arrow-up-circle.svg";
+import { ReactComponent as ArrowDownCircle } from "../icons/arrow-down-circle.svg";
+import { ReactComponent as ArrowUp } from "../icons/arrow-up.svg";
+import { ReactComponent as ArrowDown } from "../icons/arrow-down.svg";
 import { ReactComponent as Check } from "../icons/check.svg";
 import { ReactComponent as CheckCircle } from "../icons/check-circle.svg";
 import { ReactComponent as ChevronDown } from "../icons/chevron-down.svg";
@@ -25,7 +27,9 @@ import { ReactComponent as Hexagon } from "../icons/hexagon.svg";
 import { ReactComponent as InfoCircle } from "../icons/info.svg";
 import { ReactComponent as Lock } from "../icons/lock.svg";
 import { ReactComponent as Login } from "../icons/log-in.svg";
+import { ReactComponent as Logout } from "../icons/log-out.svg";
 import { ReactComponent as Message } from "../icons/message-square.svg";
+import { ReactComponent as Mail } from "../icons/mail.svg";
 import { ReactComponent as MinusCircle } from "../icons/minus-circle.svg";
 import { ReactComponent as More } from "../icons/more-horizontal.svg";
 import { ReactComponent as MoreVertical } from "../icons/more-vertical.svg";
@@ -54,6 +58,7 @@ import { ReactComponent as Flag } from "../icons/flag.svg";
 import { ReactComponent as Heart } from "../icons/heart.svg";
 import { ReactComponent as Debug } from "../icons/terminal.svg";
 import { ReactComponent as Search } from "../icons/search.svg";
+import { ReactComponent as Cog } from "../icons/settings.svg";
 
 import { ReactComponent as Logo } from "../icons/logo.svg";
 import { ReactComponent as Popular } from "../icons/trending-up.svg";
@@ -64,6 +69,8 @@ const IconMap = {
   alert: <AlertCircle />,
   alerttriangle: <AlertTriangle />,
   archive: <Archive />,
+  arrowdowncircle: <ArrowDownCircle />,
+  arrowupcircle: <ArrowUpCircle />,
   arrowdown: <ArrowDown />,
   arrowup: <ArrowUp />,
   check: <Check />,
@@ -73,6 +80,7 @@ const IconMap = {
   chevronright: <ChevronRight />,
   chevronup: <ChevronUp />,
   coffee: <Coffee />,
+  cog: <Cog />,
   collapse: <Collapse />,
   column: <ColumnView />,
   compact: <Compact />,
@@ -86,7 +94,9 @@ const IconMap = {
   info: <InfoCircle />,
   lock: <Lock />,
   login: <Login />,
+  logout: <Logout />,
   message: <Message />,
+  mail: <Mail />,
   minus: <MinusCircle />,
   more: <More />,
   morevertical: <MoreVertical />,
@@ -123,6 +133,10 @@ const IconMap = {
 };
 
 const IconWrapper = styled.span`
+  /* Aligns icons to font */
+  position: relative;
+  bottom: ${props => (props.doNotAlignBaseline ? "0" : "-0.135em")};
+  margin-top: ${props => (props.doNotAlignBaseline ? "0" : "-0.135em")};
   display: inline-block;
   width: 1em;
   height: 1em;
@@ -131,11 +145,6 @@ const IconWrapper = styled.span`
   svg {
     transform: ${props =>
       props.rotate ? "rotate(" + props.rotate + ")" : null};
-    position: relative;
-    bottom: ${props =>
-      props.doNotAlignBaseline
-        ? "0"
-    : "-0.083em"}; /* Aligns icons to center of the font */
     color: inherit;
     height: inherit;
     width: inherit;

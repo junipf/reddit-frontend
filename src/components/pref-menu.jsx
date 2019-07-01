@@ -37,6 +37,28 @@ class PrefMenu extends React.Component {
     const { darkSystem, useSystemPref } = this.state;
     return (
       <Dropdown label="Preferences">
+        <Button
+          label="Messages"
+          icon="mail"
+          to="/messages/"
+        />
+        <Button
+          label="Profile"
+          icon="user"
+          to="/user/me"
+        />
+        <Button
+          label="Hexagon"
+          icon="hexagon"
+        />
+        <Button
+          label="Coffee"
+          icon="coffee"
+        />
+        <Button
+          label="Pin"
+          icon="pin"
+        />
         <Dropdown
           select
           label="Theme"
@@ -61,10 +83,15 @@ class PrefMenu extends React.Component {
             onClick={this.handleUserThemeChange}
             value="system"
             label="System"
-            icon={darkSystem ? "moon" : "sun"}
+            icon="cog"
+            iconAfter={darkSystem ? "moon" : "sun"}
             type={useSystemPref ? "primary" : "flat"}
           />
         </Dropdown>
+        <Button
+          label="Log out"
+          icon="logout"
+        />
       </Dropdown>
     );
   }

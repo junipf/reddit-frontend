@@ -33,6 +33,7 @@ export default class Dropdown extends React.Component {
       Select,
       sub,
       size,
+      parentMenu,
     } = this.props;
     const { selection } = this.state;
     const toggleProps = {
@@ -59,13 +60,14 @@ export default class Dropdown extends React.Component {
 
         {this.state.showDropdown && (
           <Menu
-            children={children}
             closeDropdown={this.closeDropdown}
             setSelection={this.setSelection}
-            reposition={this.reposition}
             sub={sub}
             wrapper={this.wrapper}
-          />
+            parentMenu={parentMenu}
+          >
+            {children}
+          </Menu>
         )}
       </Wrapper>
     );
@@ -76,7 +78,7 @@ class Menu extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      position: { x: 0, y: 0 },
+      rect: { x: 0, y: 0 },
     };
     this.menu = React.createRef();
   }
@@ -86,56 +88,57 @@ class Menu extends React.Component {
     const { sub } = this.props;
     const {
       clientWidth: menuWidth,
-      clientHeight: menuHeight,
+      // clientHeight: menuHeight,
     } = this.menu.current;
     const bodyWidth = document.body.clientWidth;
     const {
       left,
+      right,
       top,
       width,
       height,
     } = this.props.wrapper.current.getBoundingClientRect();
-    
-    const overflowRight = left + width + menuWidth > bodyWidth
+    console.log(this.props.wrapper.current);
 
+    const overflowRight = left + width + menuWidth > bodyWidth;
     if (sub) {
       if (overflowRight) {
         this.setState({
-          position: {
-            x: -menuWidth,
-            y: top - height,
+          rect: {
+            left: -width,
+            top: "calc(" + this.props.wrapper.current.offsetTop + "px - 0.5em)",
           },
         });
       } else {
         this.setState({
-          position: {
-            x: width,
-            y: top - height,
+          rect: {
+            left: width,
+            top: "calc(" + this.props.wrapper.current.offsetTop + "px - 0.5em)",
           },
         });
       }
     } else {
       if (overflowRight) {
         this.setState({
-          position: {
-            x: left - menuWidth + width,
-            y: top + height,
+          rect: {
+            left: right - menuWidth,
+            top: top + height,
           },
         });
       } else {
         this.setState({
-          position: {
-            x: left,
+          rect: {
+            left,
           },
         });
       }
     }
   }
   componentWillMount() {
-    document.addEventListener("mousedown", this.handleClick, false);
+    document.addEventListener("click", this.handleClick, false);
   }
   componentWillUnmount() {
-    document.removeEventListener("mousedown", this.handleClick, false);
+    document.removeEventListener("click", this.handleClick, false);
   }
   handleClick = e => {
     if (this.menu.current.contains(e.target)) return;
@@ -144,7 +147,7 @@ class Menu extends React.Component {
   render() {
     const { children, setSelection, sub } = this.props;
     return (
-      <StyledMenu position={this.state.position} sub={sub} ref={this.menu}>
+      <StyledMenu rect={this.state.rect} sub={sub} ref={this.menu}>
         {React.Children.map(children, child => {
           if (React.isValidElement(child)) {
             if (child.type.name === "Button") {
@@ -163,6 +166,7 @@ class Menu extends React.Component {
                 sub: true,
                 setSelection: setSelection,
                 hideLabel: false,
+                parentMenu: this.menu,
               });
             }
           }
@@ -215,12 +219,17 @@ export const LinkEntry = styled(Link)`
   }
 `;
 
-export const StyledMenu = styled.div.attrs(props => ({
-  style: {
-    left: props.sub ? -1 : props.position.x || 0,
-    top: props.sub ? -1 : props.position.y,
-  },
-}))`
+export const StyledMenu = styled.div.attrs(props => {
+  if (props.rect)
+    return {
+      style: {
+        width: props.rect.width,
+        minHeight: props.rect.height,
+        left: props.rect.left,
+        top: props.rect.top,
+      },
+    };
+})`
   z-index: 100;
   float: left;
   min-width: 8rem;
@@ -234,11 +243,11 @@ export const StyledMenu = styled.div.attrs(props => ({
   border: 1px solid ${props => props.theme.container.border};
   border-radius: 0.25rem;
   position: absolute;
-  /* width: ${props=>props.sub ? "100%" : "unset"}; */
-  /* height: ${props=>props.sub ? "100%" : "unset"}; */
+  /* width: ${props => (props.sub ? "100%" : "unset")}; */
+  /* height: ${props => (props.sub ? "100%" : "unset")}; */
   max-height: calc(100vh - 3rem);
   /* overflow-y: auto; */
-  /* overflow-x: show; */
+  /* overflow-x: hidden; */
   scrollbar-width: thin;
   padding: 0.5em 0;
   display: flex;
@@ -281,7 +290,7 @@ export const CategoryTitle = styled.div`
   color: inherit;
   white-space: nowrap;
   position: sticky;
-  top: 3rem;
+  top: 0;
   color: ${props => props.theme.container.color[1]};
   background-color: ${props => props.theme.container.levels[1]};
   z-index: 99;

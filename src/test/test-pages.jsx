@@ -8,6 +8,8 @@ import Dropdown from "../components/dropdown";
 const Column = styled.div`
   width: 100%;
   overflow-y: scroll;
+  background: ${props => props.theme.column.background};
+  color: ${props => props.theme.container.color};
 `;
 
 const TestPage = styled.div`
@@ -15,11 +17,17 @@ const TestPage = styled.div`
   margin: 0 auto;
 `;
 
+const Header = styled.div`
+  background: ${props => props.theme.container.levels[0]};
+  border: 1px solid ${props => props.theme.container.border};
+  padding: 1rem 0;
+  margin: 1rem 0;
+`;
+
 const SectionCard = styled.section`
   margin: 1rem;
   margin-bottom: 0;
   background: ${props => props.theme.container.levels[0]};
-  color: ${props => props.theme.container.color};
   border: 1px solid ${props => props.theme.container.border};
   padding: 1rem;
   border-radius: 0.5rem;
@@ -51,11 +59,72 @@ const Alignment = styled.h1`
   }
 `;
 
+const FloatRight = styled.div`
+  float:right;
+`;
+
 const handleClick = e => console.log(e.target + " clicked!");
 
 export const ComponentTestPage = () => (
   <Column>
     <TestPage>
+      <Header>
+        <Dropdown label="Dropdown">
+          <Button label="Spacer" />
+          <Dropdown label="Dropdown">
+          <Button label="Spacer" />
+            <Dropdown label="Dropdown">
+            <Button label="Spacer" />
+              <Dropdown label="Dropdown">
+              <Button label="Spacer" />
+                <Dropdown label="Dropdown">
+                <Button label="Spacer" />
+                  <Dropdown label="Dropdown">
+                  <Button label="Spacer" />
+                    <Dropdown label="Dropdown">
+                    <Button label="Spacer" />
+                      <Dropdown label="Dropdown">
+                      <Button label="Spacer" />
+                        <Dropdown label="Dropdown">
+                        <Button label="Spacer" />
+                          <Dropdown label="Dropdown">
+                          <Button label="Spacer" />
+                            <Button label="Found me!" />
+                            <Button label="Spacer" />
+                          </Dropdown>
+                        </Dropdown>
+                      </Dropdown>
+                    </Dropdown>
+                  </Dropdown>
+                </Dropdown>
+              </Dropdown>
+            </Dropdown>
+          </Dropdown>
+        </Dropdown>
+        <FloatRight>
+          <Dropdown label="Dropdown">
+            <Dropdown label="Dropdown">
+              <Dropdown label="Dropdown">
+                <Dropdown label="Dropdown">
+                  <Dropdown label="Dropdown">
+                    <Dropdown label="Dropdown">
+                      <Dropdown label="Dropdown">
+                        <Dropdown label="Dropdown">
+                          <Dropdown label="Dropdown">
+                            <Dropdown label="Dropdown">
+                              <Button label="Found me!" />
+                            </Dropdown>
+                          </Dropdown>
+                        </Dropdown>
+                      </Dropdown>
+                    </Dropdown>
+                  </Dropdown>
+                </Dropdown>
+              </Dropdown>
+            </Dropdown>
+          </Dropdown>
+        </FloatRight>
+        </Header>
       <SectionCard>
         <Banner
           type="quarantine"

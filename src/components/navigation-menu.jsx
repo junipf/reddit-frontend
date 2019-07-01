@@ -8,27 +8,11 @@ import SubredditIcon from "./subreddit-icon";
 import { Requester } from "./requester";
 import Icon from "./icon";
 import Dropdown, { LinkEntry, Search, Input, CategoryTitle } from "./dropdown";
+import { ScrollWrapper } from './../containers/scroll-wrapper';
 
 import { ReactComponent as Popular } from "../icons/trending-up.svg";
 import { ReactComponent as All } from "../icons/bar-chart-2.svg";
 import { ReactComponent as Home } from "../icons/home.svg";
-
-// const Brand = styled(Button)`
-//   font-size: 1.125rem;
-//   display: flex;
-//   flex-flow: row nowrap;
-//   align-items: center;
-//   align-content: center;
-//   line-height: 1;
-//   padding: 0;
-//   height: 100%;
-//   margin: 0 0.5rem;
-//   background: none;
-//   border: none;
-//   &:after {
-//     display: none;
-//   }
-// `;
 
 const EntrySubIcon = styled(SubredditIcon)`
   margin-right: 0.5em;
@@ -150,7 +134,7 @@ export default class NavigationMenu extends React.Component {
             value={filter}
           />
         </Search>
-
+        <ScrollWrapper>
         {filter === "" ? (
           <>
             <FrontpageEntry onClick={this.toggleDropdown} key="frontpage" />
@@ -196,6 +180,7 @@ export default class NavigationMenu extends React.Component {
             <Icon icon="info" data-tip="No results found from reddit's search - did you mistype something?" />
           </CategoryTitle>
         ) : null}
+        </ScrollWrapper>
       </Dropdown>
     );
   }
