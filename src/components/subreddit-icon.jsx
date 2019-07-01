@@ -61,7 +61,6 @@ const SubredditIcon = props => {
 export default withTheme(SubredditIcon);
 
 const Circle = styled.div.attrs(props => {
-  // console.log(props.bgColor);
   return {
     style: {
       backgroundImage: props.icon,

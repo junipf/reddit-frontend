@@ -200,7 +200,7 @@ class App extends React.Component {
               setRefreshToken(r.refreshToken);
             },
             error => {
-              console.log(error);
+              console.error(error);
             }
           );
       }
@@ -213,7 +213,6 @@ class App extends React.Component {
   componentDidUpdate(prevProps) {
     const { refreshToken } = this.props;
     if (refreshToken && refreshToken !== prevProps.refreshToken) {
-      // console.log("Got new refresh token");
       this.setState({
         requester: new snoowrap({
           clientId,
@@ -282,7 +281,7 @@ const AppWrapper = styled.div`
 const Columns = styled.div`
   display: flex;
   flex-flow: row nowrap;
-  height: 100vh;
+  height: calc(100vh - 3rem);
   width: 100vw;
 `;
 

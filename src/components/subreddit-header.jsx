@@ -95,12 +95,6 @@ class SubredditHeader extends React.Component {
       subscribed: !this.state.subscribed,
     });
   }
-  // componentDidUpdate() {
-  // console.group("Subreddit-header updated");
-  // console.log(this.props);
-  // console.groupEnd();
-  // this.props.parentColumn.current.scrollTo(0, 0);
-  // }
   render() {
     const { subreddits, currentSubredditName } = this.props;
     if (subreddits[currentSubredditName] === undefined) return null;

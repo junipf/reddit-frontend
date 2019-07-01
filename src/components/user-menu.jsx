@@ -81,11 +81,6 @@ export default class UserMenu extends React.Component {
       console.info("Unread messages:", unread);
     });
   }
-  // componentDidUpdate() {
-  // this.unread.fetchMore({ amount: 10 }).then(unread => console.log(unread));
-  // this.context.getUnreadMessages().then(unread => {
-  // })
-  // }
   render() {
     return (
       <>
