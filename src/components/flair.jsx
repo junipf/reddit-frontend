@@ -33,7 +33,7 @@ const Flair = styled.span`
   color: ${props =>
     props.backgroundColor === "transparent"
       ? props.theme.container.color
-      : props.color || props.theme.container.color};
+      : props.theme.flairColor || props.color || props.theme.container.color};
   background-color: ${props =>
     props.backgroundColor || props.theme.container.levels[2]};
 `;

@@ -6,7 +6,7 @@ import { Requester } from "./requester";
 import styled from "styled-components";
 // import { Spinner } from "./Spinner";
 
-import SubredditIcon from "./subreddit-icon";
+// import SubredditIcon from "./subreddit-icon";
 
 import { ReactComponent as Chevron } from "../icons/chevron-down.svg";
 import { ReactComponent as Mail } from "../icons/mail.svg";
@@ -93,7 +93,6 @@ export default class UserMenu extends React.Component {
         <Dropdown drop="down" navbar focusFirstItemOnShow={true}>
           <DropdownToggle id="user-menu" variant="link">
             <User>
-              <SubredditIcon icon={this.props.user.icon_img} />
               {this.props.user.name}
               <Chevron />
             </User>

@@ -7,13 +7,12 @@ import Icon from "./icon";
 const StyledButton = styled.button`
   display: inline-block;
   font-weight: 500;
-  font-size: 1em;
-  text-align: ${props => (props.align)};
+  text-align: ${props => props.align};
   white-space: nowrap;
   vertical-align: middle;
   user-select: none;
   padding: ${props =>
-    props.size === "small" ? "0.1em 0.25em" : "0.35em 0.5em"};
+    props.size === "small" ? "0.175em 0.25em" : "0.35em 0.5em"};
   border: none;
   border-radius: ${props => (props.size === "fill" ? "0" : "0.2em")};
   margin: ${props =>

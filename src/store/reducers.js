@@ -18,6 +18,7 @@ const initialState = {
   favoriteNames: [],
   multireddits: [],
   currentPost: null,
+  locationName: "Frontpage",
   themesBySubreddit: {},
   themesByColor: {},
 };
@@ -87,12 +88,12 @@ const store = (state = initialState, action) => {
       const subscriptionNames = action.subscriptions.reduce(
         (names, subscription) => {
           // Adds the subreddit info to the subreddits store
-          subreddits[subscription.display_name] = subscription;
+          subreddits[subscription.display_name.toLowerCase()] = subscription;
 
           if (subscription.user_has_favorited) {
-            favoriteNames.push(subscription.display_name);
+            favoriteNames.push(subscription.display_name.toLowerCase());
           } else {
-            names.push(subscription.display_name);
+            names.push(subscription.display_name.toLowerCase());
           }
           return names;
         },
@@ -102,7 +103,7 @@ const store = (state = initialState, action) => {
     case "SET_MULTIREDDITS":
       return { ...state, multireddits: action.multis };
     case "ADD_SUBREDDIT":
-      subreddits[action.subredditInfo.display_name] = action.subredditInfo;
+      subreddits[action.subredditInfo.display_name.toLowerCase()] = action.subredditInfo;
       return { ...state, subreddits };
     // case "ADD_POST":
     //   const { comments, ...post } = action.post;
@@ -141,6 +142,8 @@ const store = (state = initialState, action) => {
       return { ...state, lightboxIsOpen: !lightboxIsOpen };
     case "SET_CURRENT_POST":
       return { ...state, currentPost: action.post };
+    case "SET_LOCATION_NAME":
+      return { ...state, locationName: action.name };
     case "SET_USE_SYSTEM_THEME":
       return { ...state, useSystemTheme: action.bool };
     case "ADD_SUBREDDIT_THEME":

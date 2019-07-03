@@ -51,7 +51,7 @@ Banner.propTypes = {
 };
 
 export const InfoBanners = props => {
-  const { archived, locked, hidden, stickied } = props;
+  const { archived, locked, hidden, stickied, saved } = props;
   let banners = [];
 
   if (stickied) {
@@ -94,6 +94,17 @@ export const InfoBanners = props => {
         // label="Hidden"
         data-tip="This post is hidden, so it isn't in any listing."
         key="3"
+      />
+    );
+  }
+  if (saved) {
+    banners.push(
+      <Banner
+        type="saved"
+        icon="star"
+        // label="Hidden"
+        data-tip="You've saved this post."
+        key="4"
       />
     );
   }

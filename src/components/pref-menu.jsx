@@ -57,10 +57,10 @@ class PrefMenu extends React.Component {
           .then(result => setUserPrefs(result));
   };
   render() {
-    const { useSystemTheme, userPrefs: { nightmode } = {}} = this.props;
+    const { useSystemTheme, user, userPrefs: { nightmode } = {}} = this.props;
     const { darkSystem } = this.state;
     return (
-      <Dropdown label="Preferences">
+      <Dropdown label={user.name}>
         <Button label="Messages" icon="mail" to="/messages/" />
         <Button label="Profile" icon="user" to="/user/me" />
         <Button label="Hexagon" icon="hexagon" />
@@ -102,10 +102,11 @@ class PrefMenu extends React.Component {
 }
 
 function mapStateToProps(state) {
-  const { useSystemTheme, userPrefs } = state;
+  const { useSystemTheme, userPrefs, user } = state;
   return {
     useSystemTheme,
     userPrefs,
+    user,
   };
 }
 

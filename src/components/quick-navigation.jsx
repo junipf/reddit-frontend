@@ -8,6 +8,7 @@ import SubredditIcon, {
   AllIcon,
 } from "./subreddit-icon";
 import { Spinner } from "./spinner";
+import uniqueId from "../utils/unique-id";
 
 const Favorites = styled.div`
   display: flex;
@@ -40,6 +41,7 @@ export const QuickNavigation = ({ favorites }) => (
       data-multiline={true}
       data-place="right"
       data-delay-show={0}
+      key={0}
     >
       <FrontpageIcon size="large" />
     </IconLink>
@@ -49,6 +51,7 @@ export const QuickNavigation = ({ favorites }) => (
       data-multiline={true}
       data-place="right"
       data-delay-show={0}
+      key={1}
     >
       <PopularIcon size="large" />
     </IconLink>
@@ -58,6 +61,7 @@ export const QuickNavigation = ({ favorites }) => (
       data-multiline={true}
       data-place="right"
       data-delay-show={0}
+      key={2}
     >
       <AllIcon size="large" />
     </IconLink>
@@ -66,7 +70,7 @@ export const QuickNavigation = ({ favorites }) => (
         favorites.slice(0, 5).map(sub => (
           <IconLink
             to={"/r/" + sub.display_name}
-            key={sub.id}
+            key={uniqueId()}
             data-tip={"r/" + sub.display_name + " <br /> " + sub.title}
             data-multiline={true}
             data-place="right"

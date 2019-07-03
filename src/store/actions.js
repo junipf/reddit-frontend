@@ -27,10 +27,10 @@ export const setMultireddits = multis => ({
 //   id,
 // });
 
-// export const setCurrentSubredditName = subredditName => ({
-//   type: "SET_CURRENT_SUBREDDIT_NAME",
-//   subredditName,
-// });
+export const setLocationName = name => ({
+  type: "SET_LOCATION_NAME",
+  name,
+});
 
 // export const addPost = post => ({
 //   type: "ADD_POST",

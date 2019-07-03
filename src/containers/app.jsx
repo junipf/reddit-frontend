@@ -8,17 +8,22 @@ import queryString from "query-string";
 
 // Import API-related
 import { Requester } from "../components/requester";
-import { setRefreshToken } from "../store/actions";
+import {
+  setRefreshToken,
+  setUser,
+  setUserPrefs,
+} from "../store/actions";
 
 // Import containers and components
 import PostListing from "./post-listing";
 import CommentListing from "./comment-listing";
 import SubscriptionsPage from "./subscriptions-page";
 import MessagesPage from "./messages-page";
-import Header from "./header";
 import { ComponentTestPage } from "../test/test-pages";
 import Button from "../components/button";
 import { Spinner } from "../components/spinner";
+import NavigationMenu from "../components/navigation-menu";
+import PrefMenu from "../components/pref-menu";
 
 // Import Styles and Fonts
 import { themes } from "../style/color-theme";
@@ -176,8 +181,8 @@ class App extends React.Component {
             refreshToken,
           })
         : null,
+      initialized: false,
     };
-    this.state.requester.config({ debug: true });
   }
   componentDidMount() {
     const { refreshToken, location, history, setRefreshToken } = this.props;
@@ -209,6 +214,7 @@ class App extends React.Component {
     if (values.state) {
       history.replace(values.state);
     }
+    this.initialize();
   }
   componentDidUpdate(prevProps) {
     const { refreshToken } = this.props;
@@ -221,58 +227,98 @@ class App extends React.Component {
         }),
       });
     }
-    this.state.requester.config({ debug: true });
+    this.initialize();
   }
+  initialize = () => {
+    if (!this.state.requester || this.state.initialized) return;
+    const r = this.state.requester;
+    const { setUser, setUserPrefs } = this.props;
+    r.config({ debug: true });
+    r.getMe().then(user => setUser(user));
+    r.getPreferences().then(prefs => {
+      setUserPrefs(prefs);
+    });
+    this.setState({ initialized: true });
+  };
   render() {
-    const { refreshToken, location, darkTheme } = this.props;
+    const { refreshToken, location, useDarkTheme } = this.props;
     const { requester } = this.state;
-    if (refreshToken === undefined)
-      return <LoginPrompt state={location.pathname} />;
-    if (requester) {
-      return (
-        <ThemeProvider theme={darkTheme ? themes.dark : themes.light}>
-          <Requester.Provider value={requester}>
-            <GlobalStyle />
-            <ReactTooltip
-              effect="solid"
-              place={"bottom"}
-              clickable={true}
-              delayShow={250}
-              className="tooltip"
-              type={darkTheme ? "light" : "dark"}
-            />
-            <AppWrapper>
-              <Header
-                toggleDarkTheme={this.toggleDarkTheme}
-                darkTheme={darkTheme}
+    const theme = useDarkTheme ? themes.dark : themes.light;
+    return (
+      <ThemeProvider theme={theme}>
+        <div>
+          <GlobalStyle />
+          {refreshToken === undefined ? (
+            <LoginPrompt state={location.pathname} />
+          ) : requester ? (
+            <Requester.Provider value={requester}>
+              <ReactTooltip
+                effect="solid"
+                place={"bottom"}
+                clickable={true}
+                delayShow={250}
+                className="tooltip"
+                type={useDarkTheme ? "light" : "dark"}
               />
-              <Columns>
-                <Switch>
-                  <Route path="/message/:sort?" component={MessagesPage} />
-                  <Route
-                    exact
-                    path="/subscriptions"
-                    component={SubscriptionsPage}
-                  />
-                  <Route exact path="/test" component={ComponentTestPage} />
-                  <Route
-                    path={[
-                      "/r/:subredditName/comments/:id/:title/:commentId?",
-                      "/r/:subredditName/:sort?/",
-                      "/:sort?",
-                    ]}
-                    component={SplitListings}
-                  />
-                </Switch>
-              </Columns>
-            </AppWrapper>
-          </Requester.Provider>
-        </ThemeProvider>
-      );
-    }
-    return <Spinner />;
+              <AppWrapper>
+                <Header>
+                  <Section>
+                    <NavigationMenu />
+                  </Section>
+                  <Section>
+                    <PrefMenu />
+                  </Section>
+                </Header>
+                <Columns>
+                  <Switch>
+                    <Route path="/message/:sort?" component={MessagesPage} />
+                    <Route
+                      exact
+                      path="/subscriptions"
+                      component={SubscriptionsPage}
+                    />
+                    <Route exact path="/test" component={ComponentTestPage} />
+                    <Route
+                      path={[
+                        "/r/:subredditName/comments/:id/:title/:commentId?",
+                        "/r/:subredditName/:sort?/",
+                        "/:sort?",
+                      ]}
+                      component={SplitListings}
+                    />
+                  </Switch>
+                </Columns>
+              </AppWrapper>
+            </Requester.Provider>
+          ) : (
+            <Spinner />
+          )}
+        </div>
+      </ThemeProvider>
+    );
   }
 }
+
+const headerHeight = "3rem";
+
+const Header = styled.div`
+  width: 100vw;
+  height: ${headerHeight};
+  background-color: ${props => props.theme.container.levels[1]};
+  color: ${props => props.theme.container.color};
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const Section = styled.div`
+  display: flex;
+  flex-direction: inherit;
+  align-items: center;
+  height: inherit;
+  margin: 0.25rem;
+`;
 
 const AppWrapper = styled.div`
   display: flex;
@@ -281,7 +327,7 @@ const AppWrapper = styled.div`
 const Columns = styled.div`
   display: flex;
   flex-flow: row nowrap;
-  height: calc(100vh - 3rem + 1px);
+  height: calc(100vh - ${headerHeight} + 1px);
   width: 100vw;
 `;
 
@@ -297,20 +343,17 @@ const SplitListings = props => {
         component={CommentListing}
       />
     </>
-    // <>
-    //   <PostListing {...props} />
-    //   <CommentListing {...props} />
-    // </>
   );
 };
 
 function mapStateToProps(state) {
   const { refreshToken, userPrefs } = state;
-  return { refreshToken, darkTheme: userPrefs.nightmode };
+  let useDarkTheme =
+    userPrefs && userPrefs.nightmode ? userPrefs.nightmode : false;
+  return { refreshToken, useDarkTheme };
 }
 
 export default connect(
   mapStateToProps,
-  { setRefreshToken }
-  // )(hot(module)(App));
+  { setRefreshToken, setUserPrefs, setUser }
 )(hot(module)(App));

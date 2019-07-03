@@ -6,9 +6,11 @@ import {
   addSubreddit,
   setCurrentPost,
   addSubredditTheme,
+  addColorTheme,
+  setLocationName,
 } from "../store/actions";
 import styled, { ThemeProvider, withTheme } from "styled-components";
-// import queryString from "query-string";
+import useIntersect from "../utils/use-intersect";
 
 import Post from "./post";
 import Button from "../components/button";
@@ -16,13 +18,13 @@ import { SpinnerPage } from "../components/spinner";
 import Dropdown from "../components/dropdown";
 import SubredditIcon from "../components/subreddit-icon";
 import { ProgressOverlay, ProgressUnderline } from "../components/progress-bar";
-import { genSubredditTheme } from "../utils/color";
+import { genSubredditTheme, genTheme } from "../utils/color";
 
 const SubredditBanner = styled.div.attrs(props => ({
   style: {
     backgroundColor: props.banner_background_color,
     backgroundImage: "url(" + props.banner_background_image + ")",
-    height: props.display_name ? "12rem" : "2.5rem", // Detects frontpage/popular/all
+    height: props.display_name ? "10rem" : "0", // Detects frontpage/popular/all
   },
 }))`
   background-position: center;
@@ -35,53 +37,77 @@ const SubredditBanner = styled.div.attrs(props => ({
   background-color: ${props => props.theme.container.levels[1]};
   border-top-right-radius: inherit;
   border-top-left-radius: inherit;
-  padding-bottom: 2.5rem;
 `;
 const StyledListing = styled.div`
   max-width: 48rem;
-  margin: 0 auto;
+  margin: 0 auto 0.5rem auto;
 `;
 
-class Listing extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      // visiblePosts: [],
-    };
-    this.listing = React.createRef();
-  }
-  handleIntersection = e => {
-    // this.setState({ visiblePosts: e.map(entry => entry.target.id)})
-  };
-  shouldComponentUpdate(nextProps, nextState) {
-    if (this.state !== nextState || this.props !== nextProps) return true;
-    else return false;
-  }
-  render() {
-    const { visiblePosts } = this.state;
-    const { listing, subreddits, subredditName, setCurrentPost } = this.props;
-    return listing ? (
-      <StyledListing>
-        {listing.map((post, i) => {
-          if (subreddits[post.subreddit.display_name] === undefined) {
-            this.props.fetchSubreddit(post.subreddit.display_name);
+const Listing = props => {
+  const {
+    listing,
+    subreddits,
+    subredditName,
+    setCurrentPost,
+    fetchSubreddit,
+    fetchMore,
+    themesByColor,
+    addColorTheme,
+    inheritedTheme,
+  } = props;
+
+  const [ref, entry] = useIntersect({
+    threshold: [0.0, 0.5, 1.0],
+  });
+
+  if (entry.isIntersecting) fetchMore();
+
+  return listing ? (
+    <StyledListing>
+      {listing.map((post, i) => {
+        if (
+          subreddits[post.subreddit.display_name.toLowerCase()] === undefined
+        ) {
+          fetchSubreddit(post.subreddit.display_name);
+        }
+        let theme = inheritedTheme;
+        if (
+          post.link_flair_background_color &&
+          post.link_flair_background_color !== ""
+        ) {
+          if (themesByColor[post.link_flair_background_color]) {
+            theme = inheritedTheme.dark
+              ? themesByColor[post.link_flair_background_color].dark
+              : themesByColor[post.link_flair_background_color].light;
+          } else {
+            const generatedTheme = genTheme(post.link_flair_background_color);
+            addColorTheme(post.link_flair_background_color, generatedTheme);
+            theme = inheritedTheme.dark
+              ? generatedTheme.dark
+              : generatedTheme.light;
           }
-          return (
-            <Post
-              subredditInfo={subreddits[post.subreddit.display_name]}
-              inSubreddit={subredditName === post.subreddit.display_name}
-              post={post}
-              key={i}
-              inListing
-              id={post.id}
-              setCurrentPost={setCurrentPost}
-            />
-          );
-        })}
-      </StyledListing>
-    ) : null;
-  }
-}
+        }
+        return (
+          <Post
+            subredditInfo={subreddits[post.subreddit.display_name]}
+            inSubreddit={subredditName === post.subreddit.display_name}
+            post={post}
+            key={i}
+            inListing
+            id={post.id}
+            setCurrentPost={setCurrentPost}
+            theme={theme}
+          />
+        );
+      })}
+      <NextPage ref={ref} />
+    </StyledListing>
+  ) : null;
+};
+
+const NextPage = styled(SpinnerPage)`
+  display: block;
+`;
 
 class PostListing extends React.Component {
   static contextType = Requester;
@@ -105,37 +131,46 @@ class PostListing extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     const { sort, time } = this.state;
     const { sort: prevSort, time: prevTime } = prevState;
-    const { params } = this.props.match;
+    const { subredditName, id } = this.props.match.params;
+
+    console.log(this.props.match.params);
 
     // We take the subredditName from the URL, but only if there is no ID.
     // (e.g. we take /r/firefox, but not /r/firefox/comments/c6xrwv/...)
     // This allows normal navigation (clicking links) to update the listing.
-    if (!params.id && params.subredditName !== this.state.subredditName) {
-      document.title = params.subredditName
-        ? "r/" + params.subredditName
-        : "Frontpage";
-      this.setSubreddit(params.subredditName);
+    if (!id && subredditName !== this.state.subredditName) {
+      console.info(
+        "PostListing detected subreddit switch to: " + subredditName
+      );
+      document.title = subredditName ? "r/" + subredditName : "Frontpage";
+      this.setSubreddit(subredditName);
     }
 
     // If the subreddit name, sort, or sort time - in state - updates, we
     // fetch the new listing. This means that there is an update when we get
     // the subredditName from the URL, then another after it's set to state -
     // so it's important to prevent re-renders.
-    if (
-      this.state.subredditName === prevState.subredditName &&
-      (sort !== prevSort || time !== prevTime)
-    ) {
+    if (sort !== prevSort || time !== prevTime) {
       this.fetchListing(this.state.subredditName);
     }
 
     // If the ID vanishes, we now have control of the URL.
     if (prevProps.match.params.id && !this.props.match.params.id)
-      this.setSort({ subredditName: this.props.match.params.subredditName });
+      this.setSort({
+        subredditName: this.props.match.params.subredditName || "frontpage",
+      });
   }
   setSubreddit = subredditName => {
+    console.info("Setting Subreddit to: " + subredditName);
     this.setState({ subredditName });
     this.fetchListing(subredditName);
-    const { addSubreddit, themesBySubreddit, addSubredditTheme } = this.props;
+    const {
+      addSubreddit,
+      themesBySubreddit,
+      addSubredditTheme,
+      setLocationName,
+    } = this.props;
+    setLocationName(subredditName || "Frontpage");
     if (
       subredditName &&
       subredditName !== "frontpage" &&
@@ -193,13 +228,10 @@ class PostListing extends React.Component {
         );
     }
   };
-  fetchListing = (passedSubName = null) => {
-    const {
-      subredditName: stateSubName,
-      sort = "hot",
-      time = "all",
-    } = this.state;
-    const subredditName = passedSubName ? passedSubName : stateSubName;
+  refreshListing = () => this.fetchListing(this.state.subredditName);
+  fetchListing = subredditName => {
+    const { sort = "hot", time = "all" } = this.state;
+    console.info("Fetching: " + subredditName);
     const t = sort === "controversial" || sort === "top" ? time : null;
     this.setState({ fetching: true });
     this.context._getSortedFrontpage(sort, subredditName, { t }).then(
@@ -221,16 +253,16 @@ class PostListing extends React.Component {
         error => console.error(error)
       );
   };
-  handleScroll = e => {
-    if (!this.state.fetchingMore) {
-      const bottom =
-        e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight <=
-        1000;
-      if (bottom) {
-        this.fetchMore();
-      }
-    }
-  };
+  // handleScroll = e => {
+  //   if (!this.state.fetchingMore) {
+  //     const bottom =
+  //       e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight <=
+  //       1000;
+  //     if (bottom) {
+  //       this.fetchMore();
+  //     }
+  //   }
+  // };
 
   // Passes sort & time to state, and, if we control the URL,
   // we build and update it.
@@ -239,19 +271,20 @@ class PostListing extends React.Component {
     sort = this.state.sort,
     time = this.state.time,
   }) => {
+    const subName = subredditName === "frontpage" ? undefined : subredditName;
     if (
-      this.state.subredditName !== subredditName ||
+      this.state.subredditName !== subName ||
       this.state.sort !== sort ||
       this.state.time !== time
     ) {
       this.setState({
-        subredditName,
+        subredditName: subName,
         sort,
         time,
       });
     }
     if (!this.props.match.params.id) {
-      let url = subredditName ? "/r/" + subredditName : "";
+      let url = subName ? "/r/" + subName : "";
       url += sort && sort !== "hot" ? "/" + sort : "";
       url +=
         (sort === "controversial" || sort === "top") && time
@@ -267,6 +300,8 @@ class PostListing extends React.Component {
       theme: { dark: useDark },
       theme: inheritedTheme,
       themesBySubreddit,
+      themesByColor,
+      addColorTheme,
       lightboxIsOpen,
     } = this.props;
     const {
@@ -305,116 +340,30 @@ class PostListing extends React.Component {
               <Dropdown label={sort}>
                 <Button
                   label="hot"
-                  onClick={() => this.setSort({ sort: "hot" })}
+                  onClick={this.setSort}
+                  value={{ sort: "hot" }}
                 />
                 <Button
                   label="best"
-                  onClick={() => this.setSort({ sort: "best" })}
+                  onClick={this.setSort}
+                  value={{ sort: "best" }}
                 />
                 <Button
                   label="new"
-                  onClick={() => this.setSort({ sort: "new" })}
+                  onClick={this.setSort}
+                  value={{ sort: "new" }}
                 />
                 <Button
                   label="rising"
-                  onClick={() => this.setSort({ sort: "rising" })}
+                  onClick={this.setSort}
+                  value={{ sort: "rising" }}
                 />
-                <Dropdown label="controversial">
-                  <Button
-                    label="hour"
-                    onClick={() =>
-                      this.setSort({ sort: "controversial", time: "hour" })
-                    }
-                  />
-                  <Button
-                    label="day"
-                    onClick={() =>
-                      this.setSort({ sort: "controversial", time: "day" })
-                    }
-                  />
-                  <Button
-                    label="week"
-                    onClick={() =>
-                      this.setSort({ sort: "controversial", time: "week" })
-                    }
-                  />
-                  <Button
-                    label="month"
-                    onClick={() =>
-                      this.setSort({ sort: "controversial", time: "month" })
-                    }
-                  />
-                  <Button
-                    label="year"
-                    onClick={() =>
-                      this.setSort({ sort: "controversial", time: "year" })
-                    }
-                  />
-                  <Button
-                    label="all time"
-                    value="all"
-                    onClick={() =>
-                      this.setSort({ sort: "controversial", time: "all" })
-                    }
-                  />
-                </Dropdown>
-                <Dropdown label="top">
-                  <Button
-                    label="hour"
-                    onClick={() => this.setSort({ sort: "top", time: "hour" })}
-                  />
-                  <Button
-                    label="day"
-                    onClick={() => this.setSort({ sort: "top", time: "day" })}
-                  />
-                  <Button
-                    label="week"
-                    onClick={() => this.setSort({ sort: "top", time: "week" })}
-                  />
-                  <Button
-                    label="month"
-                    onClick={() => this.setSort({ sort: "top", time: "month" })}
-                  />
-                  <Button
-                    label="year"
-                    onClick={() => this.setSort({ sort: "top", time: "year" })}
-                  />
-                  <Button
-                    label="all time"
-                    value="all"
-                    onClick={() => this.setSort({ sort: "top", time: "all" })}
-                  />
-                </Dropdown>
+                {TimeDropdown("controversial", this.setSort)}
+                {TimeDropdown("top", this.setSort)}
               </Dropdown>
-              {(sort === "top" || sort === "controversial") && (
-                <Dropdown label={time}>
-                  <Button
-                    label="hour"
-                    onClick={() => this.setSort({ sort, time: "hour" })}
-                  />
-                  <Button
-                    label="day"
-                    onClick={() => this.setSort({ sort, time: "day" })}
-                  />
-                  <Button
-                    label="week"
-                    onClick={() => this.setSort({ sort, time: "week" })}
-                  />
-                  <Button
-                    label="month"
-                    onClick={() => this.setSort({ sort, time: "month" })}
-                  />
-                  <Button
-                    label="year"
-                    onClick={() => this.setSort({ sort, time: "year" })}
-                  />
-                  <Button
-                    label="all time"
-                    value="all"
-                    onClick={() => this.setSort({ sort, time: "all" })}
-                  />
-                </Dropdown>
-              )}
+              {sort === "top" || sort === "controversial"
+                ? TimeDropdown(sort, this.setSort, time)
+                : null}
               <Button
                 icon="search"
                 hideLabel
@@ -433,6 +382,10 @@ class PostListing extends React.Component {
                 subredditName={subredditName}
                 fetchSubreddit={this.fetchSubreddit}
                 setCurrentPost={this.props.setCurrentPost}
+                fetchMore={this.fetchMore}
+                themesByColor={themesByColor}
+                addColorTheme={addColorTheme}
+                inheritedTheme={theme}
               />
             </ScrollWrapper>
           )}
@@ -442,6 +395,18 @@ class PostListing extends React.Component {
     );
   }
 }
+
+// Just a function (e.g. not a component) so Dropdowns are treated as Sub
+const TimeDropdown = (sort, onClick, label) => (
+  <Dropdown label={label || sort}>
+    <Button label="hour" onClick={onClick} value={{ sort, time: "hour" }} />
+    <Button label="day" onClick={onClick} value={{ sort, time: "day" }} />
+    <Button label="week" onClick={onClick} value={{ sort, time: "week" }} />
+    <Button label="month" onClick={onClick} value={{ sort, time: "month" }} />
+    <Button label="year" onClick={onClick} value={{ sort, time: "year" }} />
+    <Button label="all time" onClick={onClick} value={{ sort, time: "all" }} />
+  </Dropdown>
+);
 
 // Prevents page contents from shifting when scrollbar disappears
 // due to lightbox being open.
@@ -462,10 +427,8 @@ const Column = styled.div`
 
 const ViewSettings = styled.div`
   width: 100%;
-  height: 2.5rem;
   position: sticky;
   top: 0rem;
-  margin-top: -2.5rem;
   border: 1px solid ${props => props.theme.container.border};
   border-width: 1px 0;
   background-color: ${props => props.theme.container.levels[0]};
@@ -486,16 +449,24 @@ function mapStateToProps(state) {
     subreddits,
     lightboxIsOpen,
     themesBySubreddit,
+    themesByColor,
   } = state;
   return {
     currentPostId,
     subreddits,
     lightboxIsOpen,
     themesBySubreddit,
+    themesByColor,
   };
 }
 
 export default connect(
   mapStateToProps,
-  { addSubreddit, setCurrentPost, addSubredditTheme }
+  {
+    addSubreddit,
+    setCurrentPost,
+    addSubredditTheme,
+    addColorTheme,
+    setLocationName,
+  }
 )(withTheme(withRouter(PostListing)));

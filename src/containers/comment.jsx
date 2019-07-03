@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 
 import Flair from "../components/flair";
@@ -69,169 +69,143 @@ const Body = styled.div`
   }
 `;
 
-export default class Comment extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      depth: 0,
-      mod: 0,
-      collapse: props.collapse,
-      numChildren: 0,
-      hideButtonLabels: true,
-      compact: false,
-    };
-  }
-  upvote = () => {
-    let mod = this.state.mod > 0 ? 0 : 1;
-    this.setState({ mod });
-  };
-  downvote = () => {
-    let mod = this.state.mod < 0 ? 0 : -1;
-    this.setState({ mod });
-  };
-  toggle;
-  toggleButtonLabels = () => {
-    this.setState({
-      hideButtonLabels: !this.state.hideButtonLabels,
-    });
-  };
-  toggleCollapse = () => {
-    this.setState({
-      collapse: !this.state.collapse,
-    });
-  };
-  shouldComponentUpdate(prevProps, prevState) {
-    return this.state !== prevState;
-  }
-  render() {
-    const {
-      permalink,
-      id,
-      // primary_color,
-      // key_color,
-      author: { name: authorName },
-      depth,
-      score,
-      score_hidden,
-      edited,
-      created_utc,
-      body_html,
-      replies,
-      distinguished,
-      is_submitter,
+export default props => {
+  const [mod, setMod] = useState(0);
+  const [collapse, setCollapse] = useState(props.collapse);
+  // const [showReplies, setShowReplies] = useState(props.collapse);
 
-      author_flair_type,
-      author_flair_text,
-      author_flair_template_id,
-      author_flair_richtext,
-      author_flair_text_color,
-      author_flair_background_color,
-    } = this.props;
-    const { collapse, mod } = this.state;
-    return (
-      <StyledComment id={id}>
-        <Left>
-          {collapse ? (
-            <Button
-              size="small"
-              type="flat"
-              icon={collapse ? "plus" : "minus"}
-              label={collapse ? "Expand" : "Collapse"}
-              hideLabel
-              noMargin
-              onClick={this.toggleCollapse}
-            />
+  const upvote = () => setMod(mod > 0 ? 0 : 1);
+  const downvote = () => setMod(mod < 0 ? 0 : -1);
+  const toggleCollapse = () => setCollapse(!collapse);
+  // const toggleShowReplies = () => setShowReplies(!showReplies);
+
+  const {
+    permalink,
+    id,
+    // primary_color,
+    // key_color,
+    author: { name: authorName },
+    depth: inheritedDepth,
+    score,
+    score_hidden,
+    edited,
+    created_utc,
+    body_html,
+    replies,
+    distinguished,
+    is_submitter,
+
+    author_flair_type,
+    author_flair_text,
+    author_flair_template_id,
+    author_flair_richtext,
+    author_flair_text_color,
+    author_flair_background_color,
+  } = props;
+  const depth = inheritedDepth || 0;
+  return (
+    <StyledComment id={id}>
+      <Left>
+        {collapse ? (
+          <Button
+            size="small"
+            type="flat"
+            icon={collapse ? "plus" : "minus"}
+            label={collapse ? "Expand" : "Collapse"}
+            hideLabel
+            noMargin
+            onClick={toggleCollapse}
+          />
+        ) : (
+          <>
+            <Votes mod={mod} upvote={upvote} downvote={downvote} size="small" />
+            <Collapse onClick={toggleCollapse}>
+              <Threadline />
+            </Collapse>
+          </>
+        )}
+      </Left>
+      <Right>
+        <Tagline>
+          <Author
+            authorName={authorName}
+            distinguished={distinguished}
+            is_submitter={is_submitter}
+          />
+          <Flair
+            backgroundColor={author_flair_background_color}
+            color={author_flair_text_color}
+            richText={author_flair_richtext}
+            w
+            templateId={author_flair_template_id}
+            text={author_flair_text}
+            type={author_flair_type}
+          />
+          {score_hidden ? (
+            <span data-tip="score hidden">(?) </span>
           ) : (
-            <>
-              <Votes
-                mod={mod}
-                upvote={this.upvote}
-                downvote={this.downvote}
+            <span data-tip={score + mod}>
+              {formatNumber(score + mod, "point")}
+            </span>
+          )}
+          <Timestamp time={created_utc} to={"#" + id} />
+          {edited ? (
+            <Timestamp
+              time={edited}
+              data-tip="view comments"
+              tooltipLabel="Edited "
+              label="*"
+            />
+          ) : null}
+        </Tagline>
+        {!collapse && (
+          <>
+            <Body
+              dangerouslySetInnerHTML={{
+                __html: body_html,
+              }}
+            />
+            <Actions>
+              <Button
+                label="Reply"
+                // hideLabel
+                type="flat"
                 size="small"
+                icon="reply"
+                key="0"
               />
-              <Collapse onClick={this.toggleCollapse}>
-                <Threadline />
-              </Collapse>
-            </>
-          )}
-        </Left>
-        <Right>
-          <Tagline>
-            <Author
-              authorName={authorName}
-              distinguished={distinguished}
-              is_submitter={is_submitter}
-            />
-            <Flair
-              backgroundColor={author_flair_background_color}
-              color={author_flair_text_color}
-              richText={author_flair_richtext}
-              w
-              templateId={author_flair_template_id}
-              text={author_flair_text}
-              type={author_flair_type}
-            />
-            {score_hidden ? (
-              <span data-tip="score hidden">(?) </span>
-            ) : (
-              <span data-tip={score + mod}>
-                {formatNumber(score + mod, "point")}
-              </span>
-            )}
-            <Timestamp time={created_utc} to={"#" + id} />
-            {edited ? (
-              <Timestamp
-                time={edited}
-                data-tip="view comments"
-                tooltipLabel="Edited "
-                label="*"
+              <Button
+                label="view on reddit"
+                hideLabel
+                type="flat"
+                size="small"
+                icon="external"
+                href={"https://www.reddit.com" + permalink}
+                key="1"
               />
-            ) : null}
-          </Tagline>
-          {!collapse && (
-            <>
-              <Body
-                dangerouslySetInnerHTML={{
-                  __html: body_html,
-                }}
+              <Button
+                label="Log submission object to console"
+                type="flat"
+                size="small"
+                hideLabel
+                icon="debug"
+                onClick={() => console.log(props)}
+                key="2"
               />
-              <Actions>
-                <Button
-                  label="Reply"
-                  // hideLabel
-                  type="flat"
-                  size="small"
-                  icon="reply"
-                  key="0"
-                />
-                <Button
-                  label="view on reddit"
-                  hideLabel
-                  type="flat"
-                  size="small"
-                  icon="external"
-                  href={"https://www.reddit.com" + permalink}
-                  key="1"
-                />
-                <Button
-                  label="Log submission object to console"
-                  type="flat"
-                  size="small"
-                  hideLabel
-                  icon="debug"
-                  onClick={() => console.log(this.props)}
-                  key="2"
-                />
-              </Actions>
-              <Context depth={depth}>
-                {replies.map(child => (
-                  <Comment {...child} key={child["id"]} />
-                ))}
-              </Context>
-            </>
-          )}
-        </Right>
-      </StyledComment>
-    );
-  }
-}
+            </Actions>
+            <Context depth={depth}>
+              {replies.length} replies
+              {/* {replies.map((child) => {
+                  console.log(child);
+                  if (!child.collapsed) {
+                    return (<Comment {...child} key={child["id"]} />);
+                  }
+                  return <Button label="More" />;
+                })} */}
+            </Context>
+          </>
+        )}
+      </Right>
+    </StyledComment>
+  );
+};

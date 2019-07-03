@@ -84,8 +84,8 @@ class SubredditHeader extends React.Component {
     super(props);
     const { subreddits, currentSubredditName } = props;
     this.state = {
-      subscribed: subreddits[currentSubredditName]
-        ? subreddits[currentSubredditName].subscribed
+      subscribed: subreddits[currentSubredditName.toLowerCase()]
+        ? subreddits[currentSubredditName.toLowerCase()].subscribed
         : null,
     };
     this.toggleSubscribe = this.toggleSubscribe.bind(this);
@@ -97,7 +97,7 @@ class SubredditHeader extends React.Component {
   }
   render() {
     const { subreddits, currentSubredditName } = this.props;
-    if (subreddits[currentSubredditName] === undefined) return null;
+    if (subreddits[currentSubredditName.toLowerCase()] === undefined) return null;
     const {
       banner_background_color,
       banner_background_image,
