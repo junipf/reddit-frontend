@@ -78,7 +78,7 @@ class Menu extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      rect: { x: 0, y: 0 },
+      rect: {},
     };
     this.menu = React.createRef();
   }
@@ -127,9 +127,7 @@ class Menu extends React.Component {
         });
       } else {
         this.setState({
-          rect: {
-            left,
-          },
+          rect: {},
         });
       }
     }
@@ -170,7 +168,7 @@ class Menu extends React.Component {
               });
             }
           }
-          return <span>{child}</span>;
+          return child;
         })}
       </StyledMenu>
     );
@@ -233,6 +231,7 @@ export const StyledMenu = styled.div.attrs(props => {
   z-index: 100;
   float: left;
   min-width: 8rem;
+  max-width: 16rem;
   padding: 0;
   margin: 0;
   list-style: none;
@@ -256,7 +255,7 @@ export const StyledMenu = styled.div.attrs(props => {
 `;
 
 export const Search = styled.div`
-  padding: 0.5rem;
+  padding: 0.35rem;
   position: sticky;
   top: 0;
   z-index: 99;
@@ -275,7 +274,7 @@ export const Input = styled.input`
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   &:focus {
     outline: 0;
-    border-color: ${props => props.theme.input.borderFocus};
+    border-color: ${props => props.theme.input.focusBorder};
     box-shadow: 0 0 0 0.2rem ${props => props.theme.input.focus};
   }
 `;
@@ -290,8 +289,8 @@ export const CategoryTitle = styled.div`
   color: inherit;
   white-space: nowrap;
   position: sticky;
-  top: 0;
-  color: ${props => props.theme.container.color[1]};
+  top: 2.8rem;
+  color: ${props => props.theme.container.color};
   background-color: ${props => props.theme.container.levels[1]};
   z-index: 99;
 `;
