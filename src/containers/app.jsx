@@ -1,6 +1,6 @@
 import React from "react";
 import styled, { ThemeProvider, createGlobalStyle } from "styled-components";
-import { hot } from "react-hot-loader";
+// import { hot } from "react-hot-loader";
 import { connect } from "react-redux";
 import { Route, Switch } from "react-router-dom";
 import ReactTooltip from "react-tooltip";
@@ -24,14 +24,13 @@ import PrefMenu from "../components/pref-menu";
 // Import Styles and Fonts
 import { themes } from "../style/color-theme";
 import "normalize.css";
-import "@ibm/plex/scss/ibm-plex.scss";
+import "@ibm/plex/css/ibm-plex.css";
 import SubscriptionList from "../components/subscription-list";
 import { Sidebar } from "./column";
 import { QuickNavigation } from "../components/quick-navigation";
 
 // Global Style
 const GlobalStyle = createGlobalStyle`
-  @import "node_modules/@ibm/plex/scss/ibm-plex.scss";
   body {
     font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -393,4 +392,5 @@ function mapStateToProps(state) {
 export default connect(
   mapStateToProps,
   { setRefreshToken, setUserPrefs, setUser }
-)(hot(module)(App));
+)(App);
+// )(hot(module)(App));

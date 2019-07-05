@@ -8,7 +8,6 @@ import Storage from "./store";
 
 import App from "./containers/app";
 import { Spinner } from "./components/spinner";
-import "./sass/index.scss";
 
 const store = Storage().store;
 const persistor = Storage().persistor;

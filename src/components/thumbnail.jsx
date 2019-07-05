@@ -1,6 +1,5 @@
 import React from "react";
 import styled from "styled-components";
-import LazyLoad from "react-lazy-load";
 
 const Thumbnail = props => {
   const { preview: { images } = {}, width, height } = props;
@@ -17,9 +16,7 @@ const Thumbnail = props => {
   }
   return (
     <Thumb width={width} height={height}>
-      <LazyLoad debounce={false} offset={1000} width={width} height={height}>
         <img width={width} height={height} src={thumb.url} alt="thumbnail" />
-      </LazyLoad>
     </Thumb>
   );
 };
