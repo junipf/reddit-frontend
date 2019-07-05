@@ -19,6 +19,7 @@ import Dropdown from "../components/dropdown";
 import SubredditIcon from "../components/subreddit-icon";
 import { ProgressOverlay, ProgressUnderline } from "../components/progress-bar";
 import { genSubredditTheme, genTheme } from "../utils/color";
+import { Column } from "./column";
 
 const SubredditBanner = styled.div.attrs(props => ({
   style: {
@@ -416,15 +417,6 @@ const ScrollWrapper = styled.div`
   height: 100%;
 `;
 
-const Column = styled.div`
-  scroll-behavior: smooth;
-  background-color: ${props => props.theme.column.background};
-  overflow-x: hidden;
-  overflow-y: ${props => (props.lightboxIsOpen ? "hidden" : "scroll")};
-  flex: 1 1 auto;
-  scrollbar-color: ${props => props.theme.scrollbar};
-`;
-
 const ViewSettings = styled.div`
   width: 100%;
   position: sticky;
@@ -439,7 +431,7 @@ const ViewSettings = styled.div`
 `;
 
 const VSContents = styled.div`
-  max-width: 750px;
+  max-width: 40rem;
   margin: 0 auto;
 `;
 

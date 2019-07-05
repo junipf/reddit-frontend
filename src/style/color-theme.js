@@ -148,6 +148,7 @@ const light = {
   input: {
     color: colors.grey90,
     background: colors.white100,
+    border: colors.grey40,
     focusBorder: colors.blue50,
     focus: colors.blue50a30,
   },

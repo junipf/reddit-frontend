@@ -32,23 +32,23 @@ class CommentListing extends React.Component {
   componentDidMount() {
     this.fetchComments();
   }
-  shouldComponentUpdate(nextProps, nextState) {
-    const {
-      currentPost,
-      match: {
-        params: { id },
-      },
-    } = this.props;
-    const {
-      match: {
-        params: { id: nextId },
-      },
-    } = nextProps;
-    const { currentPost: nextPost } = nextProps;
-    return (
-      id !== nextId || currentPost !== nextPost || this.state !== nextState
-    );
-  }
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   const {
+  //     currentPost,
+  //     match: {
+  //       params: { id },
+  //     },
+  //   } = this.props;
+  //   const {
+  //     match: {
+  //       params: { id: nextId },
+  //     },
+  //   } = nextProps;
+  //   const { currentPost: nextPost } = nextProps;
+  //   return (
+  //     id !== nextId || currentPost !== nextPost || this.state !== nextState
+  //   );
+  // }
   componentDidUpdate(prevProps) {
     if (
       this.props.match.params.id &&
@@ -168,25 +168,26 @@ class CommentListing extends React.Component {
     const comments = focusedComments !== null ? focusedComments : post.comments;
     let theme = inheritedTheme;
     if (themesBySubreddit[subredditName]) {
-      theme = themesBySubreddit[subredditName][useDark ? "dark" : "light"];
+      theme = useDark
+        ? themesBySubreddit[subredditName].dark
+        : themesBySubreddit[subredditName].light;
     }
-    if (
-      post.link_flair_background_color &&
-      post.link_flair_background_color !== ""
-    ) {
-      if (themesByColor[post.link_flair_background_color]) {
-        theme = inheritedTheme.dark
-          ? themesByColor[post.link_flair_background_color].dark
-          : themesByColor[post.link_flair_background_color].light;
-      } else {
-        const generatedTheme = genTheme(post.link_flair_background_color);
-        addColorTheme(post.link_flair_background_color, generatedTheme);
-        theme = inheritedTheme.dark
-          ? generatedTheme.dark
-          : generatedTheme.light;
-      }
-    } else {
-    }
+    // if (
+    //   post.link_flair_background_color &&
+    //   post.link_flair_background_color !== ""
+    // ) {
+    //   if (themesByColor[post.link_flair_background_color]) {
+    //     theme = inheritedTheme.dark
+    //       ? themesByColor[post.link_flair_background_color].dark
+    //       : themesByColor[post.link_flair_background_color].light;
+    //   } else {
+    //     const generatedTheme = genTheme(post.link_flair_background_color);
+    //     addColorTheme(post.link_flair_background_color, generatedTheme);
+    //     theme = inheritedTheme.dark
+    //       ? generatedTheme.dark
+    //       : generatedTheme.light;
+    //   }
+    // }
     console.log(comments);
     return (
       <ThemeProvider theme={theme}>

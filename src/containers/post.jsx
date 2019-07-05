@@ -30,12 +30,15 @@ const StyledPost = styled.div`
     "left title   thumb"
     "left media   thumb"
     "left actions thumb";
+  border-bottom-style: solid;
+  border-bottom-color: ${props => props.theme.container.border};
+  border-bottom-width: ${props => (props.showComments ? "1px" : "0")};
 `;
 
 const PostWrapper = styled.div.attrs(props => ({
   id: props.id,
 }))`
-  margin: ${props => (props.compact ? "0" : "0.5rem 0.5rem 0 0.5rem")};
+  margin: ${props => (props.compact ? "0 auto" : "0.5rem auto 0 auto")};
   background: ${props => props.theme.container.levels[0]};
   color: ${props => props.theme.container.color};
   border-width: 1px
@@ -44,6 +47,7 @@ const PostWrapper = styled.div.attrs(props => ({
   border-radius: 0.25rem;
   overflow: hidden;
   font-size: 0.85rem;
+  max-width: ${props => props.inListing ? "40rem" : "50rem"};
 `;
 
 const Left = styled.div`
@@ -75,7 +79,7 @@ const TitleBox = styled.div`
 const Title = styled(Link)`
   display: block;
   color: ${props => props.theme.container.titleColor};
-  font-size: 1.2rem;
+  font-size: ${props => props.compact ? "1rem" : "1.2rem"};
   font-weight: 400;
   text-decoration: none;
 `;
@@ -224,8 +228,8 @@ const Post = props => {
   if (!props || authorName === undefined) return null;
   return (
     <ThemeProvider theme={theme}>
-      <PostWrapper>
-        <StyledPost id={id} compact={compact}>
+      <PostWrapper inListing={inListing}>
+        <StyledPost id={id} compact={compact} showComments={showComments}>
           {!compact && (
             <Left>
               {!inSubreddit ? (
@@ -274,8 +278,10 @@ const Post = props => {
             <Timestamp time={created_utc} />
           </Tagline>
           <TitleBox>
-            <Title to={permalink}>{title}</Title>
-            {isRedditLink ? null : (
+            {isCrosspost && title === crosspost_parent_list[0].title ? null : (
+              <Title to={permalink} compact={compact}>{title}</Title>
+            )}
+            {isRedditLink || isCrosspost ? null : (
               <GoTo href={url}>
                 {displayUrl + " "}
                 <Icon icon="external" />
