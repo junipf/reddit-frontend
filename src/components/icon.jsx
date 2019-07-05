@@ -65,6 +65,8 @@ import { ReactComponent as Popular } from "../icons/trending-up.svg";
 import { ReactComponent as All } from "../icons/bar-chart-2.svg";
 import { ReactComponent as Home } from "../icons/home.svg";
 
+import { ReactComponent as Github } from "../icons/github.svg";
+
 const IconMap = {
   alert: <AlertCircle />,
   alerttriangle: <AlertTriangle />,
@@ -129,6 +131,7 @@ const IconMap = {
   heart: <Heart />,
   debug: <Debug />,
   search: <Search />,
+  github: <Github />,
   none: null,
 };
 

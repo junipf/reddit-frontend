@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-
+import { connect } from "react-redux";
 import SubredditIcon, {
   FrontpageIcon,
   PopularIcon,
@@ -17,7 +17,7 @@ const Favorites = styled.div`
 `;
 const Navigation = styled.div`
   display: flex;
-  flex-flow: inherit;
+  flex-flow: column nowrap;
   align-items: center;
   /* height: 100%; */
 `;
@@ -28,12 +28,15 @@ const IconLink = styled(Link)`
   margin-bottom: 0.5em;
   transition: box-shadow 0.1s ease;
   border-radius: 50%;
+  border: 5px solid
+    ${props =>
+      props.active ? "red" : "transparent"};
   &:hover {
     box-shadow: 0 0 0 3px ${props => props.theme.button.primary.focus};
   }
 `;
 
-export const QuickNavigation = ({ favorites }) => (
+export const QuickNavigation = ({ favorites = [], locationName }) => (
   <Navigation>
     <IconLink
       to={"/"}
@@ -42,6 +45,7 @@ export const QuickNavigation = ({ favorites }) => (
       data-place="right"
       data-delay-show={0}
       key={0}
+      active={locationName === "Frontpage"}
     >
       <FrontpageIcon size="large" />
     </IconLink>
@@ -52,6 +56,7 @@ export const QuickNavigation = ({ favorites }) => (
       data-place="right"
       data-delay-show={0}
       key={1}
+      active={locationName === "popular"}
     >
       <PopularIcon size="large" />
     </IconLink>
@@ -62,6 +67,7 @@ export const QuickNavigation = ({ favorites }) => (
       data-place="right"
       data-delay-show={0}
       key={2}
+      active={locationName === "all"}
     >
       <AllIcon size="large" />
     </IconLink>
@@ -75,6 +81,7 @@ export const QuickNavigation = ({ favorites }) => (
             data-multiline={true}
             data-place="right"
             data-delay-show={0}
+            active={locationName === sub.display_name}
           >
             <SubredditIcon {...sub} size="large" />
           </IconLink>
@@ -85,3 +92,51 @@ export const QuickNavigation = ({ favorites }) => (
     </Favorites>
   </Navigation>
 );
+
+const extractSubData = ({
+  display_name,
+  path,
+  url,
+  curator,
+  community_icon,
+  icon_img,
+  icon_url,
+  primary_color,
+  key_color,
+  banner_background_color,
+  title,
+}) => {
+  return {
+    display_name,
+    path,
+    url,
+    curator,
+    community_icon,
+    icon_img,
+    icon_url,
+    primary_color,
+    key_color,
+    banner_background_color,
+    title,
+  };
+};
+
+function mapStateToProps(state) {
+  const { subreddits, favoriteNames, locationName } = state;
+
+  let favorites = [];
+  if (favoriteNames) {
+    favorites = favoriteNames.reduce((favorites, name) => {
+      if (subreddits[name]) favorites.push(extractSubData(subreddits[name]));
+      return favorites;
+    }, []);
+  }
+
+  return {
+    favoriteNames,
+    favorites,
+    locationName,
+  };
+}
+
+export default connect(mapStateToProps)(QuickNavigation);

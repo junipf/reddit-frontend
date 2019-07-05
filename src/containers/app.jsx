@@ -8,11 +8,7 @@ import queryString from "query-string";
 
 // Import API-related
 import { Requester } from "../components/requester";
-import {
-  setRefreshToken,
-  setUser,
-  setUserPrefs,
-} from "../store/actions";
+import { setRefreshToken, setUser, setUserPrefs } from "../store/actions";
 
 // Import containers and components
 import PostListing from "./post-listing";
@@ -29,6 +25,9 @@ import PrefMenu from "../components/pref-menu";
 import { themes } from "../style/color-theme";
 import "normalize.css";
 import "@ibm/plex/scss/ibm-plex.scss";
+import SubscriptionList from "../components/subscription-list";
+import { Sidebar } from "./column";
+import { QuickNavigation } from "../components/quick-navigation";
 
 // Global Style
 const GlobalStyle = createGlobalStyle`
@@ -151,21 +150,43 @@ function LoginPrompt({ state }) {
   });
   return (
     <Wrapper>
-      <Button
-        type="primary"
-        href={authURL}
-        icon="login"
-        label="Log in with Reddit"
-      />
+      <p>
+        <Button
+          type="primary"
+          href={authURL}
+          icon="login"
+          label="Log in with Reddit"
+          size="large"
+        />
+      </p>
+      <p>
+        Your credentials will be saved locally and never transmitted other than
+        to reddit's auth servers.
+      </p>
+      <p>
+        We don't watch you in any way - nothing about you is transmitted
+        anywhere but reddit's servers, and we minimize even what we tell them.
+      </p>
+      <p>
+        We won't subscribe you anywhere, upvote anything, or do anything at all,
+        without your explicit input.
+      </p>
+      <p>
+        We're completely open source! <Button
+          icon="github"
+          to="https://github.com/junipf/reddit-frontend"
+          label="View on Github"
+        />
+      </p>
     </Wrapper>
   );
 }
 
 const Wrapper = styled.div`
-  margin: 1rem auto;
-  width: 100vw;
+  margin: 10rem;
   display: flex;
-  justify-content: center;
+  align-content: center;
+  flex-flow: column nowrap;
 `;
 
 class App extends React.Component {
@@ -182,6 +203,7 @@ class App extends React.Component {
           })
         : null,
       initialized: false,
+      collapse: true,
     };
   }
   componentDidMount() {
@@ -240,9 +262,12 @@ class App extends React.Component {
     });
     this.setState({ initialized: true });
   };
+  toggleSubscriptionList = () => {
+    this.setState({ collapse: !this.state.collapse });
+  };
   render() {
     const { refreshToken, location, useDarkTheme } = this.props;
-    const { requester } = this.state;
+    const { requester, collapse } = this.state;
     const theme = useDarkTheme ? themes.dark : themes.light;
     return (
       <ThemeProvider theme={theme}>
@@ -270,6 +295,17 @@ class App extends React.Component {
                   </Section>
                 </Header>
                 <Columns>
+                  <Sidebar collapse={collapse}>
+                    <Button
+                      label="Collapse"
+                      onClick={this.toggleSubscriptionList}
+                    />
+                    {collapse ? (
+                      <QuickNavigation />
+                    ) : (
+                      <SubscriptionList collapse={collapse} />
+                    )}
+                  </Sidebar>
                   <Switch>
                     <Route path="/message/:sort?" component={MessagesPage} />
                     <Route
@@ -299,13 +335,14 @@ class App extends React.Component {
   }
 }
 
-const headerHeight = "3rem";
+const headerHeight = "calc(3rem - 1px)";
 
 const Header = styled.div`
   width: 100vw;
   height: ${headerHeight};
   background-color: ${props => props.theme.container.levels[1]};
   color: ${props => props.theme.container.color};
+  border-bottom: 1px solid ${props => props.theme.container.border};
   display: flex;
   flex-direction: row;
   align-items: center;

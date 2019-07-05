@@ -80,7 +80,13 @@ const Circle = styled.div.attrs(props => {
   overflow: hidden;
 
   font-size: ${props =>
-    props.size === "xl" ? "5rem" : props.size === "large" ? "1.5rem" : "1rem"};
+    props.size === "xl" 
+    ? "5rem" 
+    : props.size === "large" 
+    ? "1.5rem" 
+    : props.size === "small"
+    ? "0.8rem"
+    : "1rem"};
   font-weight: 100;
   text-align: center;
   background-position: center;
