@@ -12,12 +12,20 @@ const StyledButton = styled.button`
   vertical-align: middle;
   user-select: none;
   padding: ${props =>
-    props.size === "small" ? "0.175em 0.25em" : "0.35em 0.5em"};
+    props.size === "large"
+      ? "0.5em 0.75em"
+      : props.size === "small"
+      ? "0.175em 0.25em"
+      : props.size === "fill"
+      ? "0.35em 0.75em"
+      : "0.35em 0.5em"};
   border: none;
   border-radius: ${props => (props.size === "fill" ? "0" : "0.2em")};
   margin: ${props =>
     props.nomargin
       ? "0"
+      : props.size === "large"
+      ? "0.25em 0.5em"
       : props.size === "small"
       ? "0.0625em 0.125em"
       : "0.125em 0.25em"};
@@ -56,10 +64,33 @@ const Span = styled.span.attrs(props => ({ style: { color: props.color } }))`
   font-weight: 300;
 `;
 
+const Children = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
+  text-decoration: none;
+  font-weight: 300;
+  font-size: ${props => props.size === "large" ? "1em" : "0.8em"};
+  /* line-height: 100%; */
+  align-items: center;
+  & > * {
+    margin-right: 0.5em;
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+  & > span {
+    /* height: 1em; */
+  }
+`;
+
+const IconAfter = styled(Icon)`
+  float: right;
+`;
+
 export default class Button extends React.Component {
   static propTypes = {
     type: PropTypes.oneOf(["flat", "primary", "secondary"]),
-    size: PropTypes.oneOf(["small", "normal", "fill"]),
+    size: PropTypes.oneOf(["small", "normal", "large", "fill"]),
     label: PropTypes.string,
     hideLabel: PropTypes.bool,
   };
@@ -99,12 +130,17 @@ export default class Button extends React.Component {
       ...rest
     } = this.props;
 
-    const selectedChildren = [
-      icon && <Icon icon={icon} marginRight={!hideLabel && label} key="0" />,
-      children && <Span key="1">{children}</Span>,
-      !hideLabel && label && <Span key="2">{label}</Span>,
-      iconAfter && <Icon icon={iconAfter} key="3" />,
-    ];
+    const selectedChildren = (
+      <Children size={this.props.size}>
+        {icon && <Icon icon={icon} key="0" />}
+        {children &&
+          React.Children.map(children, child =>
+            React.isValidElement(child) ? child : <span>{child}</span>
+          )}
+        {!hideLabel && label && <Span key="2">{label}</Span>}
+        {iconAfter && <IconAfter icon={iconAfter} key="3" />}
+      </Children>
+    );
 
     const props = {
       type,
