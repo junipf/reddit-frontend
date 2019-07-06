@@ -1,6 +1,6 @@
 [build]
-  base = ""
-  build = "build"
+  build = "react-scripts build"
+  publish = "build"
 [[redirects]]
   from = "/*"
   to = "/index.html"
