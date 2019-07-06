@@ -1,6 +1,6 @@
 [build]
   build = "build"
-  publish = "build"
+  publish = "./build"
 [[redirects]]
   from = "/*"
   to = "/index.html"
