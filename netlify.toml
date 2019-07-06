@@ -1,6 +1,6 @@
 [build]
   build = "netlify-build"
-  publish = "./build"
+  publish = "build"
 [[redirects]]
   from = "/*"
   to = "/index.html"
