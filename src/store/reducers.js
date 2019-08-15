@@ -1,27 +1,19 @@
-/* eslint-disable array-callback-return */
-// import { combineReducers } from "redux";
-// import tokens from "./tokens";
-// import user from "./user";
-// import subredditInfo from "./subreddit-info";
-
-// export default combineReducers({
-//   tokens,
-//   user,
-//   subredditInfo
-// });
-
 const initialState = {
   refreshToken: undefined,
-  user: {},
-  subreddits: { frontpage: {} },
+  user: null,
+  userPrefs: { nightmode: false },
+  subreddits: {},
   subscriptionNames: [],
   favoriteNames: [],
+  defaultNames: [],
   multireddits: [],
   currentPost: null,
   locationName: "Frontpage",
   themesBySubreddit: {},
   themesByColor: {},
+  themePrefs: { syncSystemTheme: true, syncRedditTheme: false },
 };
+
 const store = (state = initialState, action) => {
   var {
     user,
@@ -83,6 +75,13 @@ const store = (state = initialState, action) => {
       return { ...state, user };
     case "SET_USER_PREFS":
       return { ...state, userPrefs: action.prefs };
+    case "SET_THEME_PREFS":
+      return { ...state, themePrefs: { ...state.themePrefs, ...action.prefs } };
+    case "SET_NIGHTMODE":
+      return {
+        ...state,
+        userPrefs: { ...state.userPrefs, nightmode: action.nightmode },
+      };
     case "SET_SUBSCRIPTIONS":
       let favoriteNames = [];
       const subscriptionNames = action.subscriptions.reduce(
@@ -100,44 +99,19 @@ const store = (state = initialState, action) => {
         []
       );
       return { ...state, subreddits, subscriptionNames, favoriteNames };
+    case "SET_DEFAULTS":
+      console.log("Storing defaults");
+      const defaultNames = action.defaults.map((sub) => {
+        subreddits[sub.display_name.toLowerCase()] = sub;
+        return sub.display_name.toLowerCase();
+      });
+      return { ...state, subreddits, defaultNames };
     case "SET_MULTIREDDITS":
       return { ...state, multireddits: action.multis };
     case "ADD_SUBREDDIT":
-      subreddits[action.subredditInfo.display_name.toLowerCase()] = action.subredditInfo;
+      subreddits[action.subredditInfo.display_name.toLowerCase()] =
+        action.subredditInfo;
       return { ...state, subreddits };
-    // case "ADD_POST":
-    //   const { comments, ...post } = action.post;
-    //   postsById[post.id] = post;
-    //   if (comments && comments.length > 0) {
-    //     commentsById[post.id] = comments;
-    //   }
-    //   return { ...state, postsById, commentsById };
-    // case "SET_HOT":
-    //   if (hotIdsBySubreddit[action.subredditName] === undefined) {
-    //     hotIdsBySubreddit[action.subredditName] = [];
-    //   }
-
-    //   action.listing.map(post => {
-    //     hotIdsBySubreddit[action.subredditName].push(post.id);
-    //     postsById[post.id] = post;
-    //   });
-
-    //   return { ...state, hotIdsBySubreddit, postsById };
-    // case "CLEAR_HOT":
-    //   hotIdsBySubreddit[action.subredditName] = [];
-    //   return { ...state, hotIdsBySubreddit };
-    // case "ADD_HOT":
-    //   if (hotIdsBySubreddit[action.subredditName] === undefined) {
-    //     hotIdsBySubreddit[action.subredditName] = [];
-    //   }
-
-    //   action.listing.map(post => {
-    //     if (!hotIdsBySubreddit[action.subredditName].includes(post.id)) {
-    //       hotIdsBySubreddit[action.subredditName].push(post.id);
-    //     }
-    //     postsById[post.id] = post;
-    //   });
-    //   return { ...state, hotIdsBySubreddit, postsById };
     case "TOGGLE_LIGHTBOX_IS_OPEN":
       return { ...state, lightboxIsOpen: !lightboxIsOpen };
     case "SET_CURRENT_POST":
@@ -147,11 +121,25 @@ const store = (state = initialState, action) => {
     case "SET_USE_SYSTEM_THEME":
       return { ...state, useSystemTheme: action.bool };
     case "ADD_SUBREDDIT_THEME":
-      themesBySubreddit[action.subredditName] = action.theme;
+      themesBySubreddit[action.subName] = action.theme;
       return { ...state, themesBySubreddit };
     case "ADD_COLOR_THEME":
       themesByColor[action.color] = action.theme;
       return { ...state, themesByColor };
+    case "LOGOUT":
+      for (let [subName, sub] of Object.entries(subreddits)) {
+        if (sub.subreddit_type === "private") subreddits[subName] = undefined;
+      }
+      return {
+        ...state,
+        subscriptionNames: [],
+        favoriteNames: [],
+        multireddits: [],
+        user: null,
+        refreshToken: undefined,
+        userPrefs: { nightmode: state.userPrefs.nightmode },
+        subreddits,
+      };
     default:
       return state;
   }

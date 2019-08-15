@@ -1,76 +1,67 @@
-export const setRefreshToken = token => ({
+export const setRefreshToken = (token) => ({
   type: "SET_REFRESH_TOKEN",
   token,
 });
 
-export const setUser = user => ({
+export const setUser = (user) => ({
   type: "SET_USER",
   user,
 });
 
-export const setUserPrefs = prefs => ({
+export const setThemePrefs = (prefs) => ({
+  type: "SET_THEME_PREFS",
+  prefs,
+})
+
+export const setUserPrefs = (prefs) => ({
   type: "SET_USER_PREFS",
   prefs,
 });
 
-export const setSubscriptions = subscriptions => ({
+export const setNightmode = (nightmode) => ({
+  type: "SET_NIGHTMODE",
+  nightmode,
+});
+
+export const setSubscriptions = (subscriptions) => ({
   type: "SET_SUBSCRIPTIONS",
   subscriptions,
 });
-export const setMultireddits = multis => ({
+
+export const setMultireddits = (multis) => ({
   type: "SET_MULTIREDDITS",
   multis,
 });
 
-// export const setCurrentPostId = id => ({
-//   type: "SET_CURRENT_POST_ID",
-//   id,
-// });
-
-export const setLocationName = name => ({
-  type: "SET_LOCATION_NAME",
-  name,
+export const setDefaults = (defaults) => ({
+  type: "SET_DEFAULTS",
+  defaults,
 });
 
-// export const addPost = post => ({
-//   type: "ADD_POST",
-//   post,
-// });
+export const setLocationName = (name) => {
+  return {
+    type: "SET_LOCATION_NAME",
+    name,
+  };
+};
 
-export const addSubreddit = subredditInfo => ({
+export const addSubreddit = (subredditInfo) => ({
   type: "ADD_SUBREDDIT",
   subredditInfo,
 });
 
-// export const setHot = (listing, subredditName) => ({
-//   type: "SET_HOT",
-//   listing,
-//   subredditName,
-// });
-
-// export const addHot = (listing, subredditName) => ({
-//   type: "ADD_HOT",
-//   listing,
-//   subredditName,
-// });
-
-// export const clearHot = subredditName => ({
-//   type: "ADD_HOT",
-//   subredditName,
-// });
-
 export const toggleLightboxIsOpen = () => ({ type: "TOGGLE_LIGHTBOX_IS_OPEN" });
 
-export const setCurrentPost = post => ({ type: "SET_CURRENT_POST", post });
+export const setCurrentPost = (post) => ({ type: "SET_CURRENT_POST", post });
 
-export const setUseSystemTheme = bool => ({
+export const setUseSystemTheme = (bool) => ({
   type: "SET_USE_SYSTEM_THEME",
   bool,
 });
 
-export const addSubredditTheme = (subredditName, theme) => ({
+export const addSubredditTheme = (subName, theme) => ({
   type: "ADD_SUBREDDIT_THEME",
-  subredditName,
+  subName,
   theme,
 });
 
@@ -79,3 +70,5 @@ export const addColorTheme = (color, theme) => ({
   color,
   theme,
 });
+
+export const logout = () => ({ type: "LOGOUT" });

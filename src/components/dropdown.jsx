@@ -1,183 +1,238 @@
-import React from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import styled from "styled-components";
 import Button from "./button";
 import { Link } from "react-router-dom";
+import PropTypes from "prop-types";
 
-export default class Dropdown extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      showDropdown: false,
-      selection: props.placeholder,
-    };
-    this.wrapper = React.createRef();
-  }
-  openDropdown = () => {
-    this.setState({ showDropdown: true });
+const Dropdown = ({
+  children,
+  icon,
+  iconAfter,
+  toggle,
+  hideLabel,
+  sub,
+  size,
+  placeholder,
+  onSelect,
+  expand,
+  open,
+  up,
+  down,
+  left,
+  right,
+  center,
+  ...rest
+}) => {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const debugLogChildren = () => console.log(children);
+
+  const toggleDropdown = () => setShowDropdown((bool) => !bool);
+  const closeDropdown = () => setShowDropdown(false);
+
+  const dir = {
+    x: left ? "left" : right ? "right" : center ? null : "right",
+    y: up ? "up" : down ? "down" : center ? null : "down",
   };
-  closeDropdown = () => {
-    this.setState({ showDropdown: false });
+
+  let props = {
+    hideLabel: hideLabel,
+    onClick: toggleDropdown,
+    onAltClick:
+      process.env.NODE_ENV === "development" ? debugLogChildren : null,
+    icon: icon ? icon : dir.x === "left" && !dir.y ? "chevronLeft" : null,
+    iconAfter: iconAfter
+      ? iconAfter === "none"
+        ? undefined
+        : iconAfter
+      : sub || (dir.x === "right" && !dir.y)
+      ? "chevronRight"
+      : !icon && dir.x === "left" && !dir.y
+      ? null
+      : dir.y === "up"
+      ? "chevronUp"
+      : !dir.x && !dir.y
+      ? "moreHorizontal"
+      : "chevronDown",
+    size: sub ? "fill" : size ? size : undefined,
+    ...rest,
   };
-  setSelection = value => {
-    this.setState({ selection: value });
-    this.closeDropdown();
+
+  if (toggle && React.isValidElement(toggle)) {
+    props = { ...props, ...toggle.props };
+  }
+
+  const useToggle = React.isValidElement(toggle) ? (
+    React.cloneElement(toggle, props)
+  ) : (
+    <Button {...props} />
+  );
+
+  const wrapper = useRef(null);
+
+  return (
+    <Wrapper ref={wrapper} size={props.size}>
+      {useToggle}
+      {showDropdown || open ? (
+        <Menu
+          onSelect={onSelect}
+          closeDropdown={closeDropdown}
+          showDropdown={showDropdown}
+          sub={sub || (dir.x && !dir.y)}
+          expand={expand}
+          wrapper={wrapper}
+          dir={dir}
+          toggle={useToggle}
+          items={children}
+        >
+          {expand ? useToggle : null}
+          {children}
+        </Menu>
+      ) : null}
+    </Wrapper>
+  );
+};
+
+Dropdown.propTypes = {
+  direction: PropTypes.oneOf(["left", "up", "right", "down"]),
+};
+
+export default Dropdown;
+
+const Menu = ({
+  children,
+  onSelect,
+  sub,
+  closeDropdown,
+  wrapper,
+  dir,
+  expand,
+  toggle,
+}) => {
+  const menu = useRef(null);
+  const [pos, setPos] = useState({
+    init: false,
+    left: null,
+    top: null,
+  });
+  const [subMenuPositioning, setSubMenuPositioning] = useState("right");
+
+  useLayoutEffect(() => {
+    if (pos.init) return;
+    const { clientWidth: menuWidth, clientHeight: menuHeight } = menu.current;
+    const { clientWidth: bodyWidth, clientHeight: bodyHeight } = document.body;
+    const button = wrapper.current.getBoundingClientRect();
+
+    const overflow = {
+      right: button.left + button.width + menuWidth > bodyWidth,
+      left: button.right + button.width + menuWidth > bodyWidth,
+      top: button.bottom + button.height + menuHeight > bodyHeight,
+      bottom: button.top + button.height + menuHeight > bodyHeight,
+    };
+
+    const h = {
+      left: button.width - menuWidth,
+      center: -(menuWidth / 2) + button.width / 2,
+      right: null,
+    };
+    const v = {
+      up: -menuHeight,
+      center: -(menuHeight / 2) + button.height / 2,
+      down: null,
+    };
+
+    setPos({
+      top:
+        sub || expand
+          ? null
+          : !dir.y
+          ? v.center
+          : overflow.bottom || dir.y === "up"
+          ? v.up
+          : v.down,
+      left: sub
+        ? dir.x === "left"
+          ? -menuWidth
+          : button.width
+        : !dir.x
+        ? h.center
+        : overflow.right || dir.x === "left"
+        ? h.left
+        : h.right,
+    });
+
+    if (overflow.right || dir.x === "left") setSubMenuPositioning("left");
+
+    // setPos(newPos);
+  }, [wrapper, sub, expand, dir, pos.init]);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (menu.current && menu.current.contains(e.target)) return;
+      closeDropdown();
+    };
+
+    document.addEventListener("click", handleClick, false);
+    return () => {
+      document.removeEventListener("click", handleClick, false);
+    };
+  });
+
+  const selectAndClose = (value) => {
+    onSelect && onSelect(value);
+    closeDropdown();
   };
-  render() {
-    const {
-      label,
-      children,
-      icon,
-      iconAfter,
-      toggle,
-      hideLabel,
-      Select,
-      sub,
-      size,
-      parentMenu,
-    } = this.props;
-    const { selection } = this.state;
-    const toggleProps = {
-      label: Select ? selection || label : label,
-      hideLabel: hideLabel,
-      onClick: this.state.showDropdown ? this.closeDropdown : this.openDropdown,
-      icon: icon ? icon : null,
-      iconAfter: iconAfter
-        ? iconAfter
-        : sub
-        ? "chevronRight"
-        : hideLabel
-        ? "more"
-        : "chevronDown",
-      size: sub ? "fill" : size,
-    };
-    return (
-      <Wrapper ref={this.wrapper}>
-        {React.isValidElement(toggle) ? (
-          React.cloneElement(toggle, toggleProps)
-        ) : (
-          <Button {...toggleProps} />
-        )}
 
-        {this.state.showDropdown && (
-          <Menu
-            closeDropdown={this.closeDropdown}
-            setSelection={this.setSelection}
-            sub={sub}
-            wrapper={this.wrapper}
-            parentMenu={parentMenu}
-          >
-            {children}
-          </Menu>
-        )}
-      </Wrapper>
-    );
-  }
-}
-
-class Menu extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      rect: {},
-    };
-    this.menu = React.createRef();
-  }
-  componentDidMount() {
-    // Wrapper (contains dropdown toggle button)
-    // Menu (the actual menu being positioned)
-    const { sub } = this.props;
-    const {
-      clientWidth: menuWidth,
-      // clientHeight: menuHeight,
-    } = this.menu.current;
-    const bodyWidth = document.body.clientWidth;
-    const {
-      left,
-      right,
-      top,
-      width,
-      height,
-    } = this.props.wrapper.current.getBoundingClientRect();
-    console.log(this.props.wrapper.current);
-
-    const overflowRight = left + width + menuWidth > bodyWidth;
-    if (sub) {
-      if (overflowRight) {
-        this.setState({
-          rect: {
-            left: -width,
-            top: "calc(" + this.props.wrapper.current.offsetTop + "px - 0.5em - 2px)",
-          },
-        });
-      } else {
-        this.setState({
-          rect: {
-            left: width,
-            top: "calc(" + this.props.wrapper.current.offsetTop + "px - 0.5em - 2px)",
-          },
-        });
-      }
-    } else {
-      if (overflowRight) {
-        this.setState({
-          rect: {
-            left: right - menuWidth,
-            top: top + height,
-          },
-        });
-      } else {
-        this.setState({
-          rect: {},
-        });
-      }
+  const useChildren = React.Children.map(children, (child) => {
+    if (React.isValidElement(child)) {
+      if (child.type === Button)
+        return (
+          <li>
+            {React.cloneElement(child, {
+              size: "fill",
+              type: child.props.type === "primary" ? "primary" : "flat",
+              hideLabel: false,
+              align: "left",
+              onSelect: selectAndClose,
+            })}
+          </li>
+        );
+      if (child.type === Dropdown)
+        return (
+          <li>
+            {React.cloneElement(child, {
+              size: "fill",
+              type: child.props.type ? child.props.type : "flat",
+              align: "left",
+              sub: true,
+              left: subMenuPositioning === "left",
+              right: subMenuPositioning === "right",
+              onSelect: selectAndClose,
+              hideLabel: false,
+            })}
+          </li>
+        );
+      return <li>{child}</li>;
     }
-  }
-  componentWillMount() {
-    document.addEventListener("click", this.handleClick, false);
-  }
-  componentWillUnmount() {
-    document.removeEventListener("click", this.handleClick, false);
-  }
-  handleClick = e => {
-    if (this.menu.current.contains(e.target)) return;
-    this.props.closeDropdown();
-  };
-  render() {
-    const { children, setSelection, sub } = this.props;
-    return (
-      <StyledMenu rect={this.state.rect} sub={sub} ref={this.menu}>
-        {React.Children.map(children, child => {
-          if (React.isValidElement(child)) {
-            if (child.type.name === "Button") {
-              return React.cloneElement(child, {
-                size: "fill",
-                type: child.props.type || "flat",
-                align: "left",
-                setSelection: setSelection,
-              });
-            }
-            if (child.type.name === "Dropdown") {
-              return React.cloneElement(child, {
-                size: "fill",
-                type: child.props.type || "flat",
-                align: "left",
-                sub: true,
-                setSelection: setSelection,
-                hideLabel: false,
-                parentMenu: this.menu,
-              });
-            }
-          }
-          return child;
-        })}
-      </StyledMenu>
-    );
-  }
-}
+    if (child)
+      return (
+        <li>
+          <CategoryTitle>{child}</CategoryTitle>
+        </li>
+      );
+    return child;
+  });
+
+  return (
+    <StyledMenu pos={pos} sub={sub} ref={menu} expand={expand}>
+      {useChildren}
+    </StyledMenu>
+  );
+};
 
 const Wrapper = styled.div`
-  /* width: 0; */
+  position: relative;
   display: inline-block;
+  width: ${({size}) => size === "fill" ? "100%" : null};
 `;
 
 const StyledEntry = styled(Button)`
@@ -186,15 +241,13 @@ const StyledEntry = styled(Button)`
   width: 100%;
 `;
 
-export class Entry extends React.Component {
-  handleClick() {
-    this.props.onClick();
-    this.props.closeDropdown();
-  }
-  render() {
-    return <StyledEntry {...this.props} onClick={this.handleClick} />;
-  }
-}
+export const Entry = ({ onClick, closeDropdown, ...props }) => {
+  const handleClick = () => {
+    onClick();
+    closeDropdown();
+  };
+  return <StyledEntry {...props} onClick={handleClick} />;
+};
 
 export const LinkEntry = styled(Link)`
   display: flex;
@@ -204,30 +257,36 @@ export const LinkEntry = styled(Link)`
   line-height: 1;
   padding: 0.5rem 0.75rem;
   transition: box-shadow 0.15s ease-in-out;
-  color: ${props => props.theme.button.flat.color[1]};
-  background-color: ${props => props.theme.button.flat.levels[0]};
+  color: ${({ theme }) => theme.button.flat.color};
+  background-color: ${({ theme }) => theme.button.flat.bg};
   &:hover {
-    background-color: ${props => props.theme.button.flat.levels[1]};
+    background-color: ${({ theme }) => theme.button.flat.hover};
     text-decoration: none;
     color: currentColor;
   }
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 0.2rem ${props => props.theme.button.flat.focus};
+    box-shadow: 0 0 0 0.2rem ${({ theme }) => theme.focus.glow};
   }
 `;
 
-export const StyledMenu = styled.div.attrs(props => {
-  if (props.rect)
-    return {
-      style: {
-        width: props.rect.width,
-        minHeight: props.rect.height,
-        left: props.rect.left,
-        top: props.rect.top,
-      },
-    };
-})`
+const menuPadding = "0.35em";
+
+export const Divider = styled.div`
+  height: 1px;
+  width: 100%;
+  margin: ${menuPadding} 0;
+  border-top: 1px solid ${({ theme }) => theme.card.innerBorder};
+`;
+
+export const StyledMenu = styled.ul.attrs(
+  ({ pos: { left, top } = {}, sub, expand }) => ({
+    style: {
+      left: left,
+      top: top ? top : sub || expand ? `-${menuPadding}` : null,
+    },
+  })
+)`
   z-index: 100;
   float: left;
   min-width: 8rem;
@@ -237,21 +296,20 @@ export const StyledMenu = styled.div.attrs(props => {
   list-style: none;
   background-color: inherit;
   background-clip: padding-box;
-  background: ${props => props.theme.container.levels[1]};
-  color: ${props => props.theme.container.color[1]};
-  border: 1px solid ${props => props.theme.container.border};
+
+  background: ${({ theme }) => theme.card.bg};
+  color: ${({ theme }) => theme.color};
+  border: 1px solid ${({ theme }) => theme.card.border};
   border-radius: 0.25rem;
   position: absolute;
-  /* width: ${props => (props.sub ? "100%" : "unset")}; */
-  /* height: ${props => (props.sub ? "100%" : "unset")}; */
   max-height: calc(100vh - 3rem);
-  /* overflow-y: auto; */
-  /* overflow-x: hidden; */
   scrollbar-width: thin;
-  padding: 0.5em 0;
+  padding: ${menuPadding} 0;
   display: flex;
   flex-flow: column nowrap;
-  scrollbar-color: ${props => props.theme.scrollbar};
+  scrollbar-color: ${({ theme }) => theme.scrollbar};
+  overscroll-behavior: contain;
+  transition: height 2s ease, width 2s ease, border-color 50ms ease;
 `;
 
 export const Search = styled.div`
@@ -259,24 +317,7 @@ export const Search = styled.div`
   position: sticky;
   top: 0;
   z-index: 99;
-  background-color: ${props => props.theme.container.levels[1]};
-`;
-
-export const Input = styled.input`
-  display: block;
-  width: 100%;
-  padding: 0.375rem 0.75rem;
-  line-height: 1.25;
-  color: ${props => props.theme.input.color};
-  background-color: ${props => props.theme.input.background};
-  border: 1px solid ${props => props.theme.input.border};
-  border-radius: 0.25rem;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  &:focus {
-    outline: 0;
-    border-color: ${props => props.theme.input.focusBorder};
-    box-shadow: 0 0 0 0.2rem ${props => props.theme.input.focus};
-  }
+  background-color: inherit;
 `;
 
 export const CategoryTitle = styled.div`
@@ -290,7 +331,6 @@ export const CategoryTitle = styled.div`
   white-space: nowrap;
   position: sticky;
   top: 2.8rem;
-  color: ${props => props.theme.container.color};
-  background-color: ${props => props.theme.container.levels[1]};
+  background-color: inherit;
   z-index: 99;
 `;

@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
-const Emoji = styled.div.attrs(props => ({
-  style: { backgroundImage: "url(" + props.url + ")" },
+const Emoji = styled.div.attrs(({url}) => ({
+  style: { backgroundImage: "url(" + url + ")" },
 }))`
   padding: 0;
   width: 1.25em;
@@ -18,43 +18,45 @@ const Emoji = styled.div.attrs(props => ({
 
 const Text = styled.span``;
 
-const Flair = styled.span`
+const StyledFlair = styled.span`
   margin-right: 0.25em;
   display: inline-block;
-  padding: ${props =>
-    props.backgroundColor === "transparent" ? "0" : "0.25em 0.4em"};
+  padding: ${({ backgroundColor }) =>
+    backgroundColor === "transparent" ? "0" : "0 0.4em"};
   font-size: inherit;
   font-weight: 400;
   line-height: 1.25;
   text-align: center;
   white-space: nowrap;
   vertical-align: baseline;
-  border-radius: 0.25rem;
-  color: ${props =>
-    props.backgroundColor === "transparent"
-      ? props.theme.container.color
-      : props.theme.flairColor || props.color || props.theme.container.color};
-  background-color: ${props =>
-    props.backgroundColor || props.theme.container.levels[2]};
+  border-radius: 0.125rem;
+  color: ${({ backgroundColor, theme, color }) =>
+    backgroundColor === "transparent"
+      ? theme.color
+      : theme.flairColor || color || theme.color};
+  background-color: ${({ backgroundColor, theme }) =>
+    backgroundColor || theme.card.innerBg};
 `;
 
-const ConstructFlair = props => {
-  const {
-    color = "dark", // "dark" or "light"
-    backgroundColor = "transparent",
-    templateId,
-    type, // "richText" or "text"
-    text,
-    richText,
-    //  [
-    //   0: {
-    //     u: URL to emoji img
-    //     e: type (emoji, text)
-    //     a: emoji text (:example:)
-    //     t: text string
-    //   },
-    //   ...]
-  } = props;
+const Flair = ({
+  color = "dark", // "dark" or "light"
+  backgroundColor = "transparent",
+  templateId,
+  type, // "richText" or "text"
+  text,
+  richText,
+}) => {
+  // richText format:
+  //  [
+  //   0: {
+  //     u: URL to emoji img
+  //     e: type (emoji, text)
+  //     a: emoji text (:example:)
+  //     t: text string
+  //   },
+  //   ...]
+
+  const bgColor = backgroundColor === "" ? "transparent" : backgroundColor;
 
   const content =
     type === "richtext"
@@ -71,15 +73,15 @@ const ConstructFlair = props => {
 
   if (content)
     return (
-      <Flair
-        backgroundColor={backgroundColor}
+      <StyledFlair
+        backgroundColor={bgColor}
         color={color === "light" ? "#fff" : "#000"}
         id={templateId}
       >
         {content}
-      </Flair>
+      </StyledFlair>
     );
   else return null;
 };
 
-export default ConstructFlair;
+export default Flair;

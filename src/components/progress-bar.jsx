@@ -9,9 +9,8 @@ const Overlay = styled.div`
 `;
 
 const Underline = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 0;
+  position: absolute;
+  bottom: -0.125rem;
   width: 100%;
 `;
 
@@ -23,9 +22,9 @@ const Progress = styled.div`
 const Bar = styled.div`
   width: 0;
   height: 0.25rem;
-  background-color: ${props => props.theme.button.flat.focus};
+  background-color: ${({theme}) => theme.highlight};
   border-radius: 1rem;
-  box-shadow: 0 0 5px 0 ${props => props.theme.button.flat.focus};
+  box-shadow: 0 0 5px 0 ${({theme}) => theme.focus.glow};
   animation: growInPushOut 2s cubic-bezier(0.5, 0, 0.66, 1) infinite;
   @keyframes growInPushOut {
     25% {

@@ -59,7 +59,7 @@ export default class SubredditCard extends React.Component {
             backgroundImage={banner_background_image}
           />
           <Body>
-            <SubredditIcon subredditInfo={this.props} />
+            <SubredditIcon subName={this.props.display_name} />
             <Link to={url} className="subreddit-name">
               {display_name_prefixed}
             </Link>

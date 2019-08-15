@@ -1,54 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 21.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve">
-<style type="text/css">
-	.st0{display:none;}
-	.st1{fill:#24A0ED;}
-	.st2{display:inline;fill:#24A0ED;}
-	.st3{display:inline;}
-	.st4{clip-path:url(#SVGID_3_);fill:#24A0ED;}
-	.st5{clip-path:url(#SVGID_3_);}
-	.st6{clip-path:url(#SVGID_5_);fill:#24A0ED;}
-	.st7{clip-path:url(#SVGID_5_);}
-	.st8{fill:#FFFFFF;}
-	.st9{fill:#FF4500;}
-</style>
-<g id="Layer_1">
-	<g class="st0">
-		<g>
-			<path id="SVGID_1_" class="st1" d="M40,64H24C10.8,64,0,53.2,0,40V24C0,10.8,10.8,0,24,0h16c13.2,0,24,10.8,24,24v16
-				C64,53.2,53.2,64,40,64z"/>
-			<path class="st2" d="M40,64H24C10.8,64,0,53.2,0,40C0,40,0,28,0,24C0,10.8,10.8,0,24,0H40c13.2,0,24,10.8,24,24V40
-				C64,53.2,53.2,64,40,64z"/>
-		</g>
-		<g class="st3">
-			<defs>
-				<path id="SVGID_2_" d="M40,64H24C10.8,64,0,53.2,0,40V24C0,10.8,10.8,0,24,0h16c13.2,0,24,10.8,24,24v16C64,53.2,53.2,64,40,64z
-					"/>
-			</defs>
-			<clipPath id="SVGID_3_">
-				<use xlink:href="#SVGID_2_"  style="display:none;overflow:visible;"/>
-			</clipPath>
-			<circle class="st4" cx="32" cy="32" r="32"/>
-			<g class="st5">
-				<path d="M3.9,78.1c-8.6-17,2.9-40.1,25.5-51.4l5.4,10.7C18.3,45.7,9.1,61.9,14.6,72.7L3.9,78.1z"/>
-			</g>
-		</g>
-	</g>
-	<g>
-		<defs>
-			<circle id="SVGID_4_" cx="32" cy="32" r="32"/>
-		</defs>
-		<clipPath id="SVGID_5_">
-			<use xlink:href="#SVGID_4_"  style="overflow:visible;"/>
-		</clipPath>
-		<circle class="st6" cx="32" cy="32" r="32"/>
-		<path class="st7" d="M3.9,78.1c-8.6-17,2.9-40.1,25.5-51.4l5.4,10.7C18.3,45.7,9.1,61.9,14.6,72.7L3.9,78.1z"/>
-	</g>
-	<ellipse transform="matrix(0.7071 -0.7071 0.7071 0.7071 -13.3409 32.0515)" class="st8" cx="32" cy="32.1" rx="20" ry="20"/>
-	<polygon class="st9" points="37.3,44.5 26.7,44.5 26.7,35.3 19.5,35.3 32,19.5 44.5,35.3 37.3,35.3 	"/>
-</g>
-<g id="Layer_2">
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" class="logo">
+  <defs>
+    <clipPath id="clip">
+      <circle cx="32" cy="32" r="32"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#clip)">
+    <circle fill="#24A0ED" cx="32" cy="32" r="32"/>
+    <path fill="#000" d="M3.9,78.1c-8.6-17,2.9-40.1,25.5-51.4l5.4,10.7C18.3,45.7,9.1,61.9,14.6,72.7L3.9,78.1z"/>
+    <circle fill="#fff" cx="32" cy="32.1" r="20"/>
+    <polygon fill="#FF4500" points="37.3,44.5 26.7,44.5 26.7,35.3 19.5,35.3 32,19.5 44.5,35.3 37.3,35.3"/>
+  </g>
 </svg>

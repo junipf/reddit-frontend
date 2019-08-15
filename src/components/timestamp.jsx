@@ -9,11 +9,11 @@ import en from "javascript-time-ago/locale/en";
 TimeAgo.addLocale(en);
 const timeAgo = new TimeAgo("en-US");
 
-export const formatTime = time =>
+export const formatTime = (time) =>
   timeAgo.format(new Date(time * 1000), "twitter");
 
 const StyledTs = styled.span`
-  color: ${props => props.theme.container.color};
+  color: ${({theme}) => theme.color};
 `;
 
 export const Timestamp = ({

@@ -132,7 +132,7 @@ class SubredditHeader extends React.Component {
               backgroundImage: "url(" + banner_background_image + ")",
             }}
           >
-            <SubredditIcon subredditInfo={this.props} />
+            <SubredditIcon subName={this.props.display_name} />
           </div>
           <div className="description">
             <div className="actions">

@@ -13,17 +13,14 @@ export default ({ root = null, rootMargin, threshold = 0 }) => {
     })
   );
 
-  useEffect(
-    () => {
-      const { current: currentObserver } = observer;
-      currentObserver.disconnect();
+  useEffect(() => {
+    const { current: currentObserver } = observer;
+    currentObserver.disconnect();
 
-      if (node) currentObserver.observe(node);
+    if (node) currentObserver.observe(node);
 
-      return () => currentObserver.disconnect();
-    },
-    [node]
-  );
+    return () => currentObserver.disconnect();
+  }, [node]);
 
   return [setNode, entry];
 };

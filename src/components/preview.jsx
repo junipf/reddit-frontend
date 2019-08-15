@@ -1,69 +1,64 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import useIntersect from "../utils/use-intersect";
 import { connect } from "react-redux";
 import { toggleLightboxIsOpen } from "../store/actions";
-import { Body } from "../components/body";
 import Button from "./button";
-import { Lightbox } from "./lightbox";
-import { Spinner } from "./spinner";
+import { Body } from "./body";
+import { Video, Gif, GifVideo } from "./reddit-video";
+import Tweet from "./tweet";
 
-const previewMaxHeight = 360;
-
-const Actions = styled.div`
-  position: absolute;
-  right: 0.5em;
-  top: 0.5em;
-`;
+const previewMaxHeight = 512;
 
 const Preview = ({
   media,
+  mediaEmbed,
   preview,
   inListing,
   navigateToPost,
   backgroundColor,
-  is_self,
+  nsfw,
+  spoiler,
+  isSelf,
   html,
-  ...props
 }) => {
-  const [LbFullImage, setLbFullImage] = useState(false);
-  const toggleLbFullImage = () => setLbFullImage(!LbFullImage);
+  const [Preview, setPreview] = useState(undefined);
 
-  const [showLightbox, setShowLightbox] = useState(false);
-  const toggleLightbox = () => {
-    setShowLightbox(!showLightbox);
-    setShowActions(false)
-  }
-
-  const [showActions, setShowActions] = useState(false);
-  const enableActions = () => setShowActions(true);
-  const disableActions = () => setShowActions(false);
-
-  const [storedDisplayPreview, setStoredDisplayPreview] = useState(undefined);
+  const [showObscured, setShowObscured] = useState(!nsfw && !spoiler);
+  const toggleObscured = () => {
+    setShowObscured(!showObscured);
+  };
 
   const [ref, entry] = useIntersect({
-    threshold: [0, 0.25, 0.5, 0.75, 1],
+    threshold: 1,
   });
+
   const visible = entry.isIntersecting;
-  // const obstructed = !(entry.intersectionRatio > 0.9);
 
-  let displayPreview = storedDisplayPreview;
-
-  if (displayPreview === undefined) {
-    displayPreview =
-      is_self && html
+  useEffect(() => {
+    let Preview =
+      isSelf && html
         ? {
-            component: Body,
+            Component: Body,
             props: {
-              html,
-              inListing,
+              html: html,
               width: null,
               height: null,
+              inListing,
+            },
+          }
+        : media && media.reddit_video && media.reddit_video.is_gif
+        ? {
+            Component: GifVideo,
+            props: {
+              video: media.reddit_video,
+              height: media.reddit_video.height,
+              width: media.reddit_video.width,
             },
           }
         : media && media.reddit_video
         ? {
-            component: Video,
+            Component: Video,
             props: {
               video: media.reddit_video,
               height: media.reddit_video.height,
@@ -72,26 +67,39 @@ const Preview = ({
           }
         : preview && preview.reddit_video_preview
         ? {
-            component: Video,
+            Component: Video,
             props: {
               video: preview.reddit_video_preview,
               height: preview.reddit_video_preview.height,
               width: preview.reddit_video_preview.width,
             },
           }
-        : media && media.oembed && media.type === "youtube.com"
+        : media &&
+          media.oembed &&
+          (media.type === "youtube.com" || media.type === "m.youtube.com")
         ? {
-            component: Embed,
+            Component: Embed,
             props: {
               dangerouslySetInnerHTML: { __html: media.oembed.html },
-              height: media.oembed.height,
+              height: previewMaxHeight,
               width: media.oembed.width,
+            },
+          }
+        : media && media.oembed && media.type === "twitter.com"
+        ? {
+            Component: Tweet,
+            props: {
+              id: media.oembed.url.match(
+                /https:\/\/twitter.com\/(?:.*)\/status\/([^/]*)/
+              )[1],
+              width: media.oembed.width,
+              height: previewMaxHeight,
             },
           }
         : preview && preview.images[0]
         ? preview.images[0].variants.mp4
           ? {
-              component: Gif,
+              Component: Gif,
               props: {
                 video: preview.images[0].variants.mp4.source,
                 height: preview.images[0].variants.mp4.source.height,
@@ -100,7 +108,7 @@ const Preview = ({
             }
           : preview.images[0].variants.gif
           ? {
-              component: Image,
+              Component: Image,
               props: {
                 inListing,
                 navigateToPost,
@@ -111,7 +119,7 @@ const Preview = ({
               image: preview.images[0].variants.gif,
             }
           : {
-              component: Image,
+              Component: Image,
               image: preview.images[0],
               props: {
                 inListing,
@@ -122,7 +130,7 @@ const Preview = ({
             }
         : media && media.oembed
         ? {
-            component: Embed,
+            Component: Embed,
             props: {
               dangerouslySetInnerHTML: { __html: media.oembed.html },
               height: media.oembed.height,
@@ -130,75 +138,95 @@ const Preview = ({
             },
           }
         : null;
-  }
-  if (!displayPreview) return null;
-  if (displayPreview && displayPreview.image && !displayPreview.props.src) {
-    // Reddit returns down-sampled resolutions of width:
-    // 0: 108, 1: 216, 2: 320, 3: 640, 4: 960, 5: 1080
-    const selectedImage =
-      !inListing || displayPreview.image.source.height <= previewMaxHeight
-        ? displayPreview.image.source
-        : displayPreview.image.resolutions[3]
-        ? displayPreview.image.resolutions[3]
-        : displayPreview.image.resolutions[2]
-        ? displayPreview.image.resolutions[2]
-        : displayPreview.image.resolutions[1]
-        ? displayPreview.image.resolutions[1]
-        : displayPreview.image.resolutions[0]
-        ? displayPreview.image.resolutions[0]
-        : null;
-    displayPreview = {
-      ...displayPreview,
-      props: {
-        ...displayPreview.props,
-        src: selectedImage.url,
-        width: selectedImage.width,
-        height: selectedImage.height,
-      },
-    };
-  }
-  if (displayPreview !== storedDisplayPreview)
-    setStoredDisplayPreview(displayPreview);
-  const Component = displayPreview.component;
-  
-  const showMedia = visible || displayPreview.component === Body || displayPreview.component === Embed;
-  
+    if (Preview && Preview.image && !Preview.props.src) {
+      // Reddit returns down-sampled resolutions of width:
+      // 0: 108, 1: 216, 2: 320, 3: 640, 4: 960, 5: 1080
+      const selectedImage =
+        !inListing || Preview.image.source.height <= previewMaxHeight
+          ? Preview.image.source
+          : Preview.image.resolutions[Preview.image.resolutions.length - 1];
+
+      Preview = {
+        ...Preview,
+        props: {
+          ...Preview.props,
+          src: selectedImage.url,
+          width: selectedImage.width,
+          height: selectedImage.height,
+        },
+      };
+    }
+    if (Preview && Preview.props.video) {
+      // We pull the preview image for use as a poster for videos
+      Preview.props.poster =
+        preview.images[0].source.height <= previewMaxHeight
+          ? preview.images[0].source.url
+          : preview.images[0].resolutions[
+              preview.images[0].resolutions.length - 1
+            ].url;
+    }
+    if (Preview) {
+      Preview.props.blur = nsfw && inListing && !showObscured;
+      Preview.props.updatePlaceholder = updatePlaceholder;
+    }
+    setPreview(Preview);
+  }, [
+    navigateToPost,
+    media,
+    mediaEmbed,
+    preview,
+    inListing,
+    backgroundColor,
+    nsfw,
+    setPreview,
+    html,
+    isSelf,
+    showObscured,
+  ]);
+
+  const showMedia = Preview ? visible : false;
+  const [ratio, setRatio] = useState(
+    Preview ? (Preview.props.height / Preview.props.width) * 100 : null
+  );
+  const [placeholderHeight, setPlaceholderHeight] = useState(
+    Preview ? Preview.props.height : previewMaxHeight
+  );
+  const updatePlaceholder = ({ height, width }) => {
+    setRatio((height / width) * 100);
+    setPlaceholderHeight(height);
+  };
+
+  const obscureLabel =
+    nsfw && spoiler
+      ? "NSFW and Spoiler"
+      : nsfw
+      ? "NSFW"
+      : spoiler
+      ? "Spoiler"
+      : null;
+
+  if (!Preview) return null;
   return (
     <PreviewWrapper
       backgroundColor={backgroundColor}
-      onMouseEnter={enableActions}
-      onMouseLeave={disableActions}
+      height={Preview.props.height}
       ref={ref}
     >
-      {showMedia ? (
-        <Component {...displayPreview.props} />
+      <Placeholder ratio={ratio} height={placeholderHeight} />
+      {inListing && !showObscured ? (
+        <ObscurePlaceholder nsfw={nsfw}>
+          <Button label={obscureLabel} icon="eye" onClick={toggleObscured} />
+        </ObscurePlaceholder>
+      ) : null}
+      {Preview.Component === Body || Preview.Component === Tweet ? (
+        <Preview.Component {...Preview.props} />
       ) : (
-        <Placeholder
-          width={displayPreview.props.width}
-          height={displayPreview.props.height}
-        >
-          <Spinner />
-        </Placeholder>
+        <>
+          <MediaWrapper ratio={ratio}>
+            {showMedia ? <Preview.Component {...Preview.props} /> : null}
+          </MediaWrapper>
+        </>
       )}
-      {showActions ? (
-        <Actions>
-          <Button
-            hideLabel
-            type="primary"
-            label="View image in lighbtox"
-            icon="maximize"
-            onClick={toggleLightbox}
-          />
-        </Actions>
-      ) : null}
-      {showLightbox ? (
-        <Lightbox
-          close={toggleLightbox}
-          image={preview.images[0].source}
-          fullImage={LbFullImage}
-          toggleFullImage={toggleLbFullImage}
-        />
-      ) : null}
     </PreviewWrapper>
   );
 };
@@ -208,77 +236,89 @@ export default connect(
   { toggleLightboxIsOpen }
 )(Preview);
 
-const PreviewWrapper = styled.div`
-  grid-area: media;
-  position: relative;
-  overflow: hidden;
-  max-width: 100%;
-  background: ${props => props.theme.container.levels[1]};
+const MediaWrapper = styled.div`
+  width: 100%;
+  height: 100%;
   display: flex;
-  align-items: center;
   justify-content: center;
+  position: ${({ratio}) => (ratio ? "absolute" : null)};
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
 `;
 
-const Placeholder = styled.div.attrs(props => ({
+const PreviewWrapper = styled.div.attrs(({height}) => ({
   style: {
-    width: props.width,
-    height: props.height,
+    maxHeight:
+      height < previewMaxHeight ? height : previewMaxHeight,
   },
 }))`
-  max-height: ${previewMaxHeight}px;
+  grid-area: media;
+  position: relative;
   max-width: 100%;
+  background: ${({theme}) => theme.card.bg};
 `;
 
-const Image = styled.img`
+const Placeholder = styled.div.attrs(({ratio, height}) => ({
+  style: {
+    paddingBottom: ratio + "%",
+    maxHeight: height,
+  },
+}))`
+  max-width: inherit;
+`;
+
+const ObscurePlaceholder = styled.div`
+  width: 100%;
+  height: 100%;
+  background-color: ${({nsfw}) =>
+    nsfw ? "hsla(0, 100%, 30%, 0.5)" : "hsla(0, 0%, 30%, 0.5)"};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+`;
+
+const Image = (props) => (
+  <ImageWrapper>
+    <StyledImage {...props} />
+  </ImageWrapper>
+);
+
+const ImageWrapper = styled.div`
+  position: absolute;
+  top: 0;
+  max-width: 100%;
   max-height: ${previewMaxHeight}px;
+`;
+
+const StyledImage = styled.img`
+  max-height: ${previewMaxHeight}px;
+  max-width: 100%;
+  height: auto;
   width: auto;
+  margin: 0 auto;
+  filter: ${({blur}) => (blur ? "blur(50px)" : null)};
+  overflow: hidden;
 `;
 
 const Embed = styled.div`
-  height: ${props => props.height}px;
-  width: ${props => props.width}px;
+  /* height: ${({height}) => height}px; */
+  /* width: ${({width}) => width}px; */
+  height: 100%;
+  width: 100%;
   max-height: ${previewMaxHeight}px;
+  position: absolute;
+  top: 0;
   iframe {
     width: inherit;
     height: inherit;
   }
-`;
-
-const Video = ({ video }) => (
-  <StyledVideo
-    autoPlay={video.is_gif}
-    controls={!video.is_gif}
-    preload="auto"
-    loop={video.is_gif}
-    height={video.height}
-    width={video.width}
-  >
-    <source src={video.url} />
-    <source src={video.hls_url} type="application/vnd.apple.mpegURL" />
-    <source src={video.dash_url} />
-    <source src={video.fallback_url} />
-    Video failed to load
-  </StyledVideo>
-);
-
-// Gif converted to video (post.preview.images[0].variants.mp4)
-// Does not come with is_gif and uses different src names
-const Gif = ({ video }) => (
-  <StyledVideo
-    autoPlay={true}
-    controls={false}
-    preload="auto"
-    loop={true}
-    height={video.height}
-    width={video.width}
-  >
-    <source src={video.url} />
-    Gif failed to load
-  </StyledVideo>
-);
-
-const StyledVideo = styled.video`
-  max-height: ${previewMaxHeight}px;
-  max-width: inherit;
-  margin: 0 auto;
+  filter: ${({blur}) => (blur ? "blur(20px)" : null)};
 `;

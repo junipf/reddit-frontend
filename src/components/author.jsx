@@ -1,75 +1,58 @@
 import React from "react";
 import styled from "styled-components";
 import Icon from "./icon";
+// import { Link } from "react-router-dom";
 
-import { Link } from "react-router-dom";
-
-const User = styled(Link)`
-  color: ${props => props.theme.author[props.type] || "inherit"};
+// const User = styled(Link)`
+const User = styled.span`
+  color: ${({ type }) => (type ? "#fff" : null)};
+  padding: ${({ type }) => (type ? "0 0.25em" : null)};
+  border-radius: ${({ type }) => (type ? "0.25em" : null)};
+  background-color: ${({ type, theme }) => theme.author[type] || "transparent"};
   text-decoration: none;
   margin-right: 0.25em;
+  font-weight: 400;
 `;
 
-const ModIcon = styled(Icon)`
-  color: ${props => props.theme.author.moderator};
-`;
-
-const AdminIcon = styled(Icon)`
-  color: ${props => props.theme.author.administrator};
-`;
-
-const SubmitterIcon = styled(Icon)`
-  color: ${props => props.theme.author.submitter};
+const ColoredIcon = styled(Icon)`
+  color: ${({ type, theme }) => theme.author[type]};
+  svg {
+    fill: currentColor;
+  }
 `;
 
 export const Author = ({
   authorName,
   distinguished,
   is_submitter = false,
-  isCrosspost,
   prefix,
-}) => {
-  const crosspostIcon = isCrosspost ? (
-    <Icon icon="xpost" data-tip={"Crossposted by u/" + authorName} />
-  ) : null;
-
-  let distinguishIcon = null;
-  if (distinguished) {
-    if (distinguished === "moderator") {
-      distinguishIcon = (
-        <ModIcon icon="shield" data-tip="Moderator speaking officially" />
-      );
-    }
-    if (distinguished === "administrator") {
-      distinguishIcon = (
-        <AdminIcon
-          icon="hexagon"
-          data-tip="Reddit employee speaking officially"
-        />
-      );
-    }
-  }
-
-  const submitterIcon = is_submitter ? (
-    <SubmitterIcon icon="user" data-tip="Submitter" />
-  ) : null;
-
-  const distinguishType = is_submitter ? "submitter" : distinguished;
-
-  return (
-    <span>
-      {crosspostIcon}
-      <User
-        type={distinguishType}
-        to={"/u/" + authorName}
-        data-delay-show="500"
-        data-tip={"Go to " + authorName + "'s page"}
-      >
-        {prefix && "u/"}
-        {authorName}
-        {distinguishIcon}
-        {submitterIcon}
-      </User>
-    </span>
-  );
-};
+}) => (
+  <span>
+    <User
+      type={distinguished ? distinguished : is_submitter ? "submitter" : null}
+      // to={"/u/" + authorName}
+      // data-delay-show="500"
+      // data-tip={`Go to ${authorName}'s page`}
+    >
+      {prefix && "u/"}
+      {authorName}
+    </User>
+    {distinguished === "moderator" ? (
+      <ColoredIcon
+        type="moderator"
+        icon="shield"
+        data-tip="Moderator speaking officially"
+      />
+    ) : null}
+    {distinguished === "administrator" ? (
+      <ColoredIcon
+        type="moderator"
+        icon="hexagon"
+        data-tip="Reddit employee speaking officially"
+      />
+    ) : null}
+    {is_submitter ? (
+      <ColoredIcon type="submitter" icon="user" data-tip="Original Poster" />
+    ) : null}
+  </span>
+);

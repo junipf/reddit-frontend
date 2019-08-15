@@ -1,25 +1,27 @@
 import React, { useState } from "react";
 import styled, { ThemeProvider, withTheme } from "styled-components";
+import { connect } from "react-redux";
+import { setCurrentPost } from "../store/actions";
 
 import Button from "../components/button";
-import Toggle from "../components/toggle";
 import { formatNumber } from "../utils/format-number";
 
 import Flair from "../components/flair";
 import { Timestamp } from "../components/timestamp";
-import { Votes } from "../components/votes";
+import Votes from "../components/votes";
 import { Link } from "react-router-dom";
 import { Author } from "../components/author";
 import SubredditIcon from "../components/subreddit-icon";
-import { Tags } from "../components/tags";
-import { InfoBanners } from "../components/banners";
+import Tag from "../components/tags";
 import Icon from "../components/icon";
 
 import Comment from "./comment";
+import Reply from "./../components/reply";
 
 import Preview from "../components/preview";
 import Thumbnail from "../components/thumbnail";
 import Crosspost from "./crosspost";
+import { SpinnerPage } from "../components/spinner";
 
 const StyledPost = styled.div`
   display: grid;
@@ -31,23 +33,23 @@ const StyledPost = styled.div`
     "left media   thumb"
     "left actions thumb";
   border-bottom-style: solid;
-  border-bottom-color: ${props => props.theme.container.border};
-  border-bottom-width: ${props => (props.showComments ? "1px" : "0")};
+  border-bottom-color: ${({ theme }) => theme.card.border};
+  border-bottom-width: ${({ showComments }) => (showComments ? "1px" : "0")};
 `;
 
-const PostWrapper = styled.div.attrs(props => ({
-  id: props.id,
+const PostWrapper = styled.div.attrs(({ id }) => ({
+  id: id,
 }))`
-  margin: ${props => (props.compact ? "0 auto" : "0.5rem auto 0 auto")};
-  background: ${props => props.theme.container.levels[0]};
-  color: ${props => props.theme.container.color};
+  margin: 0.5rem;
+  margin-top: ${({ compact }) => (compact ? "0" : "0.5rem")};
+  background: ${({ theme }) => theme.card.bg};
+  color: ${({ theme }) => theme.color};
   border-width: 1px
   border-style: solid;
-  border-color: ${props => props.theme.container.border};
+  border-color: ${({ theme }) => theme.card.border};
   border-radius: 0.25rem;
-  overflow: hidden;
   font-size: 0.85rem;
-  max-width: ${props => props.inListing ? "40rem" : "50rem"};
+  /* max-width: 75rem; */
 `;
 
 const Left = styled.div`
@@ -55,20 +57,25 @@ const Left = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: ${props => props.theme.container.levels[2]};
+  background-color: ${({ theme }) => theme.card.innerBg};
   grid-area: left;
   padding-top: 0.5rem;
   min-width: 2rem;
+  font-size: 1rem;
+  border-radius: 0.25rem 0 0 0.25rem;
 `;
 
 const Tagline = styled.span`
   margin: 0.65rem 0.5rem 0 0.5rem;
   grid-area: tagline;
   font-size: 0.75rem;
+  & > * {
+    margin-right: 0.5rem;
+  }
 `;
 const SubredditName = styled(Link)`
   font-weight: 500;
-  color: ${props => props.theme.container.link};
+  color: ${({ theme }) => theme.link};
   margin-right: 0.25rem;
 `;
 
@@ -76,13 +83,23 @@ const TitleBox = styled.div`
   grid-area: title;
   margin: 0.25rem 0.5rem;
 `;
-const Title = styled(Link)`
-  display: block;
-  color: ${props => props.theme.container.titleColor};
-  font-size: ${props => props.compact ? "1rem" : "1.2rem"};
-  font-weight: 400;
-  text-decoration: none;
+const Title = ({ compact, to, children }) => (
+  <StyledTitle compact={compact}>
+    <Link to={to}>{children}</Link>
+  </StyledTitle>
+);
+
+const StyledTitle = styled.span`
+  a {
+    display: block;
+    color: ${({ theme }) => theme.titleColor};
+    font-size: ${({ compact }) => (compact ? "0.85rem" : "1.2rem")};
+    font-weight: 400;
+    text-decoration: none;
+    font-size: 1.62rem;
+  }
 `;
+
 const GoTo = styled.a`
   margin-top: 0.25rem;
   position: relative;
@@ -102,29 +119,37 @@ const ActionBar = styled.div`
   grid-area: actions;
 `;
 
-const Post = props => {
-  const {
-    post,
-    inListing,
-    inSubreddit,
-    compact,
-    theme,
-    showComments,
-    subredditInfo,
-  } = props;
+const Comments = styled.div`
+  margin: 0 0.75rem 0.75rem 0.5rem;
+`;
 
+const Post = ({
+  post,
+  inListing,
+  inSubreddit,
+  compact,
+  theme: inheritedTheme,
+  themes,
+  showComments,
+  showTitle = true,
+  setCurrentPost,
+  user,
+  themesByColor,
+}) => {
   const {
     title,
     url,
     author: { name: authorName },
     subreddit_name_prefixed: subNamePrefixed,
+    subreddit: { display_name: subName },
     id,
     score,
-    comments,
+    comments: inheritedComments,
     permalink,
     created_utc,
     num_comments,
     likes,
+    domain,
 
     saved: redditSaved,
     hidden: redditHidden,
@@ -145,6 +170,7 @@ const Post = props => {
 
     is_self,
     secure_media: media,
+    secure_media_embed: mediaEmbed,
     preview,
     thumbnail_height,
     thumbnail_width,
@@ -177,6 +203,20 @@ const Post = props => {
   const [mod, setMod] = useState(likes === true ? 1 : likes === false ? -1 : 0);
   const [saved, setSaved] = useState(redditSaved);
   const [hidden, setHidden] = useState(redditHidden);
+  const [comments, setComments] = useState(inheritedComments);
+
+  if (
+    showComments &&
+    inheritedComments &&
+    inheritedComments.length === 0 &&
+    num_comments > 0
+  )
+    post
+      .expandReplies({ limit: 50, depth: 5 })
+      .then(
+        (result) => setComments(result.comments),
+        (error) => console.error(error)
+      );
 
   const save = () =>
     saved
@@ -190,7 +230,16 @@ const Post = props => {
     mod > 0 ? post.unvote().then(setMod(0)) : post.upvote().then(setMod(1));
   const downvote = () =>
     mod < 0 ? post.unvote().then(setMod(0)) : post.downvote().then(setMod(-1));
-  const navigateToPost = () => props.setCurrentPost(post);
+  const navigateToPost = () => setCurrentPost(post);
+
+  const reply = (value) => {
+    post.reply(value).then(
+      (reply) => {
+        setComments([reply, ...comments]);
+      },
+      (error) => console.error(error)
+    );
+  };
 
   const authorFlair = {
     backgroundColor: author_flair_background_color,
@@ -211,9 +260,9 @@ const Post = props => {
   };
 
   const isCrosspost = crosspost_parent_list !== undefined;
-  const isRedditLink =
-    url === permalink ||
-    /https?:\/\/(i)?(v)?(www)?\.redd(\.it)?(it\.com)?\//.test(url);
+  const isRedditLink = /https?:\/\/(i)?(v)?(www)?\.redd(\.it)?(it\.com)?\//.test(
+    url
+  );
 
   const numComments = formatNumber(num_comments);
 
@@ -225,7 +274,23 @@ const Post = props => {
       ? false
       : !media && preview && !preview.reddit_video_preview && !preview.enabled;
 
-  if (!props || authorName === undefined) return null;
+  const theme = themes
+    ? inheritedTheme.dark
+      ? themes.dark
+      : themes.light
+    : inheritedTheme;
+
+  const username = user ? user.name : null;
+  const own = username === authorName;
+
+  const loggedIn = user !== null;
+
+  const debugPostToClipboard = () =>
+    navigator.clipboard.writeText(
+      JSON.stringify({ ...post, comments: [], _r: undefined })
+    );
+  const debugPostToConsole = () => console.log({ ...post, comments: [] });
+
   return (
     <ThemeProvider theme={theme}>
       <PostWrapper inListing={inListing}>
@@ -234,25 +299,33 @@ const Post = props => {
             <Left>
               {!inSubreddit ? (
                 <SubredditIcon
-                  {...subredditInfo}
+                  subName={subName}
                   data-tip={"Go to " + subNamePrefixed}
                   data-delay-show="500"
                 />
               ) : null}
               <Votes
                 showDot
+                own={own}
                 mod={mod}
                 upvote={upvote}
                 downvote={downvote}
                 score={score + mod}
+                disabled={!loggedIn || archived}
+                data-tip={
+                  !loggedIn
+                    ? "You must be logged in to vote"
+                    : archived
+                    ? "You can't vote on archived posts"
+                    : "Voting disabled"
+                }
+                data-event="click"
               />
-              <InfoBanners
-                stickied={stickied}
-                archived={archived}
-                locked={locked}
-                hidden={hidden}
-                saved={saved}
-              />
+              {stickied ? <Tag.Stickied /> : null}
+              {archived ? <Tag.Archived /> : null}
+              {locked ? <Tag.Locked /> : null}
+              {hidden ? <Tag.Hidden /> : null}
+              {saved ? <Tag.Saved /> : null}
             </Left>
           )}
           <Tagline>
@@ -262,127 +335,244 @@ const Post = props => {
               </SubredditName>
             ) : null}
             <Flair {...linkFlair} />
-            <Tags
-              spoiler={spoiler}
-              nsfw={nsfw}
-              quarantine={quarantine}
-              oc={oc}
-            />
+            {quarantine ? <Tag.Quarantine /> : null}
+            {nsfw ? <Tag.NSFW /> : null}
+            {spoiler ? <Tag.Spoiler /> : null}
+            {oc ? <Tag.OC /> : null}
+            {isCrosspost ? (
+              <Icon
+                icon="shuffle"
+                data-tip={"Crossposted by u/" + authorName}
+              />
+            ) : null}
             <Author
               prefix
               authorName={authorName}
               distinguished={distinguished}
-              isCrosspost={isCrosspost}
             />
             <Flair {...authorFlair} />
             <Timestamp time={created_utc} />
           </Tagline>
           <TitleBox>
-            {isCrosspost && title === crosspost_parent_list[0].title ? null : (
-              <Title to={permalink} compact={compact}>{title}</Title>
+            {showTitle && (
+              <Title onClick={navigateToPost} to={permalink} compact={compact}>
+                {title}
+              </Title>
             )}
-            {isRedditLink || isCrosspost ? null : (
-              <GoTo href={url}>
-                {displayUrl + " "}
-                <Icon icon="external" />
+            {isCrosspost ? null : (
+              <GoTo href={domain.startsWith("self.") ? permalink : url}>
+                {/* {displayUrl + " "} */}
+                {domain + " "}
+                {isRedditLink ? null : <Icon icon="externalLink" />}
               </GoTo>
             )}
           </TitleBox>
-          {!showThumbnail && !isCrosspost ? (
+          {showThumbnail ? null : isCrosspost ? (
+            <Crosspost
+              crosspost={crosspost_parent_list}
+              setCurrentPost={setCurrentPost}
+            />
+          ) : (
             <Preview
-              is_self={is_self}
-              html={selftext_html}
               isRedditLink={isRedditLink}
               inListing={inListing}
               isCrosspost={isCrosspost}
               preview={preview}
               media={media}
+              mediaEmbed={mediaEmbed}
               navigateToPost={navigateToPost}
               url={url}
               permalink={permalink}
               nsfw={nsfw}
+              spoiler={spoiler}
+              isSelf={is_self}
+              html={selftext_html}
+              nightmode={theme.dark}
             />
-          ) : null}
-          <Crosspost
-            crosspost={crosspost_parent_list || null}
-            setCurrentPost={props.setCurrentPost}
-            compact={compact}
-          />
-          {compact ? (
-            <ActionBar>
-              <Button
-                type="flat"
-                label={numComments}
-                to={permalink}
-                data-tip={numComments !== String(num_comments) && num_comments}
-                icon="message"
-                key="1"
-              />
-            </ActionBar>
-          ) : (
-            <ActionBar>
-              <Button
-                type="primary"
-                label={numComments}
-                to={permalink}
-                onClick={navigateToPost}
-                data-tip={num_comments}
-                data-tip-disabled={String(numComments) === String(num_comments)}
-                icon="message"
-                key="1"
-              />
-              <Button hideLabel label="share" icon="share" key="3" />
-              <Toggle
-                hideLabel
-                label="save"
-                icon="star"
-                startOn={saved}
-                onToggle={save}
-                key="4"
-              />
-              <Toggle
-                hideLabel
-                labelOn="show"
-                labelOff="hide"
-                iconOn="eye"
-                iconOff="eyeOff"
-                startOn={hidden}
-                onToggle={hide}
-                key="5"
-              />
-              <Button hideLabel label="report" icon="flag" key="6" />
-              <Button
-                label="view on reddit"
-                hideLabel
-                icon="external"
-                href={"https://www.reddit.com" + permalink}
-                key="7"
-              />
-              <Button
-                hideLabel
-                label="Log submission object to console"
-                icon="debug"
-                onClick={() => console.log(post)}
-                key="9"
-              />
-            </ActionBar>
           )}
-          {/* <ModBanners isMod={can_mod_post} {...post} /> */}
+          <ActionBar>
+            <Button
+              // type="primary"
+              label={numComments}
+              to={permalink}
+              onClick={navigateToPost}
+              data-tip={
+                Intl.NumberFormat().format(num_comments) +
+                (num_comments === 1 ? " comment" : " comments")
+              }
+              data-tip-disable={
+                numComments.trim() === String(num_comments).trim()
+              }
+              icon="messageSquare"
+              key="1"
+            />
+            {loggedIn || compact ? (
+              <>
+                <Button
+                  type="flat"
+                  hideLabel
+                  fill={saved}
+                  toggled={saved}
+                  label={saved ? "unsave" : "save"}
+                  icon="star"
+                  onClick={save}
+                  key="2"
+                />
+                <Button
+                  type="flat"
+                  hideLabel
+                  toggled={hidden}
+                  label={hidden ? "show" : "hide"}
+                  icon={hidden ? "eyeOff" : "eye"}
+                  onClick={hide}
+                  key="3"
+                />
+                <Button
+                  type="flat"
+                  hideLabel
+                  label="report"
+                  icon="flag"
+                  key="4"
+                />
+              </>
+            ) : null}
+            <Button
+              type="flat"
+              label="view on reddit"
+              hideLabel
+              icon="externalLink"
+              href={"https://www.reddit.com" + permalink}
+              key="5"
+            />
+            {process.env.NODE_ENV === "development" ? (
+              <>
+                <Button
+                  type="flat"
+                  hideLabel
+                  label="Log submission object to console"
+                  icon="terminal"
+                  onClick={debugPostToConsole}
+                  key="6"
+                />
+                <Button
+                  type="flat"
+                  hideLabel
+                  label="Copy submission to clipboard"
+                  icon="clipboard"
+                  onClick={debugPostToClipboard}
+                  key="7"
+                />
+              </>
+            ) : null}
+          </ActionBar>
           {showThumbnail ? (
             <Thumbnail
               preview={preview}
               inListing={inListing}
               width={thumbnail_width}
               height={thumbnail_height}
+              url={url}
             />
           ) : null}
         </StyledPost>
-        {showComments
-          ? comments.map(comment => <Comment {...comment} key={comment.id} />)
-          : null}
+        {showComments ? (
+          num_comments > 0 && comments.length === 0 ? (
+            <SpinnerPage />
+          ) : (
+            <Comments>
+              {loggedIn && !locked && !archived ? (
+                <Reply onSubmit={reply} />
+              ) : null}
+              {comments.map((comment) => (
+                <Comment
+                  comment={comment}
+                  username={username}
+                  key={comment.id}
+                  loggedIn={loggedIn}
+                />
+              ))}
+            </Comments>
+          )
+        ) : null}
       </PostWrapper>
     </ThemeProvider>
   );
 };
 
-export default withTheme(Post);
+function mapStateToProps(
+  state,
+  { theme, post: { link_flair_background_color: color } }
+) {
+  const { themesByColor, user } = state;
+
+  return {
+    themes: themesByColor[color],
+    user,
+  };
+}
+
+export default connect(
+  mapStateToProps,
+  { setCurrentPost }
+)(withTheme(Post));
+
+const Block = styled.span`
+  display: inline-block;
+  height: 1em;
+  width: 40%
+  margin: 0.25em;
+  border-radius: 0.25em;
+  background-color: ${({ theme }) => theme.header.bg};
+`;
+
+const MediaBlock = styled(Block)`
+  width: 100%;
+  height: 20rem;
+  grid-area: media;
+  border-radius: 0;
+  margin: 0.25em 0;
+`;
+
+const TitleBlock = styled(Block)`
+  height: 1.5em;
+  width: 80%;
+`;
+
+const ActionBlock = styled(Block)`
+  height: 1.5em;
+  width: 60%;
+  grid-area: actions;
+`;
+
+const RoundBlock = styled(Block)`
+  border-radius: 50%;
+  height: 1.5rem;
+  width: 1.5rem;
+  margin: 0 0.5rem;
+`;
+
+export const PostPlaceholder = ({ forwardRef, showMediaBlock }) => (
+  <PostWrapper ref={forwardRef}>
+    <StyledPost>
+      <Left>
+        <RoundBlock />
+        <Block />
+        <Block />
+      </Left>
+      <Tagline>
+        <Block />
+      </Tagline>
+      <TitleBox>
+        <TitleBlock />
+      </TitleBox>
+      {showMediaBlock ? (
+        <MediaBlock>
+          <SpinnerPage />
+        </MediaBlock>
+      ) : null}
+      <ActionBar>
+        <ActionBlock />
+      </ActionBar>
+    </StyledPost>
+  </PostWrapper>
+);

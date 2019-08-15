@@ -46,7 +46,7 @@ const SVGWrapepr = styled.div`
   }
 `;
 
-export const Spinner = props => (
+export const Spinner = (props) => (
   <SVGWrapepr>
     <svg viewBox="0 0 50 50">
       <circle cx="25" cy="25" r="20" fill="none" />
@@ -54,18 +54,16 @@ export const Spinner = props => (
   </SVGWrapepr>
 );
 
-export const SpinnerPage = props => (
+export const SpinnerPage = (props) => (
   <Page {...props}>
     <Spinner />
   </Page>
 );
-const Page = styled.div.attrs(props => ({
-  style: {
-    color: props.color,
-  },
+const Page = styled.div.attrs(({ color }) => ({
+  style: { color },
 }))`
   margin: auto auto;
   height: 20vh;
   font-size: 1.5rem;
-  color: ${props => props.theme.container.color};
+  color: ${({theme}) => theme.color};
 `;

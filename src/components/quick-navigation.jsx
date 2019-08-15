@@ -1,97 +1,100 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { connect } from "react-redux";
-import SubredditIcon, {
-  FrontpageIcon,
-  PopularIcon,
-  AllIcon,
-} from "./subreddit-icon";
-import { Spinner } from "./spinner";
+import SubredditIcon from "./subreddit-icon";
 import uniqueId from "../utils/unique-id";
+import Button from "./button";
+import ReactTooltip from "react-tooltip";
 
-const Favorites = styled.div`
-  display: flex;
-  flex-flow: inherit;
-  align-items: center;
-`;
 const Navigation = styled.div`
   display: flex;
-  flex-flow: column nowrap;
+  flex-flow: row nowrap;
   align-items: center;
   /* height: 100%; */
 `;
 
-const IconLink = styled(Link)`
+const Favorite = styled.div`
+  border-bottom: 2px solid
+    ${({ active, theme }) => (active ? theme.color : "transparent")};
+  padding-bottom: 0.125rem;
+  margin: 0 0.5rem;
+`;
+
+const IconLink = ({ to, active, ...props }) => (
+  <Favorite active={active}>
+    <Link to={to}>
+      <StyledIcon {...props} />
+    </Link>
+  </Favorite>
+);
+
+const StyledIcon = styled.div`
   text-decoration: none;
   color: inherit;
-  margin-bottom: 0.5em;
   transition: box-shadow 0.1s ease;
   border-radius: 50%;
-  border: 5px solid
-    ${props =>
-      props.active ? "red" : "transparent"};
+  /* border: 1px solid ${({ active }) => (active ? "red" : "transparent")}; */
   &:hover {
-    box-shadow: 0 0 0 3px ${props => props.theme.button.primary.focus};
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.focus.glow};
   }
 `;
 
-export const QuickNavigation = ({ favorites = [], locationName }) => (
-  <Navigation>
-    <IconLink
-      to={"/"}
-      data-tip="Frontpage <br /> Your joined communities"
-      data-multiline={true}
-      data-place="right"
-      data-delay-show={0}
-      key={0}
-      active={locationName === "Frontpage"}
-    >
-      <FrontpageIcon size="large" />
-    </IconLink>
-    <IconLink
-      to={"/r/popular"}
-      data-tip="r/Popular <br /> Reddit's most active communities"
-      data-multiline={true}
-      data-place="right"
-      data-delay-show={0}
-      key={1}
-      active={locationName === "popular"}
-    >
-      <PopularIcon size="large" />
-    </IconLink>
-    <IconLink
-      to={"/r/all"}
-      data-tip="r/All <br /> All communities of reddit"
-      data-multiline={true}
-      data-place="right"
-      data-delay-show={0}
-      key={2}
-      active={locationName === "all"}
-    >
-      <AllIcon size="large" />
-    </IconLink>
-    <Favorites>
-      {favorites.length > 0 ? (
-        favorites.slice(0, 5).map(sub => (
-          <IconLink
-            to={"/r/" + sub.display_name}
-            key={uniqueId()}
-            data-tip={"r/" + sub.display_name + " <br /> " + sub.title}
-            data-multiline={true}
-            data-place="right"
-            data-delay-show={0}
-            active={locationName === sub.display_name}
-          >
-            <SubredditIcon {...sub} size="large" />
-          </IconLink>
-        ))
-      ) : (
-        <Spinner />
-      )}
-    </Favorites>
-  </Navigation>
-);
+const QuickNavigation = ({ favorites = [], locationName }) => {
+  const [favoriteIcons, setFavoriteIcons] = useState([]);
+
+  useEffect(() => {
+    setFavoriteIcons(
+      favorites.slice(0, 5).map((sub) => (
+        <IconLink
+          to={"/r/" + sub.display_name}
+          key={uniqueId()}
+          data-tip={"r/" + sub.display_name + " <br /> " + sub.title}
+          data-multiline={true}
+          data-place="right"
+          data-delay-show={0}
+          active={locationName === sub.display_name}
+        >
+          <SubredditIcon subName={sub.display_name} size="small" />
+        </IconLink>
+      ))
+    );
+  }, [favorites, locationName]);
+
+  useEffect(() => {
+    ReactTooltip.rebuild();
+  }, [favoriteIcons]);
+
+  return (
+    <Navigation>
+      <Button
+        icon="home"
+        data-tip="Frontpage <br /> Your joined communities"
+        data-multiline={true}
+        data-delay-show={0}
+        to="/"
+        size="large"
+      />
+      <Button
+        icon="trendingUp"
+        data-tip="r/popular <br /> Reddit's most active communities"
+        data-multiline={true}
+        data-delay-show={0}
+        to="/r/popular/"
+        size="large"
+      />
+      <Button
+        icon="barChart2"
+        data-tip="r/all <br /> All communities of reddit"
+        data-multiline={true}
+        data-delay-show={0}
+        to="/r/all/"
+        size="large"
+      />
+      {favoriteIcons}
+    </Navigation>
+  );
+};
 
 const extractSubData = ({
   display_name,
@@ -121,9 +124,7 @@ const extractSubData = ({
   };
 };
 
-function mapStateToProps(state) {
-  const { subreddits, favoriteNames, locationName } = state;
-
+const mapStateToProps = ({ subreddits, favoriteNames, locationName }) => {
   let favorites = [];
   if (favoriteNames) {
     favorites = favoriteNames.reduce((favorites, name) => {
@@ -133,10 +134,9 @@ function mapStateToProps(state) {
   }
 
   return {
-    favoriteNames,
     favorites,
     locationName,
   };
-}
+};
 
 export default connect(mapStateToProps)(QuickNavigation);

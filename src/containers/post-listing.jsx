@@ -1,419 +1,347 @@
-import React from "react";
+import React, {
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { withRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import { Requester } from "../components/requester";
 import {
   addSubreddit,
-  setCurrentPost,
   addSubredditTheme,
   addColorTheme,
-  setLocationName,
 } from "../store/actions";
-import styled, { ThemeProvider, withTheme } from "styled-components";
-import useIntersect from "../utils/use-intersect";
+import styled, { withTheme } from "styled-components";
 
-import Post from "./post";
 import Button from "../components/button";
 import { SpinnerPage } from "../components/spinner";
 import Dropdown from "../components/dropdown";
-import SubredditIcon from "../components/subreddit-icon";
-import { ProgressOverlay, ProgressUnderline } from "../components/progress-bar";
-import { genSubredditTheme, genTheme } from "../utils/color";
-import { Column } from "./column";
+import { ProgressUnderline } from "../components/progress-bar";
+import genTheme from "../style/gen-theme";
+import ReactTooltip from "react-tooltip";
+import SubredditBanner from "../components/subreddit-banner";
+import Post, { PostPlaceholder } from "./post";
+import useIntersect from "../utils/use-intersect";
+import Error from "../components/error";
 
-const SubredditBanner = styled.div.attrs(props => ({
-  style: {
-    backgroundColor: props.banner_background_color,
-    backgroundImage: "url(" + props.banner_background_image + ")",
-    height: props.display_name ? "10rem" : "0", // Detects frontpage/popular/all
-  },
-}))`
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: ${props => props.theme.container.levels[1]};
-  border-top-right-radius: inherit;
-  border-top-left-radius: inherit;
-`;
-const StyledListing = styled.div`
-  max-width: 48rem;
-  margin: 0 auto 0.5rem auto;
-`;
+const PostListing = ({
+  subreddits,
+  history,
+  lightboxIsOpen,
+  addSubreddit,
+  themesBySubreddit,
+  addSubredditTheme,
+  themesByColor,
+  theme,
+  username,
+  addColorTheme,
+  toggleVisible,
+  visible,
+  controlsPath,
+  subName,
+  sort,
+  time,
+}) => {
+  const r = useContext(Requester);
 
-const Listing = props => {
-  const {
-    listing,
-    subreddits,
-    subredditName,
-    setCurrentPost,
-    fetchSubreddit,
-    fetchMore,
-    themesByColor,
-    addColorTheme,
-    inheritedTheme,
-  } = props;
+  const [error, setError] = useState(null);
 
-  const [ref, entry] = useIntersect({
-    threshold: [0.0, 0.5, 1.0],
+  const [listing, setListing] = useState([]);
+  const [listSettings, setListSettings] = useState({});
+  const fetching = useMemo(() => listing.length === 0, [listing]);
+
+  const fetchListing = useCallback(() => {
+    if (
+      sort !== listSettings.sort ||
+      subName !== listSettings.subName ||
+      time !== listSettings.time
+    ) {
+      setListSettings({ sort, subName, time });
+      setListing([]);
+      setError(null);
+      r._getSortedFrontpage(sort, subName, {
+        time,
+      }).then(
+        (listing) => {
+          setListing(listing);
+        },
+        (e) => {
+          setError({
+            name: `r/${subName}`,
+            e,
+            type: "subreddit",
+          });
+        }
+      );
+    }
+  }, [r, sort, time, subName, listSettings]);
+
+  const fetchSubreddit = useCallback(
+    (subName) => {
+      if (
+        subName &&
+        subName !== "frontpage" &&
+        subName !== "popular" &&
+        subName !== "all" &&
+        subreddits[subName.toLowerCase()] === undefined
+      ) {
+        r.getSubreddit(subName)
+          .refresh()
+          .then(
+            (subreddit) => {
+              // Stores subreddit info.
+              addSubreddit(subreddit);
+
+              // Generate a new subredditTheme if there isn't one, or if
+              // the subreddit has updated their primary_color. Additionally,
+              // we set the theme to null if they don't have one ("")
+              if (
+                (themesBySubreddit[subreddit.display_name] === undefined &&
+                  subreddit.primary_color !== "") ||
+                (themesBySubreddit[subreddit.display_name] &&
+                  themesBySubreddit[subreddit.display_name].color !==
+                    subreddit.primary_color)
+              )
+                genTheme({
+                  color: subreddit.primary_color,
+                  name: subreddit.display_name,
+                }).then((themes) =>
+                  addSubredditTheme(subreddit.display_name, themes)
+                );
+            },
+            (e) => {
+              setError({ name: `r/${subName}`, e, type: "subreddit" });
+            }
+          );
+      }
+    },
+    [addSubreddit, r, addSubredditTheme, subreddits, themesBySubreddit]
+  );
+
+  // const setSubreddit = useCallback(() => {
+  // document.title = subName ? "r/" + subName : "Frontpage";
+  //   if (
+  //     subName &&
+  //     subName !== "frontpage" &&
+  //     subName !== "popular" &&
+  //     subName !== "all"
+  //   ) {
+  //     fetchSubreddit(subName);
+  //   }
+  // }, [subName, fetchSubreddit]);
+
+  const path = useMemo(() => {
+    const pathSubName =
+      subName && subreddits[subName.toLowerCase()]
+        ? subreddits[subName.toLowerCase()].display_name
+        : subName;
+    let path = pathSubName ? "/r/" + pathSubName : "";
+    path += sort && sort !== "hot" ? "/" + sort : "/";
+    path +=
+      (sort === "controversial" || sort === "top") && time ? "?t=" + time : "";
+    return path;
+  }, [subName, sort, time, subreddits]);
+
+  const updatePath = useCallback(() => {
+    if (path !== window.location.pathname) {
+      const pathName = window.location.pathname.toLowerCase();
+      if (
+        path.toLowerCase() === pathName ||
+        path.toLowerCase() === pathName + "/"
+      ) {
+        history.replace(path);
+        console.info(`updatePath REPLACE: ${pathName} -> ${path}`);
+      } else {
+        history.push(path);
+        console.info(`updatePath PUSH: ${path}`);
+      }
+    }
+  }, [path, history]);
+
+  useEffect(() => {
+    if (controlsPath) updatePath();
+  }, [controlsPath, updatePath]);
+
+  // Generate themes from flair color if theme does not
+  // already exist.
+  const generateFlairThemes = useCallback(
+    (colors) => {
+      colors.forEach((color) => {
+        if (themesByColor[color] === undefined)
+          genTheme({ color }).then((themes) => addColorTheme(color, themes));
+      });
+    },
+    [themesByColor, addColorTheme]
+  );
+
+  useEffect(() => {
+    if (visible) fetchListing();
+  }, [subName, sort, time, visible, fetchListing]);
+
+  useEffect(() => {
+    if (
+      subName &&
+      subName !== "frontpage" &&
+      subName !== "popular" &&
+      subName !== "all"
+    ) {
+      fetchSubreddit(subName);
+    }
+  }, [subName, fetchSubreddit]);
+
+  // LISTING
+  useEffect(() => {
+    // Generate list of subreddits to be fetched
+    // and link flair colors to generate themes on
+    if (listing.length === 0) return;
+
+    const fetchSubreddits = (subNames) => {
+      subNames.forEach((subName) => {
+        if (subreddits[subName] === undefined) {
+          fetchSubreddit(subName);
+        }
+      });
+    };
+
+    const subreddits = listing.reduce((subs, post) => {
+      const subName = post.subreddit.display_name.toLowerCase();
+      if (!subs.includes(subName)) subs.push(subName);
+      return subs;
+    }, []);
+    fetchSubreddits(subreddits);
+    const flairColors = listing.reduce((flairColors, post) => {
+      const color = post.link_flair_background_color;
+      if (color && color !== "" && !flairColors.includes(color))
+        flairColors.push(color);
+      return flairColors;
+    }, []);
+    generateFlairThemes(flairColors);
+  }, [listing, generateFlairThemes, fetchSubreddit]);
+
+  // Refresh tooltips
+  useEffect(() => {
+    ReactTooltip.rebuild();
   });
 
-  if (entry.isIntersecting) fetchMore();
+  /*** Fetch More posts when scrolled down far enough ***/
 
-  return listing ? (
-    <StyledListing>
-      {listing.map((post, i) => {
-        if (
-          subreddits[post.subreddit.display_name.toLowerCase()] === undefined
-        ) {
-          fetchSubreddit(post.subreddit.display_name);
-        }
-        let theme = inheritedTheme;
-        if (
-          post.link_flair_background_color &&
-          post.link_flair_background_color !== ""
-        ) {
-          if (themesByColor[post.link_flair_background_color]) {
-            theme = inheritedTheme.dark
-              ? themesByColor[post.link_flair_background_color].dark
-              : themesByColor[post.link_flair_background_color].light;
-          } else {
-            const generatedTheme = genTheme(post.link_flair_background_color);
-            addColorTheme(post.link_flair_background_color, generatedTheme);
-            theme = inheritedTheme.dark
-              ? generatedTheme.dark
-              : generatedTheme.light;
-          }
-        }
-        return (
-          <Post
-            subredditInfo={subreddits[post.subreddit.display_name]}
-            inSubreddit={subredditName === post.subreddit.display_name}
-            post={post}
-            key={i}
-            inListing
-            id={post.id}
-            setCurrentPost={setCurrentPost}
-            theme={theme}
-          />
-        );
-      })}
-      <NextPage ref={ref} />
-    </StyledListing>
-  ) : null;
+  // Use intersection of placeholder post (at bottom of listing)
+  // to fetch more posts.
+  const [ref, entry] = useIntersect({
+    threshold: [0],
+    rootMargin: "0px 0px 2000px 0px",
+  });
+
+  const [fetchingMore, setFetchingMore] = useState(false);
+  const fetchMoreAmount = 10;
+
+  const fetchMore = () => {
+    setFetchingMore(true);
+    listing.fetchMore({ amount: fetchMoreAmount }).then(
+      (listing) => {
+        setListing(listing);
+        setFetchingMore(false);
+      },
+      (e) => {
+        setError({ name: "Fetch more", e, type: "subreddit" });
+        setFetchingMore(false);
+      }
+    );
+  };
+  if (entry.isIntersecting) {
+    if (!fetchingMore) fetchMore();
+  }
+
+  if (error) console.log(error);
+
+  const goTo = useCallback(
+    ({ _sort = sort, _time = time }) =>
+      `/${subName ? `r/${subName}` : ""}/${
+        _sort && _sort !== "hot" ? _sort : ""
+      }${
+        _time && (_sort === "controversial" || _sort === "top")
+          ? `?t=${_time}`
+          : ""
+      }`,
+    [sort, time, subName]
+  );
+
+  if (!visible) return null;
+  return (
+    <>
+      {subreddits && subName && subreddits[subName.toLowerCase()] ? (
+        <SubredditBanner subName={subName} />
+      ) : null}
+      <ViewSettings>
+        <VSContents>
+          <Dropdown label={sort || "hot"}>
+            <Button label="hot" to={goTo({ _sort: "hot" })} />
+            <Button label="best" to={goTo({ _sort: "best" })} />
+            <Button label="new" to={goTo({ _sort: "new" })} />
+            <Button label="rising" to={goTo({ _sort: "rising" })} />
+            {TimeDropdown("controversial", goTo)}
+            {TimeDropdown("top", goTo)}
+          </Dropdown>
+          {sort === "top" || sort === "controversial"
+            ? TimeDropdown(sort, goTo, time)
+            : null}
+          {path}
+        </VSContents>
+        {(!error && fetching) || fetchingMore ? <ProgressUnderline /> : null}
+      </ViewSettings>
+      {error ? (
+        <Error {...error} />
+      ) : fetching ? (
+        <SpinnerPage />
+      ) : (
+        <ScrollWrapper>
+          <Listing>
+            {listing.map((post, i) => (
+              <Post
+                inSubreddit={subName === post.subreddit.display_name}
+                post={post}
+                key={i}
+                inListing
+                id={post.id}
+              />
+            ))}
+          </Listing>
+          {fetchingMore
+            ? Array(fetchMoreAmount)
+                .fill()
+                .map((x, i) => <PostPlaceholder key={"placeholder-" + i} />)
+            : null}
+          <PostPlaceholder forwardRef={ref} />
+        </ScrollWrapper>
+      )}
+    </>
+  );
 };
 
-const NextPage = styled(SpinnerPage)`
-  display: block;
-`;
-
-class PostListing extends React.Component {
-  static contextType = Requester;
-  constructor(props) {
-    super(props);
-    this.state = {
-      fetching: true,
-      fetchingMore: false,
-      listing: [],
-      sort: "hot",
-      time: "all",
-      subredditName: null,
-    };
-  }
-  componentDidMount() {
-    const { subredditName, id } = this.props.match.params;
-    if (!id) {
-      this.setSubreddit(subredditName);
-    }
-  }
-  componentDidUpdate(prevProps, prevState) {
-    const { sort, time } = this.state;
-    const { sort: prevSort, time: prevTime } = prevState;
-    const { subredditName, id } = this.props.match.params;
-
-    console.log(this.props.match.params);
-
-    // We take the subredditName from the URL, but only if there is no ID.
-    // (e.g. we take /r/firefox, but not /r/firefox/comments/c6xrwv/...)
-    // This allows normal navigation (clicking links) to update the listing.
-    if (!id && subredditName !== this.state.subredditName) {
-      console.info(
-        "PostListing detected subreddit switch to: " + subredditName
-      );
-      document.title = subredditName ? "r/" + subredditName : "Frontpage";
-      this.setSubreddit(subredditName);
-    }
-
-    // If the subreddit name, sort, or sort time - in state - updates, we
-    // fetch the new listing. This means that there is an update when we get
-    // the subredditName from the URL, then another after it's set to state -
-    // so it's important to prevent re-renders.
-    if (sort !== prevSort || time !== prevTime) {
-      this.fetchListing(this.state.subredditName);
-    }
-
-    // If the ID vanishes, we now have control of the URL.
-    if (prevProps.match.params.id && !this.props.match.params.id)
-      this.setSort({
-        subredditName: this.props.match.params.subredditName || "frontpage",
-      });
-  }
-  setSubreddit = subredditName => {
-    console.info("Setting Subreddit to: " + subredditName);
-    this.setState({ subredditName });
-    this.fetchListing(subredditName);
-    const {
-      addSubreddit,
-      themesBySubreddit,
-      addSubredditTheme,
-      setLocationName,
-    } = this.props;
-    setLocationName(subredditName || "Frontpage");
-    if (
-      subredditName &&
-      subredditName !== "frontpage" &&
-      subredditName !== "popular" &&
-      subredditName !== "all"
-    ) {
-      this.context
-        .getSubreddit(subredditName)
-        .refresh()
-        .then(
-          subreddit => {
-            // Stores subreddit info.
-            addSubreddit(subreddit);
-
-            // Sets favicon and tab title.
-            document.title = subreddit.display_name_prefixed;
-            document.querySelector('link[rel="shortcut icon"]').href =
-              subreddit.community_icon ||
-              subreddit.icon_img ||
-              subreddit.icon_url ||
-              "favicon.ico";
-
-            // Generate a new subredditTheme if there isn't one, or if
-            // the subreddit has updated their primary_color. Additionally,
-            // we set the theme to null if they don't have one ("")
-            if (
-              (themesBySubreddit[subreddit.display_name] === undefined &&
-                subreddit.primary_color !== "") ||
-              themesBySubreddit[subreddit.display_name].color !==
-                subreddit.primary_color
-            )
-              addSubredditTheme(
-                subreddit.display_name,
-                genSubredditTheme(subreddit.primary_color)
-              );
-          },
-          error => console.error(error)
-        );
-    }
-  };
-  fetchSubreddit = subredditName => {
-    // Passed to descendents.
-    if (
-      subredditName &&
-      subredditName !== "frontpage" &&
-      subredditName !== "popular" &&
-      subredditName !== "all"
-    ) {
-      this.context
-        .getSubreddit(subredditName)
-        .refresh()
-        .then(
-          result => this.props.addSubreddit(result),
-          error => console.error(error)
-        );
-    }
-  };
-  refreshListing = () => this.fetchListing(this.state.subredditName);
-  fetchListing = subredditName => {
-    const { sort = "hot", time = "all" } = this.state;
-    console.info("Fetching: " + subredditName);
-    const t = sort === "controversial" || sort === "top" ? time : null;
-    this.setState({ fetching: true });
-    this.context._getSortedFrontpage(sort, subredditName, { t }).then(
-      result => {
-        this.setState({ fetching: false, listing: result });
-      },
-      error => console.error(error)
-    );
-  };
-  fetchMore = () => {
-    const { fetchingMore, listing } = this.state;
-    if (fetchingMore) return;
-    this.setState({ fetchingMore: true });
-
-    listing
-      .fetchMore({ amount: 25 })
-      .then(
-        result => this.setState({ listing: result, fetchingMore: false }),
-        error => console.error(error)
-      );
-  };
-  // handleScroll = e => {
-  //   if (!this.state.fetchingMore) {
-  //     const bottom =
-  //       e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight <=
-  //       1000;
-  //     if (bottom) {
-  //       this.fetchMore();
-  //     }
-  //   }
-  // };
-
-  // Passes sort & time to state, and, if we control the URL,
-  // we build and update it.
-  setSort = ({
-    subredditName = this.state.subredditName,
-    sort = this.state.sort,
-    time = this.state.time,
-  }) => {
-    const subName = subredditName === "frontpage" ? undefined : subredditName;
-    if (
-      this.state.subredditName !== subName ||
-      this.state.sort !== sort ||
-      this.state.time !== time
-    ) {
-      this.setState({
-        subredditName: subName,
-        sort,
-        time,
-      });
-    }
-    if (!this.props.match.params.id) {
-      let url = subName ? "/r/" + subName : "";
-      url += sort && sort !== "hot" ? "/" + sort : "";
-      url +=
-        (sort === "controversial" || sort === "top") && time
-          ? "?t=" + time
-          : "";
-      this.props.history.push(url);
-    }
-  };
-  render() {
-    if (this.state.subredditName === null) return null;
-    const {
-      subreddits,
-      theme: { dark: useDark },
-      theme: inheritedTheme,
-      themesBySubreddit,
-      themesByColor,
-      addColorTheme,
-      lightboxIsOpen,
-    } = this.props;
-    const {
-      listing,
-      fetching,
-      fetchingMore,
-      subredditName,
-      sort = "hot",
-      time,
-    } = this.state;
-
-    let theme = inheritedTheme;
-    if (themesBySubreddit[subredditName]) {
-      theme = useDark
-        ? themesBySubreddit[subredditName].dark
-        : themesBySubreddit[subredditName].light;
-    }
-    return (
-      <ThemeProvider theme={theme}>
-        <Column
-          ref={this.parentColumn}
-          // onScroll={this.handleScroll}
-          lightboxIsOpen={lightboxIsOpen}
-        >
-          <SubredditBanner {...subreddits[subredditName]}>
-            <SubredditIcon {...subreddits[subredditName]} size="xl" flat />
-          </SubredditBanner>
-          <ViewSettings>
-            <VSContents>
-              <Button
-                label="Refresh"
-                hideLabel
-                icon="refresh"
-                onClick={this.fetchListing}
-              />
-              <Dropdown label={sort}>
-                <Button
-                  label="hot"
-                  onClick={this.setSort}
-                  value={{ sort: "hot" }}
-                />
-                <Button
-                  label="best"
-                  onClick={this.setSort}
-                  value={{ sort: "best" }}
-                />
-                <Button
-                  label="new"
-                  onClick={this.setSort}
-                  value={{ sort: "new" }}
-                />
-                <Button
-                  label="rising"
-                  onClick={this.setSort}
-                  value={{ sort: "rising" }}
-                />
-                {TimeDropdown("controversial", this.setSort)}
-                {TimeDropdown("top", this.setSort)}
-              </Dropdown>
-              {sort === "top" || sort === "controversial"
-                ? TimeDropdown(sort, this.setSort, time)
-                : null}
-              <Button
-                icon="search"
-                hideLabel
-                label={subredditName ? "Search r/" + subredditName : "Search"}
-              />
-            </VSContents>
-            {fetching || fetchingMore ? <ProgressUnderline /> : null}
-          </ViewSettings>
-          {fetching ? (
-            <SpinnerPage />
-          ) : (
-            <ScrollWrapper>
-              <Listing
-                listing={listing}
-                subreddits={subreddits}
-                subredditName={subredditName}
-                fetchSubreddit={this.fetchSubreddit}
-                setCurrentPost={this.props.setCurrentPost}
-                fetchMore={this.fetchMore}
-                themesByColor={themesByColor}
-                addColorTheme={addColorTheme}
-                inheritedTheme={theme}
-              />
-            </ScrollWrapper>
-          )}
-          {fetching || fetchingMore ? <ProgressOverlay /> : null}
-        </Column>
-      </ThemeProvider>
-    );
-  }
-}
-
-// Just a function (e.g. not a component) so Dropdowns are treated as Sub
-const TimeDropdown = (sort, onClick, label) => (
-  <Dropdown label={label || sort}>
-    <Button label="hour" onClick={onClick} value={{ sort, time: "hour" }} />
-    <Button label="day" onClick={onClick} value={{ sort, time: "day" }} />
-    <Button label="week" onClick={onClick} value={{ sort, time: "week" }} />
-    <Button label="month" onClick={onClick} value={{ sort, time: "month" }} />
-    <Button label="year" onClick={onClick} value={{ sort, time: "year" }} />
-    <Button label="all time" onClick={onClick} value={{ sort, time: "all" }} />
+// Just a function (i.e. not a component) so Dropdowns are treated as Sub
+const TimeDropdown = (_sort, goTo, label) => (
+  <Dropdown label={label || _sort}>
+    <Button label="hour" to={goTo({ _sort, _time: "hour" })} />
+    <Button label="day" to={goTo({ _sort, _time: "day" })} />
+    <Button label="week" to={goTo({ _sort, _time: "week" })} />
+    <Button label="month" to={goTo({ _sort, _time: "month" })} />
+    <Button label="year" to={goTo({ _sort, _time: "year" })} />
+    <Button label="all time" to={goTo({ _sort, _time: "all" })} />
   </Dropdown>
 );
+
+const Listing = styled.div`
+  max-width: 75rem;
+  margin: 1rem auto;
+`;
 
 // Prevents page contents from shifting when scrollbar disappears
 // due to lightbox being open.
 const ScrollWrapper = styled.div`
-  overflow-y: ${props => (props.lightboxIsOpen ? "scroll" : "show")};
-  color: ${props => props.theme.container.color};
+  overflow-y: ${({ lightboxIsOpen }) => (lightboxIsOpen ? "scroll" : "show")};
+  color: ${({ theme }) => theme.color};
   height: 100%;
 `;
 
@@ -421,32 +349,30 @@ const ViewSettings = styled.div`
   width: 100%;
   position: sticky;
   top: 0rem;
-  border: 1px solid ${props => props.theme.container.border};
-  border-width: 1px 0;
-  background-color: ${props => props.theme.container.levels[0]};
-  color: ${props => props.theme.container.color};
+  border-bottom: 1px solid ${({ theme }) => theme.card.border};
+  background-color: ${({ theme }) => theme.card.bg};
+  color: ${({ theme }) => theme.color};
   padding: 0.25rem;
   z-index: 10;
-  font-size: 0.85rem;
 `;
 
 const VSContents = styled.div`
-  max-width: 40rem;
+  /* max-width: 40rem; */
   margin: 0 auto;
 `;
 
 function mapStateToProps(state) {
   const {
-    currentPostId,
     subreddits,
     lightboxIsOpen,
+    locationName,
     themesBySubreddit,
     themesByColor,
   } = state;
   return {
-    currentPostId,
     subreddits,
     lightboxIsOpen,
+    locationName,
     themesBySubreddit,
     themesByColor,
   };
@@ -456,9 +382,7 @@ export default connect(
   mapStateToProps,
   {
     addSubreddit,
-    setCurrentPost,
     addSubredditTheme,
     addColorTheme,
-    setLocationName,
   }
-)(withTheme(withRouter(PostListing)));
+)(withRouter(withTheme(PostListing)));

@@ -1,24 +1,40 @@
 import React from "react";
+import { connect } from "react-redux";
 import styled, { withTheme } from "styled-components";
-import Icon from "./icon";
-import { genSubIconColor } from "../utils/color";
+import { genSubIconColor } from "../style/gen-theme";
 import { meetsContrastGuidelines } from "polished";
 
-const SubredditIcon = props => {
-  const {
-    primary_color,
-    key_color,
-    banner_background_color,
-    display_name,
-    size,
-    flat,
-    theme,
-    community_icon,
-    icon_img,
-    icon_url,
-  } = props;
+import { ReactComponent as LogoSVG } from "../icons/logo.svg";
 
-  const icon =
+export const Logo = (props) => (
+  <Circle {...props}>
+    <LogoSVG />
+  </Circle>
+);
+
+const SubredditIcon = ({
+  subName = "",
+  subreddit,
+  size,
+  flat,
+  theme,
+  passRef,
+  ...props
+}) => {
+  if (!subreddit) return;
+  const {
+    primary_color = null,
+    key_color = null,
+    banner_background_color = null,
+    community_icon = null,
+    icon_img = null,
+    icon_url = null,
+  } = subreddit;
+
+  const subColor =
+    primary_color || key_color || banner_background_color || null;
+
+  const url =
     community_icon !== ""
       ? community_icon
       : icon_img !== ""
@@ -27,14 +43,9 @@ const SubredditIcon = props => {
       ? icon_url
       : null;
 
-  const bgColor =
-    primary_color && primary_color !== ""
-      ? genSubIconColor(primary_color)
-      : key_color && key_color !== ""
-      ? genSubIconColor(key_color)
-      : banner_background_color && banner_background_color !== ""
-      ? genSubIconColor(banner_background_color)
-      : theme.subredditIcon.light;
+  const bgColor = subColor
+    ? genSubIconColor(subColor)
+    : theme.subredditIcon.light;
 
   const color = bgColor
     ? meetsContrastGuidelines(bgColor, theme.subredditIcon.dark).AALarge
@@ -42,33 +53,46 @@ const SubredditIcon = props => {
       : theme.subredditIcon.light
     : theme.subredditIcon.dark;
 
-  const letter =
-    !icon && display_name ? display_name.charAt(0).toUpperCase() : null;
+  const letter = url ? null : subName ? subName.charAt(0).toUpperCase() : null;
 
   return (
-    <Circle
-      icon={icon ? "url(" + icon + ")" : null}
-      bgColor={bgColor}
-      color={color}
-      size={size}
-      flat={flat}
-    >
-      {letter}
-    </Circle>
+    <div ref={passRef}>
+      <Circle
+        size={size}
+        flat={url ? undefined : flat}
+        color={color}
+        bgColor={bgColor}
+        url={url}
+        {...props}
+      >
+        {letter}
+      </Circle>
+    </div>
   );
 };
 
-export default withTheme(SubredditIcon);
+function mapStateToProps(state, { subName }) {
+  const { subreddits } = state;
 
-const Circle = styled.div.attrs(props => {
+  if (subName && subreddits[subName.toLowerCase()]) {
+    return { subreddit: subreddits[subName.toLowerCase()] };
+  }
+  return { subreddit: {} };
+}
+
+export default connect(mapStateToProps)(withTheme(SubredditIcon));
+
+const Circle = styled.div.attrs(({url, bgColor, color}) => {
   return {
     style: {
-      backgroundImage: props.icon,
-      backgroundColor: props.flat ? "transparent" : props.bgColor,
-      color: props.color,
+      backgroundImage: url ? "url(" + url + ")" : null,
+      backgroundColor: bgColor,
+      color: color,
     },
   };
 })`
+  user-select: none;
+
   height: 1.5em;
   width: 1.5em;
   border-radius: 50%;
@@ -79,14 +103,14 @@ const Circle = styled.div.attrs(props => {
   line-height: 1.4;
   overflow: hidden;
 
-  font-size: ${props =>
-    props.size === "xl" 
-    ? "5rem" 
-    : props.size === "large" 
-    ? "1.5rem" 
-    : props.size === "small"
-    ? "0.8rem"
-    : "1rem"};
+  font-size: ${({size}) =>
+    size === "xl"
+      ? "5rem"
+      : size === "large"
+      ? "1.5rem"
+      : size === "small"
+      ? "0.8rem"
+      : "1rem"};
   font-weight: 100;
   text-align: center;
   background-position: center;
@@ -95,7 +119,7 @@ const Circle = styled.div.attrs(props => {
   background-size: 100% auto;
   background-origin: border-box;
   background-clip: border-box;
-  /* border: 0.0625em solid ${props => props.theme.container.innerBorder}; */
+  /* border: 0.0625em solid ${({theme}) => theme.card.innerBorder}; */
   &.square {
     border-radius: 0;
   }
@@ -105,39 +129,3 @@ const Circle = styled.div.attrs(props => {
     text-decoration: none;
   }
 `;
-
-const Square = styled(Circle)`
-  border-radius: 0;
-  border-width: 0;
-  &:hover {
-    box-shadow: none;
-  }
-`;
-
-const IconCircle = styled(Circle)`
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-export const LogoIcon = props => (
-  <Square {...props}>
-    <Icon icon="logo" doNotAlignBaseline thin />
-  </Square>
-);
-export const FrontpageIcon = props => (
-  <IconCircle {...props}>
-    <Icon icon="home" doNotAlignBaseline thin />
-  </IconCircle>
-);
-export const PopularIcon = props => (
-  <IconCircle {...props}>
-    <Icon icon="popular" doNotAlignBaseline thin />
-  </IconCircle>
-);
-export const AllIcon = props => (
-  <IconCircle {...props}>
-    <Icon icon="all" doNotAlignBaseline thin />
-  </IconCircle>
-);

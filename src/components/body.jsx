@@ -1,26 +1,31 @@
-import React from "react";
+import React, { useState, useLayoutEffect, useRef } from "react";
 import styled from "styled-components";
-import Toggle from "./toggle";
+import Button from "./button";
 
 const Text = styled.div`
-  padding: 0 0.5rem 1rem 0.5rem;
+  padding: 0.5rem 0.75rem;
+  padding-bottom: ${({overflow}) => (overflow ? "1.5rem" : null)};
   position: relative;
-  overflow: hidden;
-  height: ${props => (props.overflow && !props.showAll ? "100px" : "unset")};
+  overflow: ${({clip}) => (clip ? "hidden" : null)};
+  height: ${({clip}) => (clip ? "384px" : "auto")};
   transition: height 0.1s ease;
+  filter: ${({blur}) => (blur ? "blur(3px)" : null)};
   &:after {
-    display: ${props => (props.overflow && !props.showAll ? "block" : "none")};
+    display: ${({clip}) => (clip ? "block" : "none")};
     content: "";
     width: 100%;
-    height: 2rem;
-    background: ${props =>
-      "linear-gradient(transparent 0%, " + props.theme.container.levels[1] + " 90%)"};
+    height: 5rem;
+    background: ${({theme}) =>
+      "linear-gradient(transparent 0%, " +
+      theme.bgLayers[1] +
+      " 78%)"};
     position: absolute;
     bottom: 0;
     left: 0;
+    pointer-events: none;
   }
   a {
-    color: ${props=>props.theme.container.link};
+    color: ${({theme}) => theme.link};
     text-decoration: underline;
   }
 `;
@@ -36,54 +41,36 @@ const Actions = styled.div`
   overflow: visible;
 `;
 
-const Wrapper = styled.div`
-  overflow: visible;
-`;
+export const Body = ({ inListing, html, ...rest }) => {
+  const [overflow, setOverflow] = useState(undefined);
+  const [showAll, setShowAll] = useState(!inListing || undefined);
+  const toggleShowAll = () => setShowAll(!showAll);
+  const body = useRef(null);
 
-export class Body extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      overflow: false,
-      showAll: false,
-    };
-    this.body = React.createRef();
-  }
-  componentDidMount() {
-    if (this.props.inListing)
-      this.setState({ overflow: this.body.current.clientHeight >= 130 });
-    else
-      this.setState({ showAll: true });
-  }
-  toggleShowAll = () => {
-    this.setState({ showAll: !this.state.showAll });
-  };
-  render() {
-    const { overflow, showAll } = this.state;
-    return (
-      <Wrapper>
-        <Text
-          ref={this.body}
-          overflow={overflow ? "true" : null}
-          showAll={showAll ? "true" : null}
-          dangerouslySetInnerHTML={{ __html: this.props.html }}
-        />
-        {this.state.overflow ? (
-          <Actions>
-            <Toggle
-              iconOff="chevronDown"
-              iconOn="chevronUp"
-              labelOn="Show less"
-              labelOff="Show more"
-              hideLabel
-              onToggle={this.toggleShowAll}
-              size="fill"
-              type="flat"
-              align="center"
-            />
-          </Actions>
-        ) : null}
-      </Wrapper>
-    );
-  }
-}
+  useLayoutEffect(() => {
+    if (inListing && body.current.clientHeight >= 512) setOverflow("true");
+  }, [body, inListing]);
+
+  return (
+    <div>
+      <Text
+        ref={body}
+        clip={inListing && !showAll && overflow ? "true" : undefined}
+        overflow={overflow}
+        dangerouslySetInnerHTML={{ __html: html }}
+        {...rest}
+      />
+      {overflow ? (
+        <Actions>
+          <Button
+            type="flat"
+            align="center"
+            size="fill"
+            icon={showAll ? "chevronUp" : "chevronDown"}
+            onClick={toggleShowAll}
+          />
+        </Actions>
+      ) : null}
+    </div>
+  );
+};

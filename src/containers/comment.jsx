@@ -2,20 +2,21 @@ import React, { useState } from "react";
 import styled from "styled-components";
 
 import Flair from "../components/flair";
-import { Votes } from "../components/votes";
+import Votes from "../components/votes";
 import { Timestamp } from "../components/timestamp";
+import Tag from "../components/tags";
 import Button from "../components/button";
 import { Author } from "../components/author";
 import { formatNumber } from "./../utils/format-number";
+import Reply from "./../components/reply";
 
 const StyledComment = styled.div`
-  /* margin-top: 0.25rem; */
   display: flex;
-  margin-top: 1rem;
+  margin-top: 0.75rem;
 `;
 const Left = styled.div`
-  width: 1.5rem;
-  margin-right: 0.5rem;
+  margin-right: 0.125rem;
+  font-size: 1rem;
   text-align: center;
   position: relative;
   display: flex;
@@ -47,38 +48,34 @@ const Right = styled.div`
 const Tagline = styled.div`
   font-size: 0.75rem;
   margin-top: 0.25rem;
-  opacity: 0.8;
   & > * {
     margin-right: 0.5rem;
   }
 `;
-const Context = styled.div``;
+const Tags = styled.span`
+  font-size: 1.25em;
+`;
+const Context = styled.div`
+  z-index: 1;
+`;
 const Actions = styled.div`
   opacity: 0.8;
   margin: 0 0.25rem 0 -0.25rem;
   font-size: 0.85rem;
+  z-index: 10;
 `;
 const Body = styled.div`
   font-size: 0.9rem;
-  margin: 0.5rem 0.125rem;
+  /* margin: 0.5rem 0.125rem; */
   blockquote {
-    border-color: ${props => props.theme.container.innerBorder};
+    border-color: ${({ theme }) => theme.card.innerBorder};
   }
   a {
-    color: ${props => props.theme.container.link};
+    color: ${({ theme }) => theme.link};
   }
 `;
 
-export default props => {
-  const [mod, setMod] = useState(0);
-  const [collapse, setCollapse] = useState(props.collapse);
-  // const [showReplies, setShowReplies] = useState(props.collapse);
-
-  const upvote = () => setMod(mod > 0 ? 0 : 1);
-  const downvote = () => setMod(mod < 0 ? 0 : -1);
-  const toggleCollapse = () => setCollapse(!collapse);
-  // const toggleShowReplies = () => setShowReplies(!showReplies);
-
+const Comment = ({ comment, username, loggedIn }) => {
   const {
     permalink,
     id,
@@ -91,9 +88,13 @@ export default props => {
     edited,
     created_utc,
     body_html,
-    replies,
     distinguished,
     is_submitter,
+    likes,
+    saved: inheritedSaved,
+    hidden: inheritedHidden,
+    replies: inheritedReplies,
+    collapse: inheritedCollapse,
 
     author_flair_type,
     author_flair_text,
@@ -101,8 +102,59 @@ export default props => {
     author_flair_richtext,
     author_flair_text_color,
     author_flair_background_color,
-  } = props;
+    locked,
+    stickied,
+  } = comment;
+
+  const [mod, setMod] = useState(likes === true ? 1 : likes === false ? -1 : 0);
+  const [saved, setSaved] = useState(inheritedSaved);
+  const [hidden, setHidden] = useState(inheritedHidden);
+  const [replies, setReplies] = useState(inheritedReplies);
+  // const [showReplies, setShowReplies] = useState(props.collapse);
+  const [collapse, setCollapse] = useState(inheritedCollapse);
+  const [showReply, setShowReply] = useState(false);
+  const [draft, setDraft] = useState("");
+  const toggleShowReply = () => {
+    setShowReply(!showReply);
+  };
+
+  const reply = (value) => {
+    comment.reply(value).then(
+      (reply) => {
+        setReplies([reply, ...replies]);
+      },
+      (error) => console.error(error)
+    );
+    setShowReply(false);
+  };
+
+  const cancelReply = (value) => {
+    setDraft(value);
+    setShowReply(false);
+  };
+
+  const save = () =>
+    saved
+      ? comment.unsave().then(setSaved(false))
+      : comment.save().then(setSaved(true));
+  const hide = () =>
+    hidden
+      ? comment.unhide().then(setHidden(false))
+      : comment.hide().then(setHidden(true));
+  const upvote = () =>
+    mod > 0
+      ? comment.unvote().then(setMod(0))
+      : comment.upvote().then(setMod(1));
+  const downvote = () =>
+    mod < 0
+      ? comment.unvote().then(setMod(0))
+      : comment.downvote().then(setMod(-1));
+  const toggleCollapse = () => setCollapse(!collapse);
+  // const toggleShowReplies = () => setShowReplies(!showReplies);
+
   const depth = inheritedDepth || 0;
+
+  const own = username === authorName;
   return (
     <StyledComment id={id}>
       <Left>
@@ -111,14 +163,21 @@ export default props => {
             size="small"
             type="flat"
             icon={collapse ? "plus" : "minus"}
-            label={collapse ? "Expand" : "Collapse"}
+            label={collapse ? "plusSquare" : "minusSquare"}
             hideLabel
             noMargin
             onClick={toggleCollapse}
           />
         ) : (
           <>
-            <Votes mod={mod} upvote={upvote} downvote={downvote} size="small" />
+            <Votes
+              own={own}
+              mod={mod}
+              upvote={upvote}
+              downvote={downvote}
+              size="small"
+              disabled={!loggedIn}
+            />
             <Collapse onClick={toggleCollapse}>
               <Threadline />
             </Collapse>
@@ -142,7 +201,7 @@ export default props => {
             type={author_flair_type}
           />
           {score_hidden ? (
-            <span data-tip="score hidden">(?) </span>
+            <span>Score hidden</span>
           ) : (
             <span data-tip={score + mod}>
               {formatNumber(score + mod, "point")}
@@ -157,6 +216,10 @@ export default props => {
               label="*"
             />
           ) : null}
+          <Tags>
+            {stickied ? <Tag.Stickied /> : null}
+            {locked ? <Tag.Locked /> : null}
+          </Tags>
         </Tagline>
         {!collapse && (
           <>
@@ -165,43 +228,76 @@ export default props => {
                 __html: body_html,
               }}
             />
-            <Actions>
-              <Button
-                label="Reply"
-                // hideLabel
-                type="flat"
-                size="small"
-                icon="reply"
-                key="0"
+            {loggedIn ? (
+              <Actions>
+                {!locked ? (
+                  <Button
+                    label="Reply"
+                    type="flat"
+                    size="small"
+                    icon="cornerDownRight"
+                    onClick={toggleShowReply}
+                    key="reply"
+                  />
+                ) : null}
+                <Button
+                  hideLabel
+                  type="flat"
+                  toggled={saved}
+                  label={saved ? "unsave" : "save"}
+                  icon="star"
+                  onClick={save}
+                  key="save"
+                />
+                <Button
+                  hideLabel
+                  type="flat"
+                  toggled={hidden}
+                  label={hidden ? "unhide" : "hide"}
+                  icon="star"
+                  onClick={hide}
+                  key="hide"
+                />
+                <Button
+                  label="view on reddit"
+                  hideLabel
+                  type="flat"
+                  size="small"
+                  icon="externalLink"
+                  href={"https://www.reddit.com" + permalink}
+                  key="onReddit"
+                />
+                {process.env.NODE_ENV === "development" ? (
+                  <Button
+                    label="Log to console"
+                    type="flat"
+                    size="small"
+                    hideLabel
+                    icon="terminal"
+                    onClick={() => console.log(comment)}
+                    key="log"
+                  />
+                ) : null}
+              </Actions>
+            ) : null}
+            {loggedIn && showReply ? (
+              <Reply
+                autoFocus
+                onSubmit={reply}
+                onCancel={cancelReply}
+                draft={draft}
               />
-              <Button
-                label="view on reddit"
-                hideLabel
-                type="flat"
-                size="small"
-                icon="external"
-                href={"https://www.reddit.com" + permalink}
-                key="1"
-              />
-              <Button
-                label="Log submission object to console"
-                type="flat"
-                size="small"
-                hideLabel
-                icon="debug"
-                onClick={() => console.log(props)}
-                key="2"
-              />
-            </Actions>
+            ) : null}
             <Context depth={depth}>
-              {replies.length} replies
-              {/* {replies.map((child) => {
-                  console.log(child);
-                  if (!child.collapsed) {
-                    return (<Comment {...child} key={child["id"]} />);
-                  }
-                  return <Button label="More" />;
-                })} */}
+              {/* {replies.length} replies */}
+              {replies.map((child) => (
+                <Comment
+                  comment={child}
+                  username={username}
+                  key={child.id}
+                  loggedIn={loggedIn}
+                />
+              ))}
             </Context>
           </>
         )}
@@ -209,3 +305,5 @@ export default props => {
     </StyledComment>
   );
 };
+
+export default Comment;

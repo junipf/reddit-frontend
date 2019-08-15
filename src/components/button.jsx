@@ -7,59 +7,61 @@ import Icon from "./icon";
 const StyledButton = styled.button`
   display: inline-block;
   font-weight: 500;
-  text-align: ${props => props.align};
+  text-align: ${({ align }) => align};
   white-space: nowrap;
   vertical-align: middle;
   user-select: none;
-  padding: ${props =>
-    props.size === "large"
-      ? "0.5em 0.75em"
-      : props.size === "small"
-      ? "0.175em 0.25em"
-      : props.size === "fill"
+  padding: ${({ size }) =>
+    size === "large"
+      ? "0.35em 0.50em"
+      : size === "small"
+      ? "0.25em 0.45em"
+      : size === "fill"
       ? "0.35em 0.75em"
       : "0.35em 0.5em"};
   border: none;
-  border-radius: ${props => (props.size === "fill" ? "0" : "0.2em")};
-  margin: ${props =>
-    props.nomargin
+  border-radius: ${({ size }) => (size === "fill" ? "0" : "0.2em")};
+  margin: ${({ nomargin, size }) =>
+    nomargin
       ? "0"
-      : props.size === "large"
+      : size === "large"
       ? "0.25em 0.5em"
-      : props.size === "small"
+      : size === "small"
       ? "0.0625em 0.125em"
       : "0.125em 0.25em"};
-  width: ${props => (props.size === "fill" ? "100%" : null)};
+  width: ${({ size }) => (size === "fill" ? "100%" : null)};
+  height: ${({ size }) => (size === "fill" ? "100%" : null)};
   margin-left: 0;
   line-height: 1;
   transition: all 0.1s ease;
   text-decoration: none;
-  color: ${props => props.color || props.theme.button[props.type].color[0]};
-  background-color: ${props => props.theme.button[props.type].levels[0]};
+  color: ${({ theme, type }) => type === "flat" ? theme.color : theme.button[type].color};
+  background-color: ${({ type, theme }) => theme.button[type].bg};
   &a {
-    color: ${props => props.color || props.theme.button[props.type].color[0]};
+    color: ${({ color, theme, type }) => color || theme.button[type].color};
   }
-  &:hover {
+  &:hover:not(.disabled) {
     cursor: pointer;
     text-decoration: none;
-    color: ${props => props.color || props.theme.button[props.type].color[1]};
-    background-color: ${props => props.theme.button[props.type].levels[1]};
+    color: ${({ type, theme }) => theme.button[type].color};
+    background-color: ${({ type, theme }) => theme.button[type].hover};
   }
-  &:active {
-    color: ${props => props.color || props.theme.button[props.type].color[2]};
-    background-color: ${props => props.theme.button[props.type].levels[2]};
+  &:active:not(.disabled) {
+    color: ${({ color, type, theme }) => color || theme.button[type].color};
+    background-color: ${({ type, theme }) => theme.button[type].active};
   }
-  &:focus {
+  &:focus:not(.disabled) {
     outline: 0;
-    box-shadow: inset 0 0 0 2px ${props => props.theme.button[props.type].focus};
+    box-shadow: ${({ size }) => (size === "fill" ? "inset" : null)} 0 0 0 2px
+      ${({ theme }) => theme.focus.glow};
   }
-  &:disabled {
-    opacity: 0.65;
+  &.disabled {
+    opacity: 0.35;
     box-shadow: none;
   }
 `;
 
-const Span = styled.span.attrs(props => ({ style: { color: props.color } }))`
+const Span = styled.span.attrs(({ color }) => ({ style: { color } }))`
   text-decoration: none;
   font-weight: 300;
 `;
@@ -67,11 +69,11 @@ const Span = styled.span.attrs(props => ({ style: { color: props.color } }))`
 const Children = styled.div`
   display: flex;
   flex-flow: row nowrap;
-  text-decoration: none;
+  /* text-decoration: none; */
   font-weight: 300;
-  font-size: ${props => props.size === "large" ? "1em" : "0.8em"};
-  /* line-height: 100%; */
-  align-items: center;
+  font-size: ${({ size }) =>
+    size === "large" ? "0.9em" : size === "small" ? "0.75em" : "0.8em"};
+  text-align: ${({ align }) => align};
   & > * {
     margin-right: 0.5em;
     &:last-child {
@@ -79,7 +81,8 @@ const Children = styled.div`
     }
   }
   & > span {
-    /* height: 1em; */
+    /* height: 1.25em;
+    line-height: 1.25; */
   }
 `;
 
@@ -87,75 +90,102 @@ const IconAfter = styled(Icon)`
   float: right;
 `;
 
-export default class Button extends React.Component {
-  static propTypes = {
-    type: PropTypes.oneOf(["flat", "primary", "secondary"]),
-    size: PropTypes.oneOf(["small", "normal", "large", "fill"]),
-    label: PropTypes.string,
-    hideLabel: PropTypes.bool,
+const Button = ({
+  type,
+  hideLabel,
+  showTooltip,
+  label,
+  icon,
+  iconAfter,
+  children,
+  // fromColor = null,
+  color,
+  to,
+  href,
+  "data-tip": data_tip,
+  fill,
+  noMargin,
+  align,
+  size,
+  onClick,
+  value,
+  onSelect,
+  disabled,
+  onCtrlClick,
+  onAltClick,
+  onShiftClick,
+  ...rest
+}) => {
+  const handleClick = (e) => {
+    if (disabled) return;
+    else if (e.ctrlKey && onCtrlClick) onCtrlClick(value);
+    else if (e.altKey && onAltClick) onAltClick(value);
+    else if (e.shiftKey && onShiftClick) onShiftClick(value);
+    else if (onClick) onClick(value);
+    else if (onSelect) onSelect(value);
   };
-  static defaultProps = {
-    type: "secondary",
-    size: "normal",
-  };
-  handleClick = () => {
-    const { onClick, value, setSelection } = this.props;
-    if (onClick) {
-      if (value) onClick(value);
-      else onClick();
-    }
-    if (setSelection && value) {
-      setSelection(value);
-    }
-  };
-  render() {
-    const {
-      type,
-      hideLabel,
-      showTooltip,
-      label,
-      icon,
-      iconAfter,
-      children,
-      // fromColor = null,
-      color,
-      to,
-      href,
-      "data-tip": data_tip,
-      noMargin,
-      align,
-      onClick,
-      value,
-      setSelection,
-      ...rest
-    } = this.props;
 
-    const selectedChildren = (
-      <Children size={this.props.size}>
-        {icon && <Icon icon={icon} key="0" />}
-        {children &&
-          React.Children.map(children, child =>
-            React.isValidElement(child) ? child : <span>{child}</span>
-          )}
-        {!hideLabel && label && <Span key="2">{label}</Span>}
-        {iconAfter && <IconAfter icon={iconAfter} key="3" />}
-      </Children>
-    );
+  const selectedChildren = (
+    <Children
+      size={size}
+      align={align ? align : size === "fill" ? "left" : "center"}
+    >
+      {icon && (
+        <Icon icon={icon} color={color} fill={fill} key="0" align="none" />
+      )}
+      {children &&
+        React.Children.map(children, (child) =>
+          React.isValidElement(child) ? child : <span>{child}</span>
+        )}
+      {!hideLabel && label && <Span key="2">{label}</Span>}
+      {iconAfter && <IconAfter icon={iconAfter} key="3" />}
+    </Children>
+  );
 
-    const props = {
-      type,
-      color,
-      "data-tip-disable": !hideLabel && !data_tip,
-      "data-tip": data_tip || label,
-      children: selectedChildren,
-      to: to ? to : null,
-      href: href ? href : null,
-      as: to ? Link : href ? "a" : null,
-      nomargin: noMargin ? "true" : this.props.size === "fill" ? "true" : null,
-      align: align || this.props.size === "fill" ? "left" : "center",
-      onClick: this.handleClick,
-      ...rest,
-    };
-    return <StyledButton {...props} />;
+  const props = {
+    type,
+    color,
+    size,
+    "data-tip-disable": !hideLabel && !data_tip,
+    "data-tip": data_tip || label,
+    children: selectedChildren,
+    to: to ? to : null,
+    href: href ? href : null,
+    as: to ? Link : href ? "a" : null,
+    nomargin: noMargin || size === "fill" ? "true" : null,
+    onClick: handleClick,
+    ...rest,
+  };
+
+  return <StyledButton {...props} className={disabled ? "disabled" : null} />;
+};
+
+Button.propTypes = {
+  type: PropTypes.oneOf(["flat", "primary", "secondary"]),
+  size: PropTypes.oneOf(["small", "normal", "large", "fill"]),
+  label: PropTypes.string,
+  hideLabel: PropTypes.bool,
+};
+Button.defaultProps = {
+  type: "secondary",
+  size: "normal",
+};
+
+export default Button;
+
+export const Group = styled.div`
+  margin: 0 0.25rem;
+  & > button {
+    border-radius: 0;
+    margin: 0;
+    &:first-of-type {
+      border-radius: 0.25rem 0 0 0.25rem;
+    }
+    &:last-of-type {
+      border-radius: 0 0.25rem 0.25rem 0;
+    }
+    &:focus {
+      z-index: 10;
+    }
   }
-}
+`;
