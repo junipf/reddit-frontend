@@ -4,28 +4,26 @@ import Button from "./button";
 
 const Text = styled.div`
   padding: 0.5rem 0.75rem;
-  padding-bottom: ${({overflow}) => (overflow ? "1.5rem" : null)};
+  padding-bottom: ${({ overflow }) => (overflow ? "1.5rem" : null)};
   position: relative;
-  overflow: ${({clip}) => (clip ? "hidden" : null)};
-  height: ${({clip}) => (clip ? "384px" : "auto")};
+  overflow: ${({ clip }) => (clip ? "hidden" : null)};
+  height: ${({ clip }) => (clip ? "384px" : "auto")};
   transition: height 0.1s ease;
-  filter: ${({blur}) => (blur ? "blur(3px)" : null)};
+  filter: ${({ blur }) => (blur ? "blur(3px)" : null)};
   &:after {
-    display: ${({clip}) => (clip ? "block" : "none")};
+    display: ${({ clip }) => (clip ? "block" : "none")};
     content: "";
     width: 100%;
     height: 5rem;
-    background: ${({theme}) =>
-      "linear-gradient(transparent 0%, " +
-      theme.bgLayers[1] +
-      " 78%)"};
+    background: ${({ theme }) =>
+      "linear-gradient(transparent 0%, " + theme.card.innerBg + " 78%)"};
     position: absolute;
     bottom: 0;
     left: 0;
     pointer-events: none;
   }
   a {
-    color: ${({theme}) => theme.link};
+    color: ${({ theme }) => theme.link};
     text-decoration: underline;
   }
 `;

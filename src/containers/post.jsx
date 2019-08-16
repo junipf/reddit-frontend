@@ -44,7 +44,7 @@ const PostWrapper = styled.div.attrs(({ id }) => ({
   margin-top: ${({ compact }) => (compact ? "0" : "0.5rem")};
   background: ${({ theme }) => theme.card.bg};
   color: ${({ theme }) => theme.color};
-  border-width: 1px
+  border-width: 1px;
   border-style: solid;
   border-color: ${({ theme }) => theme.card.border};
   border-radius: 0.25rem;
@@ -519,7 +519,7 @@ export default connect(
 const Block = styled.span`
   display: inline-block;
   height: 1em;
-  width: 40%
+  width: 40%;
   margin: 0.25em;
   border-radius: 0.25em;
   background-color: ${({ theme }) => theme.header.bg};

@@ -6,6 +6,8 @@ const StyledIframe = styled.iframe`
   border: none;
   width: 100%;
   overflow: hidden;
+  /* position: absolute; */
+  /* top: 0; */
 `;
 
 const Tweet = ({ blur, src, width, title, theme, id, ...props }) => {

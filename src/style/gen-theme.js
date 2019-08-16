@@ -7,7 +7,7 @@ import {
 } from "polished";
 import themes from "./themes";
 
-export const genSubIconColor = (color) => saturate(0.3, color);
+export const genSubIconColor = color => saturate(0.3, color);
 
 const pickContrastingColor = (background, light, dark) => {
   if (light && meetsContrastGuidelines(background, light).AALarge) return light;
@@ -34,7 +34,7 @@ export const genButtonColors = ({ color, dark, levels }) => {
   if (!color || color === "") return { ...theme.button };
 
   const { hue, saturation } = parseToHsl(color);
-  
+
   const lightText = hsl(hue, 0.8, 0.1);
   const darkText = hsl(hue, 0.8, 0.9);
 
@@ -59,21 +59,20 @@ export const genButtonColors = ({ color, dark, levels }) => {
 
 // 1, 0.618, 0.382, 0.236, 0.146, 0.09
 
-const genTheme = ({ color, name }) =>
-  new Promise((resolve) => {
+const genTheme = ({ color, name, simple }) =>
+  new Promise(resolve => {
     if (!color || color === "" || color === "transparent") return null;
     const { hue, saturation } = parseToHsl(color);
-    const goldenRatio = 1.61803398875;
     const hueAdj = 11.25;
     const levels = {
       light: [
-        hsl(hue + hueAdj, 0.075, 0.95),
+        simple ? themes.light.card.bg : hsl(hue + hueAdj, 0.075, 0.95),
         hsl(hue + hueAdj, 0.075, 0.9),
         hsl(hue + hueAdj, 0.075, 0.85),
         hsl(hue + hueAdj, 0.075, 0.8),
       ],
       dark: [
-        hsl(hue + hueAdj, 0.075, 0.16),
+        simple ? themes.dark.card.bg : hsl(hue + hueAdj, 0.075, 0.16),
         hsl(hue + hueAdj, 0.075, 0.14),
         hsl(hue + hueAdj, 0.075, 0.12),
         hsl(hue + hueAdj, 0.075, 0.1),

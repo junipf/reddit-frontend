@@ -35,7 +35,8 @@ const StyledButton = styled.button`
   line-height: 1;
   transition: all 0.1s ease;
   text-decoration: none;
-  color: ${({ theme, type }) => type === "flat" ? theme.color : theme.button[type].color};
+  color: ${({ theme, type }) =>
+    type === "flat" ? theme.color : theme.button[type].color};
   background-color: ${({ type, theme }) => theme.button[type].bg};
   &a {
     color: ${({ color, theme, type }) => color || theme.button[type].color};
@@ -104,7 +105,7 @@ const Button = ({
   href,
   "data-tip": data_tip,
   fill,
-  noMargin,
+  nomargin,
   align,
   size,
   onClick,
@@ -116,7 +117,7 @@ const Button = ({
   onShiftClick,
   ...rest
 }) => {
-  const handleClick = (e) => {
+  const handleClick = e => {
     if (disabled) return;
     else if (e.ctrlKey && onCtrlClick) onCtrlClick(value);
     else if (e.altKey && onAltClick) onAltClick(value);
@@ -134,7 +135,7 @@ const Button = ({
         <Icon icon={icon} color={color} fill={fill} key="0" align="none" />
       )}
       {children &&
-        React.Children.map(children, (child) =>
+        React.Children.map(children, child =>
           React.isValidElement(child) ? child : <span>{child}</span>
         )}
       {!hideLabel && label && <Span key="2">{label}</Span>}
@@ -152,7 +153,7 @@ const Button = ({
     to: to ? to : null,
     href: href ? href : null,
     as: to ? Link : href ? "a" : null,
-    nomargin: noMargin || size === "fill" ? "true" : null,
+    nomargin: nomargin || size === "fill" ? "true" : null,
     onClick: handleClick,
     ...rest,
   };

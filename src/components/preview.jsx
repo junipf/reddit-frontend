@@ -30,7 +30,8 @@ const Preview = ({
   };
 
   const [ref, entry] = useIntersect({
-    threshold: 1,
+    rootMargin: "500px 500px 500px 500px",
+    threshold: 0.1,
   });
 
   const visible = entry.isIntersecting;
@@ -93,7 +94,6 @@ const Preview = ({
                 /https:\/\/twitter.com\/(?:.*)\/status\/([^/]*)/
               )[1],
               width: media.oembed.width,
-              height: previewMaxHeight,
             },
           }
         : preview && preview.images[0]
@@ -167,7 +167,6 @@ const Preview = ({
     }
     if (Preview) {
       Preview.props.blur = nsfw && inListing && !showObscured;
-      Preview.props.updatePlaceholder = updatePlaceholder;
     }
     setPreview(Preview);
   }, [
@@ -184,17 +183,23 @@ const Preview = ({
     showObscured,
   ]);
 
-  const showMedia = Preview ? visible : false;
-  const [ratio, setRatio] = useState(
-    Preview ? (Preview.props.height / Preview.props.width) * 100 : null
-  );
-  const [placeholderHeight, setPlaceholderHeight] = useState(
-    Preview ? Preview.props.height : previewMaxHeight
-  );
-  const updatePlaceholder = ({ height, width }) => {
-    setRatio((height / width) * 100);
-    setPlaceholderHeight(height);
-  };
+  // const showMedia = Preview ? visible : false;
+  // const [ratio, setRatio] = useState(
+  //   Preview ? (Preview.props.height / Preview.props.width) * 100 : null
+  // );
+  // const [placeholderHeight, setPlaceholderHeight] = useState(
+  // Preview ? Preview.props.height : previewMaxHeight
+  // );
+  // const updatePlaceholder = ({ height, width }) => {
+  // console.log(`Ratio updated from ${ratio} to ${(height / width) * 100}`);
+  // setRatio((height / width) * 100);
+  // setPlaceholderHeight(height);
+  // };
+
+  const ratio = Preview
+    ? (Preview.props.height / Preview.props.width) * 100
+    : null;
+  const placeholderHeight = Preview ? Preview.props.height : previewMaxHeight;
 
   const obscureLabel =
     nsfw && spoiler
@@ -219,11 +224,11 @@ const Preview = ({
         </ObscurePlaceholder>
       ) : null}
       {Preview.Component === Body || Preview.Component === Tweet ? (
-        <Preview.Component {...Preview.props} />
+        <Preview.Component {...Preview.props} visible={visible} />
       ) : (
         <>
           <MediaWrapper ratio={ratio}>
-            {showMedia ? <Preview.Component {...Preview.props} /> : null}
+            <Preview.Component {...Preview.props} visible={visible} />
           </MediaWrapper>
         </>
       )}
@@ -241,26 +246,26 @@ const MediaWrapper = styled.div`
   height: 100%;
   display: flex;
   justify-content: center;
-  position: ${({ratio}) => (ratio ? "absolute" : null)};
+  position: ${({ ratio }) => (ratio ? "absolute" : null)};
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
 `;
 
-const PreviewWrapper = styled.div.attrs(({height}) => ({
+const PreviewWrapper = styled.div.attrs(({ height }) => ({
   style: {
-    maxHeight:
-      height < previewMaxHeight ? height : previewMaxHeight,
+    maxHeight: height < previewMaxHeight ? height : previewMaxHeight,
   },
 }))`
   grid-area: media;
   position: relative;
   max-width: 100%;
-  background: ${({theme}) => theme.card.bg};
+  background: ${({ theme }) => theme.card.bg};
+  overflow: hidden;
 `;
 
-const Placeholder = styled.div.attrs(({ratio, height}) => ({
+const Placeholder = styled.div.attrs(({ ratio, height }) => ({
   style: {
     paddingBottom: ratio + "%",
     maxHeight: height,
@@ -272,7 +277,7 @@ const Placeholder = styled.div.attrs(({ratio, height}) => ({
 const ObscurePlaceholder = styled.div`
   width: 100%;
   height: 100%;
-  background-color: ${({nsfw}) =>
+  background-color: ${({ nsfw }) =>
     nsfw ? "hsla(0, 100%, 30%, 0.5)" : "hsla(0, 0%, 30%, 0.5)"};
   display: flex;
   justify-content: center;
@@ -285,7 +290,7 @@ const ObscurePlaceholder = styled.div`
   z-index: 2;
 `;
 
-const Image = (props) => (
+const Image = props => (
   <ImageWrapper>
     <StyledImage {...props} />
   </ImageWrapper>
@@ -304,13 +309,13 @@ const StyledImage = styled.img`
   height: auto;
   width: auto;
   margin: 0 auto;
-  filter: ${({blur}) => (blur ? "blur(50px)" : null)};
+  filter: ${({ blur }) => (blur ? "blur(50px)" : null)};
   overflow: hidden;
 `;
 
 const Embed = styled.div`
-  /* height: ${({height}) => height}px; */
-  /* width: ${({width}) => width}px; */
+  /* height: ${({ height }) => height}px; */
+  /* width: ${({ width }) => width}px; */
   height: 100%;
   width: 100%;
   max-height: ${previewMaxHeight}px;
@@ -320,5 +325,5 @@ const Embed = styled.div`
     width: inherit;
     height: inherit;
   }
-  filter: ${({blur}) => (blur ? "blur(20px)" : null)};
+  filter: ${({ blur }) => (blur ? "blur(20px)" : null)};
 `;

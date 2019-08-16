@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import Button from "./button";
 import Dropdown from "./dropdown";
@@ -18,6 +18,7 @@ export const Video = ({
     hls_url: hlsUrl,
     scrubber_media_url: scrubberUrl,
     transcoding_status: status,
+    visible,
   },
   blur,
   poster,
@@ -46,16 +47,13 @@ export const Video = ({
     currentTime: 0,
   });
 
-  const setControlsState = (state) => setControls((c) => ({ ...c, ...state }));
+  const setControlsState = state => setControls(c => ({ ...c, ...state }));
 
   const setMediaState = (state, media = [$audio.current, $video.current]) => {
-    media.forEach((media) => {
+    media.forEach(media => {
       if (!media) return;
       Object.entries(state).forEach(([key, value]) => {
         if (media[key] !== value) {
-          console.log(
-            `setting ${key} from ${media[key]} to ${value} on ${media.tagName}`
-          );
           media[key] = value;
           setControlsState({ [key]: value });
         }
@@ -74,12 +72,11 @@ export const Video = ({
     $audio.current.pause();
   };
 
-  const handleSeekDrag = (e) => {
-    console.log(e);
+  const handleSeekDrag = e => {
     if (seeking) seek(e);
   };
 
-  const handleSeek = (e) => {
+  const handleSeek = e => {
     seek(e);
     if (seeking) {
       $video.current.play();
@@ -87,10 +84,10 @@ export const Video = ({
       setSeeking(false);
     }
   };
-  
+
   const endSeek = () => {
     setSeeking(false);
-  }
+  };
 
   const seek = ({ target, nativeEvent: { clientX } }) => {
     const { x, width } = target.getBoundingClientRect();
@@ -160,7 +157,7 @@ export const Video = ({
 
   // Handle errors
   const [error, setError] = useState(null);
-  const updateError = (e) => {
+  const updateError = e => {
     if (e && e.message) setError({ e, type: "video", name: "video" });
   };
 
@@ -192,6 +189,14 @@ scrubber: ${scrubberUrl}
    audio: ${audioUrl}`
     );
 
+  useEffect(() => {
+    console.log(`Video ${visible ? "" : "not"} visible`);
+    if (!visible && $video.current.playing) {
+      $video.current.pause();
+      $audio.current.pause();
+    }
+  }, [visible]);
+
   return (
     <Wrapper ref={$wrapper}>
       <StyledVideo
@@ -214,7 +219,7 @@ scrubber: ${scrubberUrl}
         onRateChange={syncStates}
         onTimeUpdate={updateCurrentTime}
         onCanPlay={syncStates}
-        onAbort={(e) => console.log(e)}
+        onAbort={e => console.log(e)}
       >
         <source src={url} />
         <source src={hlsUrl} type="application/vnd.apple.mpegURL" />
@@ -237,7 +242,7 @@ scrubber: ${scrubberUrl}
       >
         <source src={audioUrl} />
       </Audio>
-      <Controls>
+      <Controls className="controls">
         <Section>
           <Button onClick={togglePause}>
             <Icon icon={controls.paused ? "play" : "pause"} />
@@ -335,6 +340,12 @@ const Wrapper = styled.div`
   width: 100%;
   margin: 0;
   display: block;
+  &:hover {
+    .controls {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
 `;
 
 const Seekbar = ({
@@ -419,6 +430,9 @@ const Controls = styled.div`
   padding: 0.25rem;
   display: flex;
   flex-flow: row nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease;
 `;
 
 const Section = styled.div`
@@ -473,7 +487,7 @@ export const GifVideo = ({
     height,
   },
 }) => {
-  const handleClick = (e) =>
+  const handleClick = e =>
     e.target.paused ? e.target.play() : e.target.pause();
   return (
     <Wrapper>
