@@ -8,33 +8,29 @@ const SubredditThemeProvider = ({
   themesBySubreddit,
   subName,
   addSubredditTheme,
-  nightmode,
+  themePrefs,
   ...props
 }) => {
   const [theme, setTheme] = useState(inheritedTheme);
   useEffect(() => {
-    if (subName && themesBySubreddit[subName.toLowerCase()]) {
+    if (
+      themePrefs.useSubredditThemes &&
+      subName &&
+      themesBySubreddit[subName.toLowerCase()]
+    ) {
       setTheme(
-        nightmode
+        themePrefs.useDarkThemes
           ? themesBySubreddit[subName].dark
           : themesBySubreddit[subName].light
       );
     } else {
       setTheme(inheritedTheme);
     }
-  }, [inheritedTheme, themesBySubreddit, subName, nightmode]);
+  }, [inheritedTheme, themesBySubreddit, subName, themePrefs]);
   return <ThemeProvider theme={theme} {...props} />;
 };
 
-function mapStateToProps(state) {
-  const {
-    themesBySubreddit,
-    userPrefs: { nightmode },
-  } = state;
-  return { themesBySubreddit, nightmode };
-}
-
 export default connect(
-  mapStateToProps,
+  ({ themesBySubreddit, themePrefs }) => ({ themesBySubreddit, themePrefs }),
   { addSubredditTheme }
 )(withTheme(SubredditThemeProvider));

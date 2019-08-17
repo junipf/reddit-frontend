@@ -365,14 +365,12 @@ function mapStateToProps(state) {
   const {
     subreddits,
     lightboxIsOpen,
-    locationName,
     themesBySubreddit,
     themesByColor,
   } = state;
   return {
     subreddits,
     lightboxIsOpen,
-    locationName,
     themesBySubreddit,
     themesByColor,
   };

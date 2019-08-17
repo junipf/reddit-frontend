@@ -5,20 +5,20 @@ import SubscriptionList from "./subscription-list";
 import Button from "./button";
 import SubredditIcon, { Logo } from "./subreddit-icon";
 
-const NavigationMenu = ({ locationName, subreddits }) => {
+const NavigationMenu = ({ location, subreddits }) => {
   const [label, setLabel] = useState("Reddit");
 
   useEffect(() => {
-    const loc = locationName.toLowerCase();
+    const loc = location.name.toLowerCase();
     if (subreddits[loc] === undefined) {
-      document.title = locationName;
+      document.title = location.name;
       document.querySelector(
         'link[rel="shortcut icon"]'
       ).href = require("../icons/favicon.png");
       setLabel(
         <>
           <Logo size="small" />
-          {locationName}
+          {location.name}
         </>
       );
     } else {
@@ -31,7 +31,7 @@ const NavigationMenu = ({ locationName, subreddits }) => {
         </>
       );
     }
-  }, [locationName, subreddits]);
+  }, [location.name, subreddits]);
 
   return (
     <Dropdown toggle={<Button size="large">{label}</Button>}>
@@ -40,13 +40,7 @@ const NavigationMenu = ({ locationName, subreddits }) => {
   );
 };
 
-function mapStateToProps(state) {
-  const { locationName, subreddits, user } = state;
-  return {
-    locationName,
-    subreddits,
-    user,
-  };
-}
-
-export default connect(mapStateToProps)(NavigationMenu);
+export default connect(({ location, subreddits }) => ({
+  location,
+  subreddits,
+}))(NavigationMenu);

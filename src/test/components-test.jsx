@@ -4,6 +4,7 @@ import Icon from "../components/icon";
 import Button from "../components/button";
 import Dropdown from "../components/dropdown";
 import Tag from "../components/tags";
+import SubredditIcon from "../components/subreddit-icon";
 
 export const SectionCard = styled.section`
   margin: 1rem;
@@ -251,10 +252,30 @@ export const TagTest = () => (
   </>
 );
 
+const List = styled.div`
+  display: flex;
+  flex-flow: row wrap;
+`;
+
+const SubredditIconTest = () => (
+    <>
+      <h1>Generated subreddit icons</h1>
+      <SectionCard>
+        <List>
+          <SubredditIcon subName="Aa" subreddit={{}} size="small" />
+          <SubredditIcon subName="Bb" subreddit={{}} size="normal" />
+          <SubredditIcon subName="Cc" subreddit={{}} size="large" />
+          <SubredditIcon subName="Dd" subreddit={{}} size="xl" />
+        </List>
+      </SectionCard>
+    </>
+  );
+
 const ComponentsTest = () => (
   <>
     <DropdownTest />
     <TagTest />
+    <SubredditIconTest />
     <h1>Buttons</h1>
     <SectionCard>
       <h2>Types</h2>

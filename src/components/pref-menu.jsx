@@ -1,14 +1,10 @@
 import React from "react";
 import styled, { ThemeProvider } from "styled-components";
 import { connect } from "react-redux";
-import {
-  setUseSystemTheme,
-  setUserPrefs,
-  setThemePrefs,
-} from "../store/actions";
+import { setUserPrefs, setThemePrefs } from "../store/actions";
 import { Requester } from "../components/requester";
 
-import themes, { lightThemes, darkThemes } from "../style/themes";
+import { themeSets } from "../style/themes";
 
 import Dropdown, { Divider } from "./dropdown";
 import Button from "./button";
@@ -16,6 +12,7 @@ import Icon from "./icon";
 
 const Indent = styled.div`
   margin-left: 1rem;
+  /* list-style: none; */
 `;
 
 class PrefMenu extends React.Component {
@@ -45,148 +42,123 @@ class PrefMenu extends React.Component {
         .updatePreferences({ nightmode: e.matches })
         .then((result) => setUserPrefs(result));
   };
-  handleUserThemeChange = (value) => {
-    const {
-      setUseSystemTheme,
-      setUserPrefs,
-      useSystemTheme,
-      userPrefs,
-      themePrefs,
-      setThemePrefs,
-    } = this.props;
-
-    if (value === "system") {
-      if (!useSystemTheme) setUseSystemTheme(true);
-    } else {
-      if (useSystemTheme) setUseSystemTheme(false);
-    }
-
-    const { name, dark } = value;
-
-    const nightmode =
-      value === "dark" || (value === "system" && this.state.darkSystem);
-    if (userPrefs.nightmode !== nightmode)
-      this.context
-        .updatePreferences({ nightmode })
-        .then((result) => setUserPrefs(...result));
-
-    setThemePrefs({
-      system: value === "system" ? true : false,
-    });
-  };
   toggleSystemTheme = () => {};
   render() {
     const {
       user,
-      userPrefs: { nightmode } = {},
+      userPrefs: redditPrefs,
       authURL,
-      toggleNightmode,
-      useDarkTheme,
       logout,
-      currentThemeName,
-      themePrefs: { syncSystemTheme, syncRedditTheme, dark, light, useDark },
+      themePrefs: {
+        syncSystemTheme,
+        syncRedditTheme,
+        darkTheme,
+        lightTheme,
+        useDarkThemes,
+        useSubredditThemes,
+        useFlairThemes,
+      },
       setThemePrefs,
+      location,
     } = this.props;
     const { darkSystem } = this.state;
-    if (user)
-      return (
-        <>
-          <Dropdown
-            select
-            label="Theme"
-            icon={nightmode ? "moon" : "sun"}
-            {...this.props}
+    return (
+      <>
+        <Dropdown
+          select
+          label="Theme settings"
+          hideLabel
+          icon={useDarkThemes ? "moon" : "sun"}
+          iconAfter="none"
+          {...this.props}
+        >
+          {themeSets.map((themeSet) => (
+            <React.Fragment key={themeSet.name}>
+              <Button
+                onClick={setThemePrefs}
+                value={{ useDarkThemes: themeSet.dark }}
+                size="fill"
+                type="flat"
+              >
+                <Icon
+                  icon={
+                    useDarkThemes === themeSet.dark ? "checkCircle" : "circle"
+                  }
+                />
+                {themeSet.name}
+              </Button>
+              <Indent>
+                {themeSet.set.map((theme) => (
+                  <ThemeProvider theme={theme} key={theme.name}>
+                    <Button
+                      onClick={setThemePrefs}
+                      value={
+                        theme.dark
+                          ? { useDarkThemes: true, darkTheme: theme.id }
+                          : { useDarkThemes: false, lightTheme: theme.id }
+                      }
+                      type="secondary"
+                    >
+                      <Icon
+                        icon={
+                          useDarkThemes === theme.dark &&
+                          (darkTheme === theme.id || lightTheme === theme.id) &&
+                          !(useSubredditThemes && location.type === "subreddit")
+                            ? "checkCircle"
+                            : darkTheme === theme.id || lightTheme === theme.id
+                            ? "disc"
+                            : "circle"
+                        }
+                      />
+                      <Icon icon={theme.icon} />
+                      {theme.name}
+                    </Button>
+                  </ThemeProvider>
+                ))}
+              </Indent>
+            </React.Fragment>
+          ))}
+          <Divider />
+          <Button
+            onClick={setThemePrefs}
+            value={{ useSubredditThemes: !useSubredditThemes }}
           >
-            <Button onClick={setThemePrefs} value={{ useDark: false }}>
-              <Icon icon={useDark ? "circle" : "checkCircle"} />
-              Light theme
-            </Button>
-            <Indent>
-              {Object.entries(lightThemes).map(([key, theme]) => (
-                <ThemeProvider theme={theme}>
-                  <Button
-                    onClick={setThemePrefs}
-                    value={{ useDark: false, light: theme.name }}
-                    type="secondary"
-                    // size="fill"
-                  >
-                    <Icon
-                      icon={
-                        !useDark && light === theme.name
-                          ? "checkCircle"
-                          : light === theme.name
-                          ? "disc"
-                          : "circle"
-                      }
-                    />
-                    <Icon icon={theme.icon} />
-                    {theme.name}
-                  </Button>
-                </ThemeProvider>
-              ))}
-            </Indent>
-            <Button onClick={setThemePrefs} value={{ useDark: true }}>
-              <Icon icon={useDark ? "checkCircle" : "circle"} />
-              Dark theme
-            </Button>
-            <Indent>
-              {Object.entries(darkThemes).map(([key, theme]) => (
-                <ThemeProvider theme={theme}>
-                  <Button
-                    onClick={setThemePrefs}
-                    value={{ useDark: true, dark: theme.name }}
-                    type="secondary"
-                    // size="fill"
-                  >
-                    <Icon
-                      icon={
-                        useDark && dark === theme.name
-                        ? "checkCircle"
-                        : dark === theme.name
-                        ? "disc"
-                        : "circle"
-                      }
-                    />
-                    <Icon icon={theme.icon} />
-                    {theme.name}
-                  </Button>
-                </ThemeProvider>
-              ))}
-            </Indent>
-            <Divider />
-            <Button
-              onClick={setThemePrefs}
-              value={{ syncSystemTheme: !syncSystemTheme }}
-            >
-              <Icon icon={syncSystemTheme ? "checksquare" : "square"} />
-              Sync with system (
-              <Icon icon={darkSystem ? "moon" : "sun"} noMargin />)
-            </Button>
-            <Button
-              onClick={setThemePrefs}
-              value={{ syncRedditTheme: !syncRedditTheme }}
-            >
-              <Icon icon={syncRedditTheme ? "checksquare" : "square"} />
-              Sync with reddit (
-              <Icon icon={nightmode ? "moon" : "sun"} noMargin />)
-            </Button>
-          </Dropdown>
+            <Icon icon={useSubredditThemes ? "checkSquare" : "square"} />
+            Use subreddit themes
+          </Button>
+          <Button
+            onClick={setThemePrefs}
+            value={{ useFlairTheme: !useFlairThemes }}
+          >
+            <Icon icon={useFlairThemes ? "checkSquare" : "square"} />
+            Use flair themes
+          </Button>
+          <Divider />
+          <Button
+            onClick={setThemePrefs}
+            value={{ syncSystemTheme: !syncSystemTheme }}
+          >
+            <Icon icon={syncSystemTheme ? "checkSquare" : "square"} />
+            Sync with system (
+            <Icon icon={darkSystem ? "moon" : "sun"} noMargin />)
+          </Button>
+          <Button
+            onClick={setThemePrefs}
+            value={{ syncRedditTheme: !syncRedditTheme }}
+          >
+            <Icon icon={syncRedditTheme ? "checkSquare" : "square"} />
+            Sync with reddit (
+            <Icon icon={redditPrefs.nightmode ? "moon" : "sun"} noMargin />)
+          </Button>
+        </Dropdown>
+        {user ? (
           <Dropdown label={user.name} expand>
             <Button label="Messages" icon="mail" to="/messages/" />
             <Button label="Profile" icon="user" to="/user/me" />
             <Divider />
             <Button label="Log out" icon="logout" onClick={logout} />
           </Dropdown>
-        </>
-      );
-    else
-      return (
-        <>
-          <Button
-            type="secondary"
-            onClick={toggleNightmode}
-            icon={useDarkTheme ? "moon" : "sun"}
-          />
+        ) : (
           <Button
             type="primary"
             href={authURL}
@@ -194,22 +166,18 @@ class PrefMenu extends React.Component {
             label="Login"
             size="large"
           />
-        </>
-      );
+        )}
+      </>
+    );
   }
 }
 
-function mapStateToProps(state) {
-  const { useSystemTheme, userPrefs, user, themePrefs } = state;
-  return {
-    useSystemTheme,
+export default connect(
+  ({ userPrefs, user, themePrefs, location }) => ({
     userPrefs,
     user,
     themePrefs,
-  };
-}
-
-export default connect(
-  mapStateToProps,
-  { setUseSystemTheme, setUserPrefs, setThemePrefs }
+    location,
+  }),
+  { setUserPrefs, setThemePrefs }
 )(PrefMenu);

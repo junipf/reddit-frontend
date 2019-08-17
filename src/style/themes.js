@@ -2,6 +2,7 @@ import { materialColors as colors } from "./material-design-color-palette";
 
 const light = {
   dark: false,
+  id: "light",
   name: "Day",
   icon: "Sun",
   highlight: colors.blue500,
@@ -90,6 +91,7 @@ const dark = {
   ...light,
   name: "Night",
   icon: "Moon",
+  id: "dark",
   dark: true,
   highlight: colors.blue400,
   color: colors.grey100,
@@ -150,16 +152,17 @@ const dark = {
 
 const blueDark = {
   ...dark,
-  name: "Solarized Dark",
+  name: "Blue Dark",
   icon: "Sunset",
+  id: "blueDark",
   dark: true,
   color: colors.blueGrey100,
   titleColor: colors.white,
   card: {
     bg: colors.blueGrey900,
-    innerBg: colors.blueGrey200,
-    border: colors.blueGrey800,
-    innerBorder: colors.blueGrey500,
+    innerBg: colors.blueGrey700,
+    border: colors.blueGrey600,
+    innerBorder: colors.blueGrey800,
   },
   column: {
     bg: colors.blueGrey900,
@@ -196,9 +199,71 @@ const blueDark = {
   },
 };
 
-const themes = { light, dark, blueDark };
+const reddit = {
+  ...light,
+  name: "reddit",
+  id: "reddit",
+  icon: "upvote",
+  dark: false,
+  color: "#222",
+  titleColor: "#00f",
+  link: "#00f",
+  card: {
+    bg: "white",
+    border: "#808080",
+    innerBg: "#fafafa",
+    innerBorder: "#336699",
+  },
+  header: {
+    bg: "#cee3f8",
+    border: "#5f99cf",
+  },
+  button: {
+    primary: {
+      color: "#336699",
+      bg: "#bdd4ea",
+      hover: "#6a9fd1",
+      active: "#5f99cf",
+    },
+    secondary: {
+      color: "#222",
+      bg: "#f0f6fd",
+      hover: "#bdd4ea",
+      active: "#6a9fd1",
+    },
+    flat: {
+      color: "#222",
+      bg: "transparent",
+      hover: "#f0f6fd",
+      active: "#bdd4ea",
+    },
+  },
+ tag: {
+   ...light.tag,
+   stickied: "#228822",
+   oc: "#0079d3",
+   spoiler: "#222222",
+   nsfw: "#d10023",
+   restricted: "#ffd634",
+   quarantine: "#ffd635", // Seriously, reddit?
+ }
+}
+
+const themes = { light, dark, blueDark, reddit };
 
 export default themes;
 
-export const lightThemes = { light };
-export const darkThemes = { dark, blueDark };
+export const themeSets = [
+  {
+    name: "Light themes",
+    dark: false,
+    icon: "Sun",
+    set: [light, reddit],
+  },
+  {
+    name: "Dark themes",
+    dark: true,
+    icon: "Moon",
+    set: [dark, blueDark],
+  },
+];

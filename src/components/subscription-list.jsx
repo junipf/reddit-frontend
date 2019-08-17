@@ -11,7 +11,7 @@ import { Search, CategoryTitle } from "./dropdown";
 import Input from "./input";
 import Button from "./button";
 
-export const SubredditEntry = ({ onClick, filter, collapse, ...props }) => {
+export const SubredditEntry = ({ onClick, filter, ...props }) => {
   return (
     <Button
       to={props.url || props.path}
@@ -19,11 +19,8 @@ export const SubredditEntry = ({ onClick, filter, collapse, ...props }) => {
       size="fill"
       type="flat"
     >
-      <SubredditIcon
-        subName={props.display_name}
-        size={collapse ? "large" : null}
-      />
-      {!collapse && (props.curator ? " m/" : " r/") + props.display_name}
+      <SubredditIcon subName={props.display_name} size="small"/>
+      {(props.curator ? " m/" : " r/") + props.display_name}
     </Button>
   );
 };
@@ -78,8 +75,7 @@ class SubscriptionList extends React.Component {
       nextProps.subscriptions !== this.props.subscriptions ||
       nextProps.favorites !== this.props.favorites ||
       nextProps.multireddits !== this.props.multireddits ||
-      nextProps.defaults !== this.props.defaults ||
-      nextProps.collapse !== this.props.collapse
+      nextProps.defaults !== this.props.defaults
     );
   }
   handleInput(e) {
@@ -146,34 +142,23 @@ class SubscriptionList extends React.Component {
     });
   }
   filterList = (list, filter) => {
-    const { collapse } = this.props;
     if (filter && filter !== "") {
       return list.reduce((filtered, sub) => {
         if (sub && sub.display_name.toLowerCase().includes(filter)) {
           filtered.push(
-            <SubredditEntry
-              {...sub}
-              key={sub.id}
-              filter={filter}
-              collapse={collapse}
-            />
+            <SubredditEntry {...sub} key={sub.id} filter={filter} />
           );
         }
         return filtered;
       }, []);
     }
     return list.map((sub) => (
-      <SubredditEntry
-        {...sub}
-        key={UniqueId(sub.id)}
-        filter={filter}
-        collapse={collapse}
-      />
+      <SubredditEntry {...sub} key={UniqueId(sub.id)} filter={filter} />
     ));
   };
   filterSearch = (searchResults) => {
     const { subscriptions, favorites, defaults } = this.props;
-    const { collapse, filter } = this.state;
+    const { filter } = this.state;
     if (searchResults !== "{}") {
       return searchResults.reduce((filtered, sub) => {
         if (
@@ -189,7 +174,6 @@ class SubscriptionList extends React.Component {
               onClick={this.toggleDropdown}
               size="small"
               filter={filter}
-              collapse={collapse}
             />
           );
         }
@@ -200,7 +184,7 @@ class SubscriptionList extends React.Component {
     }
   };
   render() {
-    const { collapse, user } = this.props;
+    const { user } = this.props;
     const {
       filter,
       filteredFavorites,
@@ -213,15 +197,11 @@ class SubscriptionList extends React.Component {
     return (
       <ScrollWrapper>
         <Search>
-          {collapse ? (
-            <Button icon="search" />
-          ) : (
-            <Input
-              placeholder="Search"
-              onChange={this.handleInput}
-              value={filter}
-            />
-          )}
+          <Input
+            placeholder="Search"
+            onChange={this.handleInput}
+            value={filter}
+          />
         </Search>
         {filter === "" ? (
           <>
@@ -235,30 +215,29 @@ class SubscriptionList extends React.Component {
         ) : null}
 
         {filteredFavorites}
-        {!collapse && filteredMultireddits.length > 0 ? (
+        {filteredMultireddits.length > 0 ? (
           <CategoryTitle key="collections">Collections</CategoryTitle>
         ) : null}
 
-        {!collapse && filteredMultireddits}
-        {user && !collapse && filteredSubscriptions.length > 0 ? (
+        {filteredMultireddits}
+        {user && filteredSubscriptions.length > 0 ? (
           <CategoryTitle key="subscriptions">Subscriptions</CategoryTitle>
         ) : null}
-        {!collapse && filteredSubscriptions}
-        {!collapse && filteredDefaults.length > 0 ? (
+        {filteredSubscriptions}
+        {filteredDefaults.length > 0 ? (
           <CategoryTitle key="defaults">Default Subreddits</CategoryTitle>
         ) : null}
-        {!collapse && filteredDefaults}
-        {!collapse && searchResults && searchResults.length > 0 ? (
-          <CategoryTitle key="searchresults">Search</CategoryTitle>
+        {filteredDefaults}
+        {searchResults && searchResults.length > 0 ? (
+          <CategoryTitle key="searchResults">Search</CategoryTitle>
         ) : null}
-        {!collapse && searchResults}
-        {!collapse &&
-        filteredSubscriptions.length === 0 &&
+        {searchResults}
+        {filteredSubscriptions.length === 0 &&
         filteredFavorites.length === 0 &&
         filteredDefaults.length === 0 &&
         searchResults &&
         searchResults.length === 0 ? (
-          <CategoryTitle key="noresults">No results</CategoryTitle>
+          <CategoryTitle key="noResults">No results</CategoryTitle>
         ) : null}
       </ScrollWrapper>
     );
@@ -312,7 +291,6 @@ function mapStateToProps(state) {
     favoriteNames,
     defaultNames,
     multireddits,
-    locationName,
     user,
   } = state;
 
@@ -347,7 +325,6 @@ function mapStateToProps(state) {
     favorites,
     defaults,
     multireddits,
-    locationName,
     user,
   };
 }

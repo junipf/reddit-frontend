@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
 import { connect } from "react-redux";
-import { setLocationName } from "../store/actions";
+import { setLocation } from "../store/actions";
 import PostListing from "./post-listing";
 import CommentListing from "./comment-listing";
 import Button, { Group } from "../components/button";
@@ -13,17 +13,11 @@ import SubredditThemeProvider from "./sub-theme-provider";
 const SplitView = ({
   match: { params: path } = {},
   location: { search },
-  setLocationName,
+  setLocation,
 }) => {
   const searchParams = useMemo(() => {
     return new URLSearchParams(search);
   }, [search]);
-
-  // Set location name on mount,
-  const [locName, setLocName] = useState(path.subName || null);
-  useEffect(() => {
-    setLocationName(locName || "Frontpage");
-  }, [locName, setLocationName]);
 
   const [state, setState] = useState({
     postListing: {
@@ -58,7 +52,10 @@ const SplitView = ({
           time: searchParams.get("t") || "all",
         },
       }));
-      setLocName(path.subName);
+      setLocation({
+        name: path.subName || "Frontpage",
+        type: path.subName ? "subreddit" : "listing",
+      });
     } else {
       setState((state) => ({
         ...state,
@@ -75,7 +72,7 @@ const SplitView = ({
         },
       }));
     }
-  }, [path, searchParams]);
+  }, [path, searchParams, setLocation]);
 
   const togglePostListing = () => {
     setState((state) => ({
@@ -173,7 +170,6 @@ const SplitView = ({
           <CommentListing
             {...state.commentListing}
             hideSelf={toggleCommentListing}
-            setLocName={setLocName}
           />
         </Column>
       </SubredditThemeProvider>
@@ -211,7 +207,7 @@ const SplitView = ({
 
 export default connect(
   null,
-  { setLocationName }
+  { setLocation }
 )(SplitView);
 
 const Navbar = styled.div`
@@ -226,6 +222,6 @@ const Navbar = styled.div`
   width: 100vw;
   height: 2rem;
   background-color: ${({ theme }) => theme.card.bg};
-  border-top: 1px solid ${({ theme }) => theme.card.border}
+  border-top: 1px solid ${({ theme }) => theme.card.border};
   text-align: center;
 `;

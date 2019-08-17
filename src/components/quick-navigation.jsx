@@ -40,7 +40,7 @@ const StyledIcon = styled.div`
   }
 `;
 
-const QuickNavigation = ({ favorites = [], locationName }) => {
+const QuickNavigation = ({ favorites = [], location }) => {
   const [favoriteIcons, setFavoriteIcons] = useState([]);
 
   useEffect(() => {
@@ -53,13 +53,13 @@ const QuickNavigation = ({ favorites = [], locationName }) => {
           data-multiline={true}
           data-place="right"
           data-delay-show={0}
-          active={locationName === sub.display_name}
+          active={location.name === sub.display_name}
         >
           <SubredditIcon subName={sub.display_name} size="small" />
         </IconLink>
       ))
     );
-  }, [favorites, locationName]);
+  }, [favorites, location.name]);
 
   useEffect(() => {
     ReactTooltip.rebuild();
@@ -124,7 +124,7 @@ const extractSubData = ({
   };
 };
 
-const mapStateToProps = ({ subreddits, favoriteNames, locationName }) => {
+const mapStateToProps = ({ subreddits, favoriteNames, location }) => {
   let favorites = [];
   if (favoriteNames) {
     favorites = favoriteNames.reduce((favorites, name) => {
@@ -135,7 +135,7 @@ const mapStateToProps = ({ subreddits, favoriteNames, locationName }) => {
 
   return {
     favorites,
-    locationName,
+    location,
   };
 };
 

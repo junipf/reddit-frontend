@@ -18,11 +18,6 @@ export const setUserPrefs = (prefs) => ({
   prefs,
 });
 
-export const setNightmode = (nightmode) => ({
-  type: "SET_NIGHTMODE",
-  nightmode,
-});
-
 export const setSubscriptions = (subscriptions) => ({
   type: "SET_SUBSCRIPTIONS",
   subscriptions,
@@ -38,10 +33,10 @@ export const setDefaults = (defaults) => ({
   defaults,
 });
 
-export const setLocationName = (name) => {
+export const setLocation = (location) => {
   return {
-    type: "SET_LOCATION_NAME",
-    name,
+    type: "SET_LOCATION",
+    location,
   };
 };
 
@@ -53,11 +48,6 @@ export const addSubreddit = (subredditInfo) => ({
 export const toggleLightboxIsOpen = () => ({ type: "TOGGLE_LIGHTBOX_IS_OPEN" });
 
 export const setCurrentPost = (post) => ({ type: "SET_CURRENT_POST", post });
-
-export const setUseSystemTheme = (bool) => ({
-  type: "SET_USE_SYSTEM_THEME",
-  bool,
-});
 
 export const addSubredditTheme = (subName, theme) => ({
   type: "ADD_SUBREDDIT_THEME",

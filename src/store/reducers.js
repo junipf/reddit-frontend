@@ -8,10 +8,21 @@ const initialState = {
   defaultNames: [],
   multireddits: [],
   currentPost: null,
-  locationName: "Frontpage",
+  location: {
+    name: "Frontpage",
+    type: "listing",
+  },
   themesBySubreddit: {},
   themesByColor: {},
-  themePrefs: { syncSystemTheme: true, syncRedditTheme: false },
+  themePrefs: {
+    useSubredditThemes: true,
+    useFlairThemes: true,
+    syncSystemTheme: true,
+    syncRedditTheme: false,
+    useDarkThemes: false,
+    lightTheme: "light",
+    darkTheme: "dark",
+  },
 };
 
 const store = (state = initialState, action) => {
@@ -22,8 +33,6 @@ const store = (state = initialState, action) => {
     themesBySubreddit,
     themesByColor,
   } = state;
-
-  // console.log("REDUCER ACTION: ", action);
   switch (action.type) {
     case "SET_REFRESH_TOKEN":
       return Object.assign({}, state, {
@@ -77,11 +86,6 @@ const store = (state = initialState, action) => {
       return { ...state, userPrefs: action.prefs };
     case "SET_THEME_PREFS":
       return { ...state, themePrefs: { ...state.themePrefs, ...action.prefs } };
-    case "SET_NIGHTMODE":
-      return {
-        ...state,
-        userPrefs: { ...state.userPrefs, nightmode: action.nightmode },
-      };
     case "SET_SUBSCRIPTIONS":
       let favoriteNames = [];
       const subscriptionNames = action.subscriptions.reduce(
@@ -116,10 +120,8 @@ const store = (state = initialState, action) => {
       return { ...state, lightboxIsOpen: !lightboxIsOpen };
     case "SET_CURRENT_POST":
       return { ...state, currentPost: action.post };
-    case "SET_LOCATION_NAME":
-      return { ...state, locationName: action.name };
-    case "SET_USE_SYSTEM_THEME":
-      return { ...state, useSystemTheme: action.bool };
+    case "SET_LOCATION":
+      return { ...state, location: action.location };
     case "ADD_SUBREDDIT_THEME":
       themesBySubreddit[action.subName] = action.theme;
       return { ...state, themesBySubreddit };
@@ -127,18 +129,9 @@ const store = (state = initialState, action) => {
       themesByColor[action.color] = action.theme;
       return { ...state, themesByColor };
     case "LOGOUT":
-      for (let [subName, sub] of Object.entries(subreddits)) {
-        if (sub.subreddit_type === "private") subreddits[subName] = undefined;
-      }
       return {
-        ...state,
-        subscriptionNames: [],
-        favoriteNames: [],
-        multireddits: [],
-        user: null,
-        refreshToken: undefined,
-        userPrefs: { nightmode: state.userPrefs.nightmode },
-        subreddits,
+        ...initialState,
+        themePrefs: state.themePrefs,
       };
     default:
       return state;

@@ -7,7 +7,7 @@ import rootReducer from "./reducers";
 const persistConfig = {
   key: "root",
   storage,
-  blacklist: ["themesBySubreddit", "themesByColor", "currentPost", "lightboxIsOpen", "locationName", "defaultNames"],
+  blacklist: ["themesBySubreddit", "themesByColor", "currentPost", "lightboxIsOpen", "location", "defaultNames"],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

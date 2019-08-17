@@ -5,6 +5,7 @@ import { genSubIconColor } from "../style/gen-theme";
 import { meetsContrastGuidelines } from "polished";
 
 import { ReactComponent as LogoSVG } from "../icons/logo.svg";
+import { PropTypes } from "prop-types";
 
 export const Logo = (props) => (
   <Circle {...props}>
@@ -82,7 +83,11 @@ function mapStateToProps(state, { subName }) {
 
 export default connect(mapStateToProps)(withTheme(SubredditIcon));
 
-const Circle = styled.div.attrs(({url, bgColor, color}) => {
+SubredditIcon.propTypes = {
+  size: PropTypes.oneOf(["small", "normal", "large", "xl"]),
+};
+
+const Circle = styled.div.attrs(({ url, bgColor, color }) => {
   return {
     style: {
       backgroundImage: url ? "url(" + url + ")" : null,
@@ -93,25 +98,38 @@ const Circle = styled.div.attrs(({url, bgColor, color}) => {
 })`
   user-select: none;
 
+  /* display: flex; */
+  /* flex-flow: row nowrap; */
+  /* align-items: center; */
+  /* justify-content: center; */
+
   height: 1.5em;
   width: 1.5em;
   border-radius: 50%;
   /* margin-right: 0.25em; */
   flex: 0 0 1.5em;
   text-align: center;
-
-  line-height: 1.4;
-  overflow: hidden;
-
-  font-size: ${({size}) =>
+  line-height: 1.618;
+  font-size: ${({ size }) =>
     size === "xl"
-      ? "5rem"
+      ? "4.236rem"
       : size === "large"
-      ? "1.5rem"
+      ? "1.618rem"
       : size === "small"
-      ? "0.8rem"
+      ? "0.618rem"
       : "1rem"};
-  font-weight: 100;
+      
+  font-weight: ${({ size }) =>
+    size === "xl"
+      ? 100
+      : size === "large"
+      ? 300
+      : size === "small"
+      ? 800
+      : 400};
+
+  /* line-height: 1.4; */
+  overflow: hidden;
   text-align: center;
   background-position: center;
   background-repeat: no-repeat;
@@ -119,7 +137,7 @@ const Circle = styled.div.attrs(({url, bgColor, color}) => {
   background-size: 100% auto;
   background-origin: border-box;
   background-clip: border-box;
-  /* border: 0.0625em solid ${({theme}) => theme.card.innerBorder}; */
+  /* border: 0.0625em solid ${({ theme }) => theme.card.innerBorder}; */
   &.square {
     border-radius: 0;
   }

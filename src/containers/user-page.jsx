@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import styled from "styled-components";
 import { connect } from "react-redux";
-import { setLocationName } from "../store/actions";
+import { setLocation } from "../store/actions";
 import { Link } from "react-router-dom";
 import { Requester } from "../components/requester";
 import ReactTooltip from "react-tooltip";
@@ -23,15 +23,15 @@ import { formatNumber } from "./../utils/format-number";
 
 const Card = styled.article`
   margin: 1rem;
-  background: ${({theme}) => theme.card.bg};
-  border: 1px solid ${({theme}) => theme.card.border};
+  background: ${({ theme }) => theme.card.bg};
+  border: 1px solid ${({ theme }) => theme.card.border};
   padding: 0.75rem;
   border-radius: 0.5rem;
 `;
 
 const Trophies = styled.div`
-  background: ${({theme}) => theme.header.bg};
-  border: 1px solid ${({theme}) => theme.card.innerBorder};
+  background: ${({ theme }) => theme.header.bg};
+  border: 1px solid ${({ theme }) => theme.card.innerBorder};
   padding: 0.75rem;
   border-radius: 0.5rem;
   display: flex;
@@ -76,7 +76,7 @@ const Actions = styled.div`
 
 const UserPage = ({
   match: { params: path } = {},
-  setLocationName,
+  setLocation,
   username,
   loggedIn,
   ...props
@@ -89,14 +89,14 @@ const UserPage = ({
   const [trophies, setTrophies] = useState([]);
 
   useEffect(() => {
-    setLocationName(`u/${path.username}`);
+    setLocation({ name: `u/${path.username}`, type: "user" });
 
     const userRequester = r.getUser(path.username);
 
     userRequester.fetch().then(
       (result) => {
         setUser(result);
-        setLocationName(`u/${result.name}`);
+        setLocation({ name: `u/${result.name}`, type: "user" });
         console.log("user", result);
       },
       (e) => setError({ e, type: "user", name: path.username })
@@ -117,7 +117,7 @@ const UserPage = ({
       },
       (e) => setError({ e, type: "trophies", name: path.username })
     );
-  }, [path.username, setLocationName, r]);
+  }, [path.username, setLocation, r]);
 
   // Refresh tooltips
   useEffect(() => {
@@ -234,5 +234,5 @@ export default connect(
     username: state.user.name,
     loggedIn: !!state.user,
   }),
-  { setLocationName }
+  { setLocation }
 )(UserPage);

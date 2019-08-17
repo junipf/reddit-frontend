@@ -60,7 +60,7 @@ const GlobalStyle = createGlobalStyle`
     font-size: 0.9rem;
     line-height: 1.25rem;
     font-weight: 400;
-    color ${({ theme }) => (theme.dark ? "#fff" : "#000")};
+    color: ${({ theme }) => (theme.dark ? "#fff" : "#000")};
     p {
       margin: 0.25em 0;
     }

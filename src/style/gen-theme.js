@@ -87,10 +87,12 @@ const genTheme = ({ color, name, simple }) =>
     };
     const generatedThemes = {
       color: color,
+      icon: "droplet",
       light: {
         ...themes.light,
         ...shared,
         name: `Light ${name || color}`,
+        icon: "droplet",
         link: hsl(hue, 0.8, 0.35),
         color: hsl(hue, 0.8, 0.15),
         button: genButtonColors({ color, dark: false, levels: levels.light }),
@@ -113,6 +115,7 @@ const genTheme = ({ color, name, simple }) =>
         ...themes.dark,
         ...shared,
         name: `Dark ${name || color}`,
+        icon: "droplet",
         link: hsl(hue, 0.8, 0.85),
         color: hsl(hue, 0.8, 0.8),
         button: genButtonColors({ color, dark: true, levels: levels.dark }),

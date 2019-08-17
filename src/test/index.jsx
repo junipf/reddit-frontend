@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import styled from "styled-components";
 import { Switch, Route } from "react-router-dom";
 import { connect } from "react-redux";
-import { setLocationName } from "./../store/actions";
+import { setLocation } from "./../store/actions";
 import { Column } from "../containers/column";
 
 // import pages
@@ -35,7 +35,7 @@ const VideoGifPost = () => (
 );
 
 const Page = styled.div`
-  width: 100%
+  width: 100%;
   margin: 0 auto;
 `;
 
@@ -49,10 +49,10 @@ export const tests = [
   { name: "Tweet", Component: TwitterPost, icon: "twitter" },
 ];
 
-const TestPage = ({ setLocationName }) => {
+const TestPage = ({ setLocation }) => {
   useEffect(() => {
-    setLocationName("Test");
-  }, [setLocationName]);
+    setLocation({name: "Test", type: "other"});
+  }, [setLocation]);
   return (
     <Column>
       <Page>
@@ -72,5 +72,5 @@ const TestPage = ({ setLocationName }) => {
 
 export default connect(
   null,
-  { setLocationName }
+  { setLocation }
 )(TestPage);

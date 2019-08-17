@@ -12,6 +12,7 @@ import {
   addSubreddit,
   addSubredditTheme,
   addColorTheme,
+  setLocation,
 } from "../store/actions";
 import styled, { withTheme } from "styled-components";
 
@@ -44,7 +45,8 @@ const CommentListing = ({
   sort,
   hideSelf,
   visible,
-  setLocName,
+  setLocation
+  // setLocName,
 }) => {
   const r = useContext(Requester);
   const [error, setError] = useState(null);
@@ -124,9 +126,10 @@ const CommentListing = ({
     if (post && subName === null) {
       history.replace(post.permalink);
       fetchSubreddit(post.subreddit.display_name);
-      setLocName(`r/${post.subreddit.display_name}`);
+      setLocation({name: post.title, type: "thread"});
+      // setLocName(`r/${post.subreddit.display_name}`);
     }
-  }, [post, subName, history, fetchSubreddit, setLocName]);
+  }, [post, subName, history, fetchSubreddit, setLocation]);
 
   // Generates themes from flair color if theme does not
   // already exist.
@@ -243,7 +246,6 @@ function mapStateToProps(state) {
   const {
     subreddits,
     lightboxIsOpen,
-    locationName,
     themesBySubreddit,
     themesByColor,
     currentPost,
@@ -251,7 +253,6 @@ function mapStateToProps(state) {
   return {
     subreddits,
     lightboxIsOpen,
-    locationName,
     themesBySubreddit,
     themesByColor,
     currentPost,
@@ -264,5 +265,6 @@ export default connect(
     addSubreddit,
     addSubredditTheme,
     addColorTheme,
+    setLocation,
   }
 )(withRouter(withTheme(CommentListing)));

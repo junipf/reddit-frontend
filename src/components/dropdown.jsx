@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { isFragment } from "react-is";
 import styled from "styled-components";
 import Button from "./button";
 import { Link } from "react-router-dom";
@@ -26,7 +27,7 @@ const Dropdown = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const debugLogChildren = () => console.log(children);
 
-  const toggleDropdown = () => setShowDropdown((bool) => !bool);
+  const toggleDropdown = () => setShowDropdown(bool => !bool);
   const closeDropdown = () => setShowDropdown(false);
 
   const dir = {
@@ -166,7 +167,7 @@ const Menu = ({
   }, [wrapper, sub, expand, dir, pos.init]);
 
   useEffect(() => {
-    const handleClick = (e) => {
+    const handleClick = e => {
       if (menu.current && menu.current.contains(e.target)) return;
       closeDropdown();
     };
@@ -177,54 +178,59 @@ const Menu = ({
     };
   });
 
-  const selectAndClose = (value) => {
+  const selectAndClose = value => {
     onSelect && onSelect(value);
     closeDropdown();
   };
 
-  const useChildren = React.Children.map(children, (child) => {
-    if (React.isValidElement(child)) {
-      if (child.type === Button)
+  const mapChildrenByType = childrenToMap =>
+    React.Children.map(childrenToMap, child => {
+      if (React.isValidElement(child)) {
+        if (isFragment(child)) 
+          return  mapChildrenByType(child.props.children);
+        if (child.type === "li")
+          return child;
+        if (child.type === Button)
+          return (
+            <li>
+              {React.cloneElement(child, {
+                size: "fill",
+                type: child.props.type === "primary" ? "primary" : "flat",
+                hideLabel: false,
+                align: "left",
+                onSelect: selectAndClose,
+              })}
+            </li>
+          );
+        if (child.type === Dropdown)
+          return (
+            <li>
+              {React.cloneElement(child, {
+                size: "fill",
+                type: child.props.type ? child.props.type : "flat",
+                align: "left",
+                sub: true,
+                left: subMenuPositioning === "left",
+                right: subMenuPositioning === "right",
+                onSelect: selectAndClose,
+                hideLabel: false,
+              })}
+            </li>
+          );
+        return <li>{child}</li>;
+      }
+      if (child)
         return (
           <li>
-            {React.cloneElement(child, {
-              size: "fill",
-              type: child.props.type === "primary" ? "primary" : "flat",
-              hideLabel: false,
-              align: "left",
-              onSelect: selectAndClose,
-            })}
+            <CategoryTitle>{child}</CategoryTitle>
           </li>
         );
-      if (child.type === Dropdown)
-        return (
-          <li>
-            {React.cloneElement(child, {
-              size: "fill",
-              type: child.props.type ? child.props.type : "flat",
-              align: "left",
-              sub: true,
-              left: subMenuPositioning === "left",
-              right: subMenuPositioning === "right",
-              onSelect: selectAndClose,
-              hideLabel: false,
-            })}
-          </li>
-        );
-      return <li>{child}</li>;
-    }
-    if (child)
-      return (
-        <li>
-          <CategoryTitle>{child}</CategoryTitle>
-        </li>
-      );
-    return child;
-  });
+      return child;
+    });
 
   return (
     <StyledMenu pos={pos} sub={sub} ref={menu} expand={expand}>
-      {useChildren}
+      {mapChildrenByType(children)}
     </StyledMenu>
   );
 };
@@ -232,7 +238,7 @@ const Menu = ({
 const Wrapper = styled.div`
   position: relative;
   display: inline-block;
-  width: ${({size}) => size === "fill" ? "100%" : null};
+  width: ${({ size }) => (size === "fill" ? "100%" : null)};
 `;
 
 const StyledEntry = styled(Button)`

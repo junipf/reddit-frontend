@@ -1,5 +1,5 @@
 import React from "react";
-import styled, { ThemeProvider } from "styled-components";
+import styled from "styled-components";
 import { hot } from "react-hot-loader";
 import { connect } from "react-redux";
 import { Route, Switch } from "react-router-dom";
@@ -12,7 +12,6 @@ import {
   setRefreshToken,
   setUser,
   setUserPrefs,
-  setNightmode,
   logout,
   setSubscriptions,
   setMultireddits,
@@ -21,7 +20,6 @@ import {
 import AppOnlyOAuth from "../utils/app-only-oauth";
 
 // Import pages
-import SubscriptionsPage from "./subscriptions-page";
 import MessagesPage from "./messages-page";
 import ComponentTestPage from "../test";
 
@@ -32,14 +30,13 @@ import QuickNavigation from "../components/quick-navigation";
 import PrefMenu from "../components/pref-menu";
 import SplitView from "./split-view";
 import TestNav from "../test/test-nav";
-import ModTools from "./mod-tools";
 import UserPage from "./user-page";
 
 // Import Styles and Fonts
-import themes from "../style/themes";
 import "normalize.css";
 import "@ibm/plex/css/ibm-plex.css";
 import GlobalStyle from "../style/global-style";
+import GlobalThemeProvider from "./global-theme-provider";
 
 // Setting up API constants
 const snoowrap = require("snoowrap");
@@ -155,9 +152,6 @@ class App extends React.Component {
     }
     this.setState({ initialized: true });
   };
-  toggleNightmode = () => {
-    this.props.setNightmode(!this.props.useDarkTheme);
-  };
   noUserOauth = () => {
     AppOnlyOAuth().then((requester) => {
       this.setState({ requester, noUser: true }, () =>
@@ -178,10 +172,8 @@ class App extends React.Component {
     this.noUserOauth();
   };
   render() {
-    const { useDarkTheme } = this.props;
-    const { requester, noUser } = this.state;
+    const { requester } = this.state;
     const pathname = document.location.pathname;
-    const theme = useDarkTheme ? themes.dark : themes.light;
     const authURL = snoowrap.getAuthUrl({
       clientId,
       scope,
@@ -190,9 +182,8 @@ class App extends React.Component {
       state: pathname,
     });
     if (requester) window.r = requester;
-
     return (
-      <ThemeProvider theme={theme}>
+      <GlobalThemeProvider>
         <div>
           <GlobalStyle />
           {requester ? (
@@ -203,7 +194,6 @@ class App extends React.Component {
                 clickable={true}
                 delayShow={250}
                 className="tooltip"
-                type={useDarkTheme ? "light" : "dark"}
               />
               <AppWrapper>
                 <Header>
@@ -214,21 +204,12 @@ class App extends React.Component {
                     <QuickNavigation />
                     <TestNav />
                   </Section>
-                  <Section>{noUser ? "No User Oauth" : ""}</Section>
                   <Section>
-                    {/* <Timer /> */}
-                    <PrefMenu
-                      toggleNightmode={this.toggleNightmode}
-                      authURL={authURL}
-                      useDarkTheme={useDarkTheme}
-                      logout={this.logout}
-                      currentThemeName={theme.name}
-                    />
+                    <PrefMenu authURL={authURL} logout={this.logout} />
                   </Section>
                 </Header>
                 <Columns>
                   <Switch>
-                    <Route path="/mod/:sub?" component={ModTools} />
                     <Route
                       path={[
                         "/user/:username?",
@@ -239,11 +220,6 @@ class App extends React.Component {
                       component={UserPage}
                     />
                     <Route path="/message/:sort?" component={MessagesPage} />
-                    <Route
-                      exact
-                      path="/subscriptions"
-                      component={SubscriptionsPage}
-                    />
                     <Route
                       path="/test/:subTest?"
                       component={ComponentTestPage}
@@ -265,7 +241,7 @@ class App extends React.Component {
             <SpinnerPage />
           )}
         </div>
-      </ThemeProvider>
+      </GlobalThemeProvider>
     );
   }
 }
@@ -281,6 +257,7 @@ const Header = styled.div`
   flex: 0 0 auto;
   opacity: 1;
   position: relative;
+  z-index: 100;
 `;
 
 const HeaderBase = styled.div`
@@ -320,16 +297,19 @@ const Columns = styled.div`
   width: 100vw;
 `;
 
-function mapStateToProps(state) {
-  const { refreshToken, userPrefs } = state;
-  let useDarkTheme =
-    userPrefs && userPrefs.nightmode ? userPrefs.nightmode : false;
-  return { refreshToken, useDarkTheme };
-}
-
 const connectedApp = connect(
-  mapStateToProps,
-  { setRefreshToken, setUserPrefs, setUser, setNightmode, logout }
+  ({ refreshToken }) => ({
+    refreshToken,
+  }),
+  {
+    setRefreshToken,
+    setUserPrefs,
+    setUser,
+    logout,
+    setSubscriptions,
+    setMultireddits,
+    setDefaults,
+  }
 )(App);
 
 export default (process.env.NODE_ENV === "development"
