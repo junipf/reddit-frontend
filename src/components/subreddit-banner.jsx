@@ -5,6 +5,8 @@ import SubredditIcon from "./subreddit-icon";
 import html2canvas from "html2canvas";
 import Button from "./button";
 import { withRouter } from "react-router-dom";
+import { formatNumber } from "./../utils/format-number";
+import Tag from "./tags";
 
 const SubredditBanner = ({
   subreddit,
@@ -36,30 +38,67 @@ const SubredditBanner = ({
     history.push(`/r/${subName}`);
   };
 
+  console.log("SubredditBanner", subreddit);
+
   return (
     <>
       <StyledBanner {...subreddit} onClick={goToSub}>
         <SubredditIcon passRef={subIcon} subName={subName} size="xl" flat />
       </StyledBanner>
 
-      <ViewSettings>
-        {user ? (
-          <Button>
-            {subscriptionNames.includes(subName.toLowerCase())
-              ? "Leave"
-              : "Join"}
-          </Button>
-        ) : null}
-      </ViewSettings>
+      <Bar>
+        <BarContent>
+          <section>
+            <Button disabled={!user}>
+              {subscriptionNames.includes(subName.toLowerCase())
+                ? "Leave"
+                : "Join"}
+            </Button>
+            {subreddit ? (
+              <span
+                data-tip={
+                  Intl.NumberFormat().format(subreddit.subscribers) +
+                  " subscribers"
+                }
+              >
+                {formatNumber(subreddit.subscribers)}
+              </span>
+            ) : null}
+          </section>
+          <section>
+            {subreddit && subreddit.over18 ? <Tag.NSFW /> : null}
+          </section>
+          <section>
+            <Button>
+              {subreddit
+                ? subreddit.submit_text_label || "Submit text"
+                : "Submit text"}
+            </Button>
+            <Button>
+              {subreddit
+                ? subreddit.submit_link_label || "Submit link"
+                : "Submit link"}
+            </Button>
+          </section>
+        </BarContent>
+      </Bar>
     </>
   );
 };
 
-const ViewSettings = styled.div`
+const BarContent = styled.div`
+  max-width: 74rem;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  margin: 0 auto;
+`;
+
+const Bar = styled.div`
   width: 100%;
   border-bottom: 1px solid ${({ theme }) => theme.card.border};
   background-color: ${({ theme }) => theme.card.bg};
-  color: ${({ theme }) => theme.color};
+  color: ${({ theme }) => theme.text};
   padding: 0.25rem;
   z-index: 10;
 `;
@@ -80,7 +119,6 @@ const StyledBanner = styled.div.attrs(
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: ${({ theme }) => theme.header.bg};
   border-top-right-radius: inherit;
   border-top-left-radius: inherit;
   height: 10rem;

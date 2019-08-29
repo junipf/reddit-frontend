@@ -16,7 +16,7 @@ const Navigation = styled.div`
 
 const Favorite = styled.div`
   border-bottom: 2px solid
-    ${({ active, theme }) => (active ? theme.color : "transparent")};
+    ${({ active, theme }) => (active ? theme.text : "transparent")};
   padding-bottom: 0.125rem;
   margin: 0 0.5rem;
 `;
@@ -64,7 +64,7 @@ const QuickNavigation = ({ favorites = [], location }) => {
   useEffect(() => {
     ReactTooltip.rebuild();
   }, [favoriteIcons]);
-
+  
   return (
     <Navigation>
       <Button
@@ -74,6 +74,10 @@ const QuickNavigation = ({ favorites = [], location }) => {
         data-delay-show={0}
         to="/"
         size="large"
+        toggle
+        toggled={location.name === "Frontpage"}
+        primary
+        flat
       />
       <Button
         icon="trendingUp"
@@ -82,6 +86,10 @@ const QuickNavigation = ({ favorites = [], location }) => {
         data-delay-show={0}
         to="/r/popular/"
         size="large"
+        toggle
+        toggled={location.name === "popular"}
+        primary
+        flat
       />
       <Button
         icon="barChart2"
@@ -90,7 +98,25 @@ const QuickNavigation = ({ favorites = [], location }) => {
         data-delay-show={0}
         to="/r/all/"
         size="large"
+        toggle
+        toggled={location.name === "all"}
+        primary
+        flat
       />
+      {process.env.NODE_ENV === "development" ?
+        <Button 
+          icon="code"
+          data-tip="test <br /> Test pages"
+          data-multiline={true}
+          data-delay-show="0"
+          to="/test/components"
+          size="large"
+          toggle
+          toggled={location.name === "Test"}
+          primary
+          flat
+        />
+      : null}
       {favoriteIcons}
     </Navigation>
   );

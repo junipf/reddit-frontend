@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { transparentize } from "polished";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import Icon from "./icon";
@@ -30,26 +31,52 @@ const StyledButton = styled.button`
       ? "0.0625em 0.125em"
       : "0.125em 0.25em"};
   width: ${({ size }) => (size === "fill" ? "100%" : null)};
-  height: ${({ size }) => (size === "fill" ? "100%" : null)};
+  height: ${({ size }) => (size === "fill" ? "100%" : "1.5em")};
   margin-left: 0;
-  line-height: 1;
+  line-height: 1.25;
   transition: all 0.1s ease;
   text-decoration: none;
-  color: ${({ theme, type }) =>
-    type === "flat" ? theme.color : theme.button[type].color};
-  background-color: ${({ type, theme }) => theme.button[type].bg};
+  color: ${({ theme, flat, primary, toggle, toggled }) =>
+    toggled
+      ? theme.primary.text
+      : flat
+      ? theme.text
+      : primary
+      ? theme.primary.overlay
+      : theme.button.text};
+  /* toggled
+     ? theme.primary.base
+     : flat
+     ? primary
+       ? toggle && !toggled
+         ? theme.button.text
+         : theme.primary.text
+       : theme.text
+     : primary
+     ? theme.primary.overlay
+     : theme.button.text}; */
+  background-color: ${({ theme, flat, primary }) =>
+    flat ? "transparent" : primary ? theme.primary.base : theme.button.bg};
   &a {
-    color: ${({ color, theme, type }) => color || theme.button[type].color};
+    color: inherit;
+  }
+  &a:visited {
+    color: inherit;
   }
   &:hover:not(.disabled) {
     cursor: pointer;
     text-decoration: none;
-    color: ${({ type, theme }) => theme.button[type].color};
-    background-color: ${({ type, theme }) => theme.button[type].hover};
+    background-color: ${({ theme, flat, primary }) =>
+      primary
+        ? flat
+          ? transparentize(0.7, theme.primary.base)
+          : theme.primary.hover
+        : theme.button.hover};
   }
   &:active:not(.disabled) {
-    color: ${({ color, type, theme }) => color || theme.button[type].color};
-    background-color: ${({ type, theme }) => theme.button[type].active};
+    color: ${({ theme, flat, primary }) => (flat ? theme.button.text : null)};
+    background-color: ${({ theme, primary }) =>
+      primary ? theme.primary.active : theme.button.active};
   }
   &:focus:not(.disabled) {
     outline: 0;
@@ -73,26 +100,23 @@ const Children = styled.div`
   /* text-decoration: none; */
   font-weight: 300;
   font-size: ${({ size }) =>
-    size === "large" ? "0.9em" : size === "small" ? "0.75em" : "0.8em"};
+    size === "large" ? 0.9 : size === "small" ? 0.75 : 0.8}em;
   text-align: ${({ align }) => align};
+  color: ${({ primaryText, theme }) =>
+    primaryText ? theme.primary.base : null};
   & > * {
     margin-right: 0.5em;
     &:last-child {
       margin-right: 0;
     }
   }
-  & > span {
-    /* height: 1.25em;
-    line-height: 1.25; */
-  }
 `;
 
 const IconAfter = styled(Icon)`
-  float: right;
+  margin-left: auto;
 `;
 
 const Button = ({
-  type,
   hideLabel,
   showTooltip,
   label,
@@ -115,9 +139,15 @@ const Button = ({
   onCtrlClick,
   onAltClick,
   onShiftClick,
+  primaryText,
+  primary,
+  toggle,
+  flat,
+  wide,
+  toggled,
   ...rest
 }) => {
-  const handleClick = e => {
+  const handleClick = (e) => {
     if (disabled) return;
     else if (e.ctrlKey && onCtrlClick) onCtrlClick(value);
     else if (e.altKey && onAltClick) onAltClick(value);
@@ -130,24 +160,28 @@ const Button = ({
     <Children
       size={size}
       align={align ? align : size === "fill" ? "left" : "center"}
+      primaryText={primaryText}
     >
       {icon && (
-        <Icon icon={icon} color={color} fill={fill} key="0" align="none" />
+        <Icon icon={icon} color={color} fill={fill} key="0" />
       )}
       {children &&
-        React.Children.map(children, child =>
+        React.Children.map(children, (child) =>
           React.isValidElement(child) ? child : <span>{child}</span>
         )}
       {!hideLabel && label && <Span key="2">{label}</Span>}
-      {iconAfter && <IconAfter icon={iconAfter} key="3" />}
+      {iconAfter && <IconAfter icon={iconAfter} key="3"/>}
     </Children>
   );
 
   const props = {
-    type,
     color,
     size,
-    "data-tip-disable": !hideLabel && !data_tip,
+    toggle: toggle ? "true" : null,
+    primary: primary ? "true" : null,
+    flat: flat ? "true" : null,
+    toggled: toggled && toggled !== "false" ? "true" : null,
+    "data-tip-disable": toggled || (!hideLabel && !data_tip),
     "data-tip": data_tip || label,
     children: selectedChildren,
     to: to ? to : null,
@@ -158,17 +192,23 @@ const Button = ({
     ...rest,
   };
 
-  return <StyledButton {...props} className={disabled ? "disabled" : null} />;
+  return (
+    <StyledButton
+      {...props}
+      className={[
+        disabled ? "disabled" : null,
+        toggled ? "toggled" : null,
+      ].join(" ")}
+    />
+  );
 };
 
 Button.propTypes = {
-  type: PropTypes.oneOf(["flat", "primary", "secondary"]),
   size: PropTypes.oneOf(["small", "normal", "large", "fill"]),
   label: PropTypes.string,
   hideLabel: PropTypes.bool,
 };
 Button.defaultProps = {
-  type: "secondary",
   size: "normal",
 };
 

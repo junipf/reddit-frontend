@@ -31,12 +31,13 @@ import PrefMenu from "../components/pref-menu";
 import SplitView from "./split-view";
 import TestNav from "../test/test-nav";
 import UserPage from "./user-page";
+import PostListingSettings from "./post-listing-settings";
 
 // Import Styles and Fonts
 import "normalize.css";
 import "@ibm/plex/css/ibm-plex.css";
 import GlobalStyle from "../style/global-style";
-import GlobalThemeProvider from "./global-theme-provider";
+import GlobalThemeProvider from "../style/global-theme-provider";
 
 // Setting up API constants
 const snoowrap = require("snoowrap");
@@ -138,7 +139,13 @@ class App extends React.Component {
   initialize = () => {
     if (!this.state.requester || this.state.initialized) return;
     const { requester: r, noUser } = this.state;
-    const { setUser, setUserPrefs } = this.props;
+    const {
+      setUser,
+      setUserPrefs,
+      setDefaults,
+      setMultireddits,
+      setSubscriptions,
+    } = this.props;
     if (process.env.NODE_ENV === "development") r.config({ debug: true });
     if (noUser) {
       r.getDefaultSubreddits().then((subs) => setDefaults(subs));
@@ -197,12 +204,27 @@ class App extends React.Component {
               />
               <AppWrapper>
                 <Header>
-                  <HeaderBase />
-                  <HeaderOverlay />
+                  <HeaderBackground />
                   <Section>
                     <NavigationMenu />
+                    <Switch>
+                      <Route
+                        path={[
+                          "/r/:subName/comments/:id/:title/:commentId?",
+                          "/r/:subName/:sort?/",
+                          "/tb/:id",
+                          "/hot",
+                          "/best",
+                          "/new",
+                          "/rising",
+                          "/controversial",
+                          "/top",
+                        ]}
+                        component={PostListingSettings}
+                      />
+                      <Route path="/test/:test" component={TestNav} />
+                    </Switch>
                     <QuickNavigation />
-                    <TestNav />
                   </Section>
                   <Section>
                     <PrefMenu authURL={authURL} logout={this.logout} />
@@ -248,7 +270,7 @@ class App extends React.Component {
 
 const Header = styled.div`
   width: 100vw;
-  color: ${({ theme }) => theme.color};
+  color: ${({ theme }) => theme.text};
   border-bottom: 1px solid ${({ theme }) => theme.header.border};
   display: flex;
   flex-direction: row;
@@ -258,9 +280,10 @@ const Header = styled.div`
   opacity: 1;
   position: relative;
   z-index: 100;
+  /* backdrop-filter: blur(25px); */
 `;
 
-const HeaderBase = styled.div`
+const HeaderBackground = styled.div`
   position: absolute;
   top: 0;
   left: 0;
@@ -269,10 +292,7 @@ const HeaderBase = styled.div`
   width: 100%;
   height: 100%;
   background-color: ${({ theme }) => theme.header.bg};
-`;
-
-const HeaderOverlay = styled(HeaderBase)`
-  background-color: ${({ theme }) => theme.header.overlay};
+  /* opacity: 0.85; */
 `;
 
 const Section = styled.section`

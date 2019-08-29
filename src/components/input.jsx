@@ -38,7 +38,7 @@ const Input = ({
       <input {...props} ref={$input} onFocus={focus} onBlur={blur} />
       {children}
       {clear ? (
-        <Button onClick={handleClear} type="flat">
+        <Button onClick={handleClear} flat>
           <Icon icon="x" />
         </Button>
       ) : null}
@@ -52,7 +52,7 @@ export const StyledInput = styled.div`
   font-size: ${({size}) => (size === "large" ? "1em" : "0.8em")};
   margin: 0.25em;
   line-height: 1;
-  color: ${({theme}) => theme.input.color};
+  color: ${({theme}) => theme.input.text};
   background-color: ${({theme}) => theme.input.background};
   border: 1px solid ${({theme}) => theme.input.border};
   border-radius: 0.35rem;

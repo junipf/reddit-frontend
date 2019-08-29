@@ -13,7 +13,7 @@ export const formatTime = (time) =>
   timeAgo.format(new Date(time * 1000), "twitter");
 
 const StyledTs = styled.span`
-  color: ${({theme}) => theme.color};
+  color: ${({theme}) => theme.text};
 `;
 
 export const Timestamp = ({

@@ -1,12 +1,24 @@
-export const formatNumber = (number, singular, plural) => {
+export const formatNumber = (number, singular = "", plural = "") => {
   if (isNaN(number)) return null;
 
-  function kFormatter(num) {
-    return Math.abs(num) > 999
-      ? Math.sign(num) * (Math.abs(num) / 1000).toFixed(1) + "k"
-      : Math.sign(num) * Math.abs(num);
+  const num = Math.abs(number);
+  const sign = Math.sign(number);
+
+  let string = sign * num;
+
+  for (let { limit, letter } of [
+    { letter: "q", limit: 999999999999999 },
+    { letter: "t", limit: 999999999999 },
+    { letter: "b", limit: 999999999 },
+    { letter: "m", limit: 999999 },
+    { letter: "k", limit: 999 },
+  ]) {
+    if (num > limit) {
+      string = String(sign * (num / (limit + 1)).toFixed(1) + letter);
+      break;
+    }
   }
-  let string = String(kFormatter(number));
-  string += number === 1 ? singular || "" : plural || "";
+
+  string += number === 1 ? singular : plural;
   return string;
 };

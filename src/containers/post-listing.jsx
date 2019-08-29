@@ -12,13 +12,11 @@ import {
   addSubreddit,
   addSubredditTheme,
   addColorTheme,
+  setLocation,
 } from "../store/actions";
 import styled, { withTheme } from "styled-components";
 
-import Button from "../components/button";
 import { SpinnerPage } from "../components/spinner";
-import Dropdown from "../components/dropdown";
-import { ProgressUnderline } from "../components/progress-bar";
 import genTheme from "../style/gen-theme";
 import ReactTooltip from "react-tooltip";
 import SubredditBanner from "../components/subreddit-banner";
@@ -38,11 +36,10 @@ const PostListing = ({
   username,
   addColorTheme,
   toggleVisible,
+  setLocation,
   visible,
   controlsPath,
-  subName,
-  sort,
-  time,
+  settings: { sort, time, subName },
 }) => {
   const r = useContext(Requester);
 
@@ -117,20 +114,14 @@ const PostListing = ({
           );
       }
     },
-    [addSubreddit, r, addSubredditTheme, subreddits, themesBySubreddit]
+    [
+      addSubreddit,
+      r,
+      addSubredditTheme,
+      subreddits,
+      themesBySubreddit,
+    ]
   );
-
-  // const setSubreddit = useCallback(() => {
-  // document.title = subName ? "r/" + subName : "Frontpage";
-  //   if (
-  //     subName &&
-  //     subName !== "frontpage" &&
-  //     subName !== "popular" &&
-  //     subName !== "all"
-  //   ) {
-  //     fetchSubreddit(subName);
-  //   }
-  // }, [subName, fetchSubreddit]);
 
   const path = useMemo(() => {
     const pathSubName =
@@ -160,9 +151,9 @@ const PostListing = ({
     }
   }, [path, history]);
 
-  useEffect(() => {
-    if (controlsPath) updatePath();
-  }, [controlsPath, updatePath]);
+  // useEffect(() => {
+  //   if (controlsPath) updatePath();
+  // }, [controlsPath, updatePath]);
 
   // Generate themes from flair color if theme does not
   // already exist.
@@ -181,14 +172,7 @@ const PostListing = ({
   }, [subName, sort, time, visible, fetchListing]);
 
   useEffect(() => {
-    if (
-      subName &&
-      subName !== "frontpage" &&
-      subName !== "popular" &&
-      subName !== "all"
-    ) {
-      fetchSubreddit(subName);
-    }
+    fetchSubreddit(subName);
   }, [subName, fetchSubreddit]);
 
   // LISTING
@@ -256,41 +240,12 @@ const PostListing = ({
 
   if (error) console.log(error);
 
-  const goTo = useCallback(
-    ({ _sort = sort, _time = time }) =>
-      `/${subName ? `r/${subName}` : ""}/${
-        _sort && _sort !== "hot" ? _sort : ""
-      }${
-        _time && (_sort === "controversial" || _sort === "top")
-          ? `?t=${_time}`
-          : ""
-      }`,
-    [sort, time, subName]
-  );
-
   if (!visible) return null;
   return (
     <>
       {subreddits && subName && subreddits[subName.toLowerCase()] ? (
         <SubredditBanner subName={subName} />
       ) : null}
-      <ViewSettings>
-        <VSContents>
-          <Dropdown label={sort || "hot"}>
-            <Button label="hot" to={goTo({ _sort: "hot" })} />
-            <Button label="best" to={goTo({ _sort: "best" })} />
-            <Button label="new" to={goTo({ _sort: "new" })} />
-            <Button label="rising" to={goTo({ _sort: "rising" })} />
-            {TimeDropdown("controversial", goTo)}
-            {TimeDropdown("top", goTo)}
-          </Dropdown>
-          {sort === "top" || sort === "controversial"
-            ? TimeDropdown(sort, goTo, time)
-            : null}
-          {path}
-        </VSContents>
-        {(!error && fetching) || fetchingMore ? <ProgressUnderline /> : null}
-      </ViewSettings>
       {error ? (
         <Error {...error} />
       ) : fetching ? (
@@ -320,18 +275,6 @@ const PostListing = ({
   );
 };
 
-// Just a function (i.e. not a component) so Dropdowns are treated as Sub
-const TimeDropdown = (_sort, goTo, label) => (
-  <Dropdown label={label || _sort}>
-    <Button label="hour" to={goTo({ _sort, _time: "hour" })} />
-    <Button label="day" to={goTo({ _sort, _time: "day" })} />
-    <Button label="week" to={goTo({ _sort, _time: "week" })} />
-    <Button label="month" to={goTo({ _sort, _time: "month" })} />
-    <Button label="year" to={goTo({ _sort, _time: "year" })} />
-    <Button label="all time" to={goTo({ _sort, _time: "all" })} />
-  </Dropdown>
-);
-
 const Listing = styled.div`
   max-width: 75rem;
   margin: 1rem auto;
@@ -341,46 +284,28 @@ const Listing = styled.div`
 // due to lightbox being open.
 const ScrollWrapper = styled.div`
   overflow-y: ${({ lightboxIsOpen }) => (lightboxIsOpen ? "scroll" : "show")};
-  color: ${({ theme }) => theme.color};
+  color: ${({ theme }) => theme.text};
   height: 100%;
 `;
 
-const ViewSettings = styled.div`
-  width: 100%;
-  position: sticky;
-  top: 0rem;
-  border-bottom: 1px solid ${({ theme }) => theme.card.border};
-  background-color: ${({ theme }) => theme.card.bg};
-  color: ${({ theme }) => theme.color};
-  padding: 0.25rem;
-  z-index: 10;
-`;
-
-const VSContents = styled.div`
-  /* max-width: 40rem; */
-  margin: 0 auto;
-`;
-
-function mapStateToProps(state) {
-  const {
-    subreddits,
-    lightboxIsOpen,
-    themesBySubreddit,
-    themesByColor,
-  } = state;
-  return {
-    subreddits,
-    lightboxIsOpen,
-    themesBySubreddit,
-    themesByColor,
-  };
-}
-
 export default connect(
-  mapStateToProps,
+  ({
+    subreddits,
+    lgihtboxIsOpen,
+    themesBySubreddit,
+    themesByColor,
+    postListingSettings,
+  }) => ({
+    subreddits,
+    lgihtboxIsOpen,
+    themesBySubreddit,
+    themesByColor,
+    settings: postListingSettings,
+  }),
   {
     addSubreddit,
     addSubredditTheme,
     addColorTheme,
+    setLocation,
   }
 )(withRouter(withTheme(PostListing)));

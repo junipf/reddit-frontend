@@ -22,6 +22,21 @@ const initialState = {
     useDarkThemes: false,
     lightTheme: "light",
     darkTheme: "dark",
+    colorTheme: "blue",
+    darkSystem: false,
+  },
+  layoutPrefs: {
+    split: "right",
+  },
+  postListingSettings: {
+    sort: "hot",
+    time: "all",
+    subName: null,
+    visible: true,
+  },
+  threadSettings: {
+    sort: "best",
+    visible: false,
   },
 };
 
@@ -86,6 +101,11 @@ const store = (state = initialState, action) => {
       return { ...state, userPrefs: action.prefs };
     case "SET_THEME_PREFS":
       return { ...state, themePrefs: { ...state.themePrefs, ...action.prefs } };
+    case "SET_LAYOUT_PREFS":
+      return {
+        ...state,
+        layoutPrefs: { ...state.layoutPrefs, ...action.prefs },
+      };
     case "SET_SUBSCRIPTIONS":
       let favoriteNames = [];
       const subscriptionNames = action.subscriptions.reduce(
@@ -132,6 +152,22 @@ const store = (state = initialState, action) => {
       return {
         ...initialState,
         themePrefs: state.themePrefs,
+      };
+    case "SET_THREAD_SETTINGS":
+      return {
+        ...state,
+        threadSettings: {
+          ...state.threadSettings,
+          ...action.settings,
+        },
+      };
+    case "SET_POST_LISTING_SETTINGS":
+      return {
+        ...state,
+        postListingSettings: {
+          ...state.postListingSettings,
+          ...action.settings,
+        },
       };
     default:
       return state;

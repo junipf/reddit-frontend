@@ -2,8 +2,8 @@ import styled from "styled-components";
 
 export const Column = styled.div`
   scroll-behavior: smooth;
-  background-color: ${({ theme }) => theme.column.bg};
-  color: ${({ theme }) => theme.color};
+  background-color: ${({ theme }) => theme.bg};
+  color: ${({ theme }) => theme.text};
   overflow-x: hidden;
   overflow-y: ${({ lightboxIsOpen }) => (lightboxIsOpen ? "hidden" : "scroll")};
   flex: 1 1 ${({ type }) =>
@@ -32,17 +32,4 @@ export const Column = styled.div`
       flex: 0 0 0;
     }
   }
-`;
-
-export const Sidebar = styled.div`
-  background-color: ${({ theme }) => theme.header.bg};
-  &:first-child {
-    border-right: 1px solid ${({ theme }) => theme.card.border};
-  }
-  &:last-child {
-    border-left: 1px solid ${({ theme }) => theme.card.border};
-  }
-  overflow: hidden;
-  height: inherit;
-  flex: 0 0 ${({ collapse }) => (collapse ? "3.2rem" : "14rem")};
 `;

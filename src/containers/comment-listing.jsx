@@ -27,7 +27,7 @@ import SubredditBanner from "../components/subreddit-banner";
 import Post from "./post";
 import Error from "../components/error";
 
-const CommentListing = ({
+const Thread = ({
   subreddits,
   location: { search },
   history,
@@ -40,12 +40,13 @@ const CommentListing = ({
   username,
   addColorTheme,
   currentPost,
-  subName,
-  id,
-  sort,
+  // subName,
+  // id,
+  // sort,
+  settings: { subName, id, sort },
   hideSelf,
   visible,
-  setLocation
+  setLocation,
   // setLocName,
 }) => {
   const r = useContext(Requester);
@@ -55,6 +56,8 @@ const CommentListing = ({
 
   const fetchPost = useCallback(
     (id) => {
+      if (subName)
+        setLocation({ name: subName, title: `r/${subName}`, type: "thread" });
       if (!visible || (post && post.id === id)) return;
       if (post && post.id)
         console.log(`Post id updated from ${post.id}, fetching ${id}`);
@@ -66,6 +69,11 @@ const CommentListing = ({
         .then(
           (post) => {
             setPost(post);
+            setLocation({
+              name: post.subreddit.display_name,
+              title: post.title,
+              type: "thread",
+            });
           },
           (e) => {
             setError((error) =>
@@ -74,7 +82,7 @@ const CommentListing = ({
           }
         );
     },
-    [r, visible, post, error]
+    [r, visible, post, error, setLocation, subName]
   );
 
   const fetchSubreddit = useCallback(
@@ -126,7 +134,7 @@ const CommentListing = ({
     if (post && subName === null) {
       history.replace(post.permalink);
       fetchSubreddit(post.subreddit.display_name);
-      setLocation({name: post.title, type: "thread"});
+      setLocation({ title: post.title, type: "thread" });
       // setLocName(`r/${post.subreddit.display_name}`);
     }
   }, [post, subName, history, fetchSubreddit, setLocation]);
@@ -161,6 +169,7 @@ const CommentListing = ({
       ) : null}
       <ViewSettings>
         <VSContents>
+          {subName}
           <Button label="Close" hideLabel icon="x" onClick={hideSelf} />
           <Dropdown label={sort}>
             <Button label="best" onClick={setSort} value="best" />
@@ -222,7 +231,7 @@ const Placeholder = styled.div`
 // due to lightbox being open.
 const ScrollWrapper = styled.div`
   overflow-y: ${({ lightboxIsOpen }) => (lightboxIsOpen ? "scroll" : "show")};
-  color: ${({ theme }) => theme.color};
+  color: ${({ theme }) => theme.text};
   height: 100%;
 `;
 
@@ -232,7 +241,7 @@ const ViewSettings = styled.div`
   top: 0rem;
   border-bottom: 1px solid ${({ theme }) => theme.card.border};
   background-color: ${({ theme }) => theme.card.bg};
-  color: ${({ theme }) => theme.color};
+  color: ${({ theme }) => theme.text};
   padding: 0.25rem;
   z-index: 10;
 `;
@@ -260,11 +269,25 @@ function mapStateToProps(state) {
 }
 
 export default connect(
-  mapStateToProps,
+  ({
+    subreddits,
+    lightboxIsOpen,
+    themesBySubreddit,
+    themesByColor,
+    currentPost,
+    threadSettings,
+  }) => ({
+    subreddits,
+    lightboxIsOpen,
+    themesBySubreddit,
+    themesByColor,
+    currentPost,
+    settings: threadSettings,
+  }),
   {
     addSubreddit,
     addSubredditTheme,
     addColorTheme,
     setLocation,
   }
-)(withRouter(withTheme(CommentListing)));
+)(withRouter(withTheme(Thread)));

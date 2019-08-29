@@ -39,7 +39,7 @@ const Votes = ({
     <Button
       onClick={upvote}
       icon="upvote"
-      type="flat"
+      flat
       noMargin
       size={size}
       color={mod === 1 ? props.theme.votes.up : undefined}
@@ -60,7 +60,7 @@ const Votes = ({
     <Button
       onClick={downvote}
       icon="downvote"
-      type="flat"
+      flat
       noMargin
       size={size}
       color={mod === -1 ? props.theme.votes.down : undefined}

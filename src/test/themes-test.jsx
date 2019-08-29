@@ -21,8 +21,8 @@ const Flex = styled(Grid)`
 `;
 
 const Column = styled.div`
-  background: ${({ theme }) => theme.column.bg};
-  color: ${({ theme }) => theme.color};
+  background: ${({ theme }) => theme.bg};
+  color: ${({ theme }) => theme.text};
   & a {
     color: ${({ theme }) => theme.link};
   }
@@ -139,8 +139,8 @@ const SampleComponents = ({ children }) => (
       <Tag.Removed />
       <div>
         <Button>Button</Button>
-        <Button type="primary">Primary</Button>
-        <Button type="flat">Flat</Button>
+        <Button primary>Primary</Button>
+        <Button flat>Flat</Button>
         <Dropdown label="Dropdown">
           <Button>Content</Button>
         </Dropdown>
@@ -221,7 +221,7 @@ const ThemesTest = () => {
               <Icon icon="x" />
             </Button>
             <Button onClick={reGenThemes} data-tip="Regenerate themes">
-              <Icon icon="refreshcw" />
+              <Icon icon="refreshCW" />
             </Button>
           </HeaderSection>
           <HeaderSection>
@@ -252,7 +252,7 @@ const ThemesTest = () => {
                         onClick={removeColor}
                         value={color}
                         size="fill"
-                        type="primary"
+                        primary
                       >
                         <Dot color={color} />
                         {color}

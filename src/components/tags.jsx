@@ -18,7 +18,7 @@ const Tag = ({ flat, type, children, "data-tip": dataTip }) => (
 );
 
 Tag.NSFW = ({ flat }) => (
-  <StyledTag type="nsfw" data-tip="Not Safe For Work" key="nsfw" flat={flat}>
+  <StyledTag type="nsfw" data-tip="Not Safe For Work" key="nsfw" flat={flat ? "true" : undefined}>
     NSFW
   </StyledTag>
 );
@@ -28,20 +28,20 @@ Tag.Spoiler = ({ flat }) => (
     type="spoiler"
     data-tip="This post contains spoilers"
     key="spoiler"
-    flat={flat}
+    flat={flat ? "true" : undefined}
   >
     Spoiler
   </StyledTag>
 );
 Tag.OC = ({ flat }) => (
-  <StyledTag type="oc" data-tip="Original Content" key="oc" flat={flat}>
+  <StyledTag type="oc" data-tip="Original Content" key="oc" flat={flat ? "true" : undefined}>
     OC
   </StyledTag>
 );
 
 Tag.Quarantine = ({ flat = true }) => (
   <StyledTag
-    flat={flat}
+    flat={flat ? "true" : undefined}
     type="quarantine"
     data-tip="This community is quarantined."
     key="quarantine"
@@ -52,20 +52,20 @@ Tag.Quarantine = ({ flat = true }) => (
 );
 
 Tag.Stickied = ({ flat = true }) => (
-  <StyledTag flat={flat} type="stickied" data-tip="stickied" key="stickied">
+  <StyledTag flat={flat ? "true" : undefined} type="stickied" data-tip="stickied" key="stickied">
     <Icon icon="pin" fill />
   </StyledTag>
 );
 
 Tag.Hidden = ({ flat = true }) => (
-  <StyledTag flat={flat} type="hidden" data-tip="Hidden" key="locked">
+  <StyledTag flat={flat ? "true" : undefined} type="hidden" data-tip="Hidden" key="locked">
     <Icon icon="eyeOff" />
   </StyledTag>
 );
 
 Tag.Archived = ({ flat = true }) => (
   <StyledTag
-    flat={flat}
+    flat={flat ? "true" : undefined}
     type="restricted"
     data-tip="Archived. You won't be able to reply or vote."
     key="archived"
@@ -76,7 +76,7 @@ Tag.Archived = ({ flat = true }) => (
 
 Tag.Locked = ({ flat = true }) => (
   <StyledTag
-    flat={flat}
+    flat={flat ? "true" : undefined}
     type="restricted"
     data-tip="Locked. You won't be able to reply."
     key="locked"
@@ -86,13 +86,13 @@ Tag.Locked = ({ flat = true }) => (
 );
 
 Tag.Approved = ({ flat = true }) => (
-  <StyledTag flat={flat} type="approved" data-tip="Approved" key="approved">
+  <StyledTag flat={flat ? "true" : undefined} type="approved" data-tip="Approved" key="approved">
     <Icon icon="check" fill />
   </StyledTag>
 );
 
 Tag.Removed = ({ flat = true }) => (
-  <StyledTag flat={flat} type="removed" data-tip="Removed" key="removed">
+  <StyledTag flat={flat ? "true" : undefined} type="removed" data-tip="Removed" key="removed">
     <Icon icon="x" fill />
   </StyledTag>
 );

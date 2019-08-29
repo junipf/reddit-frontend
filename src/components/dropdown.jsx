@@ -4,12 +4,14 @@ import styled from "styled-components";
 import Button from "./button";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
+import ReactTooltip from 'react-tooltip';
 
 const Dropdown = ({
   children,
   icon,
   iconAfter,
   toggle,
+  label,
   hideLabel,
   sub,
   size,
@@ -27,7 +29,10 @@ const Dropdown = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const debugLogChildren = () => console.log(children);
 
-  const toggleDropdown = () => setShowDropdown(bool => !bool);
+  const toggleDropdown = () => {
+    setShowDropdown((bool) => !bool);
+    ReactTooltip.hide();
+  }
   const closeDropdown = () => setShowDropdown(false);
 
   const dir = {
@@ -36,6 +41,7 @@ const Dropdown = ({
   };
 
   let props = {
+    label: label,
     hideLabel: hideLabel,
     onClick: toggleDropdown,
     onAltClick:
@@ -55,6 +61,8 @@ const Dropdown = ({
       ? "moreHorizontal"
       : "chevronDown",
     size: sub ? "fill" : size ? size : undefined,
+    toggle: "true",
+    toggled: showDropdown,
     ...rest,
   };
 
@@ -84,6 +92,7 @@ const Dropdown = ({
           dir={dir}
           toggle={useToggle}
           items={children}
+          label={hideLabel && label}
         >
           {expand ? useToggle : null}
           {children}
@@ -108,6 +117,7 @@ const Menu = ({
   dir,
   expand,
   toggle,
+  label
 }) => {
   const menu = useRef(null);
   const [pos, setPos] = useState({
@@ -167,7 +177,7 @@ const Menu = ({
   }, [wrapper, sub, expand, dir, pos.init]);
 
   useEffect(() => {
-    const handleClick = e => {
+    const handleClick = (e) => {
       if (menu.current && menu.current.contains(e.target)) return;
       closeDropdown();
     };
@@ -178,24 +188,23 @@ const Menu = ({
     };
   });
 
-  const selectAndClose = value => {
+  const selectAndClose = (value) => {
     onSelect && onSelect(value);
     closeDropdown();
   };
 
-  const mapChildrenByType = childrenToMap =>
-    React.Children.map(childrenToMap, child => {
+  const mapChildrenByType = (childrenToMap) =>
+    React.Children.map(childrenToMap, (child) => {
       if (React.isValidElement(child)) {
-        if (isFragment(child)) 
-          return  mapChildrenByType(child.props.children);
-        if (child.type === "li")
-          return child;
+        if (isFragment(child)) return mapChildrenByType(child.props.children);
+        if (child.type === "li") return child;
         if (child.type === Button)
           return (
             <li>
               {React.cloneElement(child, {
                 size: "fill",
-                type: child.props.type === "primary" ? "primary" : "flat",
+                // type: child.props.type === "primary" ? "primary" : "flat",
+                flat: true,
                 hideLabel: false,
                 align: "left",
                 onSelect: selectAndClose,
@@ -207,7 +216,8 @@ const Menu = ({
             <li>
               {React.cloneElement(child, {
                 size: "fill",
-                type: child.props.type ? child.props.type : "flat",
+                // type: child.props.type ? child.props.type : "flat",
+                flat: true,
                 align: "left",
                 sub: true,
                 left: subMenuPositioning === "left",
@@ -230,6 +240,7 @@ const Menu = ({
 
   return (
     <StyledMenu pos={pos} sub={sub} ref={menu} expand={expand}>
+      {label ? <li><CategoryTitle>{label}</CategoryTitle></li> : null}
       {mapChildrenByType(children)}
     </StyledMenu>
   );
@@ -263,10 +274,10 @@ export const LinkEntry = styled(Link)`
   line-height: 1;
   padding: 0.5rem 0.75rem;
   transition: box-shadow 0.15s ease-in-out;
-  color: ${({ theme }) => theme.button.flat.color};
-  background-color: ${({ theme }) => theme.button.flat.bg};
+  color: ${({ theme }) => theme.button.text};
+  background-color: ${({ theme }) => theme.button.bg};
   &:hover {
-    background-color: ${({ theme }) => theme.button.flat.hover};
+    background-color: ${({ theme }) => theme.button.hover};
     text-decoration: none;
     color: currentColor;
   }
@@ -302,9 +313,8 @@ export const StyledMenu = styled.ul.attrs(
   list-style: none;
   background-color: inherit;
   background-clip: padding-box;
-
   background: ${({ theme }) => theme.card.bg};
-  color: ${({ theme }) => theme.color};
+  color: ${({ theme }) => theme.text};
   border: 1px solid ${({ theme }) => theme.card.border};
   border-radius: 0.25rem;
   position: absolute;
@@ -327,12 +337,13 @@ export const Search = styled.div`
 `;
 
 export const CategoryTitle = styled.div`
-  display: flex;
-  flex-flow: row nowrap;
-  /* justify-content: space-between; */
-  padding: 0 0.5rem 0.125rem 1.5rem;
-  margin-top: 0.5rem;
-  font-size: 0.875rem;
+  /* padding: 0 0.5rem 0.125rem 1rem; */
+  /* text-align: center; */
+  /* margin-top: 0.5rem; */
+  padding: ${menuPadding} 1em;
+  margin-bottom: ${menuPadding};
+  border-bottom: 1px solid ${({ theme }) => theme.card.innerBorder};
+  font-size: 0.75em;
   color: inherit;
   white-space: nowrap;
   position: sticky;

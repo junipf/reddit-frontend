@@ -65,5 +65,5 @@ const Page = styled.div.attrs(({ color }) => ({
   margin: auto auto;
   height: 20vh;
   font-size: 1.5rem;
-  color: ${({theme}) => theme.color};
+  color: ${({theme}) => theme.text};
 `;

@@ -61,7 +61,7 @@ export const Body = ({ inListing, html, ...rest }) => {
       {overflow ? (
         <Actions>
           <Button
-            type="flat"
+            flat
             align="center"
             size="fill"
             icon={showAll ? "chevronUp" : "chevronDown"}

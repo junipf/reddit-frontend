@@ -39,25 +39,25 @@ const Page = styled.div`
   margin: 0 auto;
 `;
 
-export const tests = [
-  { name: "Components", Component: ComponentsTest, icon: "square" },
-  { name: "Icon", Component: IconPage, icon: "search" },
-  { name: "Markdown", Component: MarkdownTest, icon: "italic" },
-  { name: "Themes", Component: ThemesTest, icon: "layout" },
-  { name: "Video", Component: VideoPost, icon: "video" },
-  { name: "Gif", Component: VideoGifPost, icon: "repeat" },
-  { name: "Tweet", Component: TwitterPost, icon: "twitter" },
-];
+export const tests = {
+  components: { name: "Components", Component: ComponentsTest, icon: "square" },
+  icon: { name: "Icon", Component: IconPage, icon: "search" },
+  markdown: { name: "Markdown", Component: MarkdownTest, icon: "italic" },
+  themes: { name: "Themes", Component: ThemesTest, icon: "layout" },
+  video: { name: "Video", Component: VideoPost, icon: "video" },
+  gif: { name: "Gif", Component: VideoGifPost, icon: "repeat" },
+  tweet: { name: "Tweet", Component: TwitterPost, icon: "twitter" },
+};
 
 const TestPage = ({ setLocation }) => {
   useEffect(() => {
-    setLocation({name: "Test", type: "other"});
+    setLocation({ name: "Test", type: "other" });
   }, [setLocation]);
   return (
     <Column>
       <Page>
         <Switch>
-          {tests.map(({ name, Component }) => (
+          {Object.entries(tests).map(([key, { name, Component }]) => (
             <Route
               path={`/test/${name.toLowerCase()}`}
               component={Component}

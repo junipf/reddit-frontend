@@ -6,17 +6,15 @@ const light = {
   name: "Day",
   icon: "Sun",
   highlight: colors.blue500,
-  color: colors.grey900,
-  titleColor: colors.black,
+  bg: colors.grey100,
+  text: colors.grey900,
+  title: colors.black,
   link: colors.blue500,
   card: {
     bg: colors.white,
     innerBg: colors.grey200,
     border: colors.grey400,
     innerBorder: colors.grey300,
-  },
-  column: {
-    bg: colors.grey100,
   },
   header: {
     bg: colors.grey200,
@@ -27,28 +25,20 @@ const light = {
     glow: colors.blueA100,
     border: colors.blue500,
   },
+  primary: {
+    text: colors.white,
+    base: colors.blue500,
+    hover: colors.blue400,
+    active: colors.blue600,
+  },
   button: {
-    primary: {
-      color: colors.white,
-      bg: colors.blue500,
-      hover: colors.blue400,
-      active: colors.blue600,
-    },
-    secondary: {
-      color: colors.grey900,
-      bg: colors.grey300,
-      hover: colors.grey200,
-      active: colors.grey400,
-    },
-    flat: {
-      color: colors.grey900,
-      bg: "transparent",
-      hover: colors.grey200,
-      active: colors.grey300,
-    },
+    text: colors.grey900,
+    bg: colors.grey300,
+    hover: colors.grey200,
+    active: colors.grey400,
   },
   input: {
-    color: colors.grey900,
+    text: colors.grey900,
     background: colors.white,
     border: colors.grey400,
   },
@@ -94,17 +84,16 @@ const dark = {
   id: "dark",
   dark: true,
   highlight: colors.blue400,
-  color: colors.grey100,
-  titleColor: colors.white,
+  text: colors.grey100,
+  title: colors.white,
   link: colors.blue400,
+  bg: colors.darkSurface50,
+  surface: colors.darkSurface200,
   card: {
     bg: colors.darkSurface200,
     innerBg: colors.darkSurface500,
     border: colors.darkSurface800,
     innerBorder: colors.darkSurface900,
-  },
-  column: {
-    bg: colors.darkSurface50,
   },
   header: {
     bg: colors.darkSurface900,
@@ -116,28 +105,20 @@ const dark = {
     glow: colors.blueA100,
     border: colors.blue500,
   },
+  primary: {
+    text: colors.white,
+    base: colors.blue600,
+    hover: colors.blue500,
+    active: colors.blue700,
+  },
   button: {
-    primary: {
-      color: colors.white,
-      bg: colors.blue600,
-      hover: colors.blue500,
-      active: colors.blue700,
-    },
-    secondary: {
-      color: colors.grey100,
-      bg: colors.grey700,
-      hover: colors.grey600,
-      active: colors.grey800,
-    },
-    flat: {
-      color: colors.grey100,
-      bg: "transparent",
-      hover: colors.grey600,
-      active: colors.grey800,
-    },
+    text: colors.grey100,
+    bg: colors.grey700,
+    hover: colors.grey600,
+    active: colors.grey800,
   },
   input: {
-    color: colors.grey100,
+    text: colors.grey100,
     background: colors.grey900,
     border: colors.grey800,
   },
@@ -156,44 +137,35 @@ const blueDark = {
   icon: "Sunset",
   id: "blueDark",
   dark: true,
-  color: colors.blueGrey100,
-  titleColor: colors.white,
+  text: colors.blueGrey100,
+  title: colors.white,
+  bg: colors.blueGrey900,
+  surface: colors.blueGrey900,
   card: {
-    bg: colors.blueGrey900,
+    bg: colors.blueGrey800,
     innerBg: colors.blueGrey700,
     border: colors.blueGrey600,
-    innerBorder: colors.blueGrey800,
-  },
-  column: {
-    bg: colors.blueGrey900,
+    innerBorder: colors.blueGrey700,
   },
   header: {
     bg: colors.blueGrey800,
     border: colors.blueGrey700,
   },
   scrollbar: colors.blueGrey800 + " " + colors.blueGrey700,
+  primary: {
+    text: colors.white,
+    base: colors.blue600,
+    hover: colors.blue500,
+    active: colors.blue700,
+  },
   button: {
-    primary: {
-      color: colors.white,
-      bg: colors.blue600,
-      hover: colors.blue500,
-      active: colors.blue700,
-    },
-    secondary: {
-      color: colors.blueGrey100,
-      bg: colors.blueGrey700,
-      hover: colors.blueGrey600,
-      active: colors.blueGrey800,
-    },
-    flat: {
-      color: colors.blueGrey100,
-      bg: "transparent",
-      hover: colors.blueGrey600,
-      active: colors.blueGrey800,
-    },
+    text: colors.blueGrey100,
+    bg: colors.blueGrey700,
+    hover: colors.blueGrey600,
+    active: colors.blueGrey800,
   },
   input: {
-    color: colors.blueGrey100,
+    text: colors.blueGrey100,
     background: colors.blueGrey900,
     border: colors.blueGrey800,
   },
@@ -205,11 +177,12 @@ const reddit = {
   id: "reddit",
   icon: "upvote",
   dark: false,
-  color: "#222",
-  titleColor: "#00f",
+  text: "#222",
+  title: "#00f",
   link: "#00f",
+  surface: "#fff",
   card: {
-    bg: "white",
+    bg: "#fff",
     border: "#808080",
     innerBg: "#fafafa",
     innerBorder: "#336699",
@@ -218,52 +191,62 @@ const reddit = {
     bg: "#cee3f8",
     border: "#5f99cf",
   },
-  button: {
-    primary: {
-      color: "#336699",
-      bg: "#bdd4ea",
-      hover: "#6a9fd1",
-      active: "#5f99cf",
-    },
-    secondary: {
-      color: "#222",
-      bg: "#f0f6fd",
-      hover: "#bdd4ea",
-      active: "#6a9fd1",
-    },
-    flat: {
-      color: "#222",
-      bg: "transparent",
-      hover: "#f0f6fd",
-      active: "#bdd4ea",
-    },
+  primary: {
+    text: "#336699",
+    base: "#bdd4ea",
+    hover: "#6a9fd1",
+    active: "#5f99cf",
   },
- tag: {
-   ...light.tag,
-   stickied: "#228822",
-   oc: "#0079d3",
-   spoiler: "#222222",
-   nsfw: "#d10023",
-   restricted: "#ffd634",
-   quarantine: "#ffd635", // Seriously, reddit?
- }
-}
+  button: {
+    text: "#222",
+    bg: "#f0f6fd",
+    hover: "#bdd4ea",
+    active: "#6a9fd1",
+  },
+  tag: {
+    ...light.tag,
+    stickied: "#228822",
+    oc: "#0079d3",
+    spoiler: "#222222",
+    nsfw: "#d10023",
+    restricted: "#ffd634",
+    quarantine: "#ffd635", // Seriously, reddit?
+  },
+};
 
-const themes = { light, dark, blueDark, reddit };
+const black = {
+  ...dark,
+  name: "AMOLED Black",
+  id: "black",
+  icon: "smartphone",
+  bg: "#000",
+  surface: "#000",
+  card: {
+    ...dark.card,
+    bg: "#000",
+    innerBg: "#000",
+  },
+  header: {
+    ...dark.header,
+    bg: "#000",
+  },
+};
+
+const themes = { light, dark, blueDark, reddit, black };
 
 export default themes;
 
 export const themeSets = [
   {
-    name: "Light themes",
+    name: "Light",
     dark: false,
     icon: "Sun",
     set: [light, reddit],
   },
   {
-    name: "Dark themes",
+    name: "Dark",
     dark: true,
     icon: "Moon",
-    set: [dark, blueDark],
+    set: [dark, blueDark, black],
   },
 ];

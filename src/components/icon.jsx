@@ -6,10 +6,8 @@ import { PropTypes } from "prop-types";
 const IconWrapper = styled.span`
   /* Aligns icons to font */
   position: relative;
-  bottom: ${({ align }) =>
-    align === "none" ? "0" : "-0.083em"};
-  margin-top: ${({ align }) =>
-    align === "none" ? "0" : "-0.083em"};
+  bottom: ${({ align }) => (align === "none" ? "0" : "-0.083em")};
+  margin-top: ${({ align }) => (align === "none" ? "0" : "-0.083em")};
   display: inline-block;
   width: ${({ size }) => (size === "xl" ? "4rem" : "1em")};
   height: ${({ size }) => (size === "xl" ? "4rem" : "1em")};
@@ -46,17 +44,16 @@ const Icon = ({ icon = "info", fill, label, "data-tip": data_tip, ...props }) =>
   ) : null;
 export default Icon;
 
-const inIconMap = (props, propName) => {
-  if (!(props[propName].toLowerCase() in icons)) {
-    return new Error(
-      `Invalid icon name '${props[propName]}'. Must be one of: ${Object.keys(
-        icons
-      )}`
-    );
-  }
-};
 Icon.propTypes = {
-  icon: inIconMap,
+  icon: (props, propName) => {
+    if (!(props[propName].toLowerCase() in icons)) {
+      return new Error(
+        `Invalid icon name '${props[propName]}'. Must be one of: ${Object.keys(
+          icons
+        )}`
+      );
+    }
+  },
   size: PropTypes.oneOf(["small", "normal", "large", "xl"]),
   align: PropTypes.oneOf(["baseline", "none"]),
 };

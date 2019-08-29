@@ -161,7 +161,7 @@ const Comment = ({ comment, username, loggedIn }) => {
         {collapse ? (
           <Button
             size="small"
-            type="flat"
+            flat
             icon={collapse ? "plus" : "minus"}
             label={collapse ? "plusSquare" : "minusSquare"}
             hideLabel
@@ -195,7 +195,6 @@ const Comment = ({ comment, username, loggedIn }) => {
             backgroundColor={author_flair_background_color}
             color={author_flair_text_color}
             richText={author_flair_richtext}
-            w
             templateId={author_flair_template_id}
             text={author_flair_text}
             type={author_flair_type}
@@ -233,7 +232,7 @@ const Comment = ({ comment, username, loggedIn }) => {
                 {!locked ? (
                   <Button
                     label="Reply"
-                    type="flat"
+                    flat
                     size="small"
                     icon="cornerDownRight"
                     onClick={toggleShowReply}
@@ -242,7 +241,7 @@ const Comment = ({ comment, username, loggedIn }) => {
                 ) : null}
                 <Button
                   hideLabel
-                  type="flat"
+                  flat
                   toggled={saved}
                   label={saved ? "unsave" : "save"}
                   icon="star"
@@ -251,7 +250,7 @@ const Comment = ({ comment, username, loggedIn }) => {
                 />
                 <Button
                   hideLabel
-                  type="flat"
+                  flat
                   toggled={hidden}
                   label={hidden ? "unhide" : "hide"}
                   icon="star"
@@ -261,7 +260,7 @@ const Comment = ({ comment, username, loggedIn }) => {
                 <Button
                   label="view on reddit"
                   hideLabel
-                  type="flat"
+                  flat
                   size="small"
                   icon="externalLink"
                   href={"https://www.reddit.com" + permalink}
@@ -270,7 +269,7 @@ const Comment = ({ comment, username, loggedIn }) => {
                 {process.env.NODE_ENV === "development" ? (
                   <Button
                     label="Log to console"
-                    type="flat"
+                    flat
                     size="small"
                     hideLabel
                     icon="terminal"

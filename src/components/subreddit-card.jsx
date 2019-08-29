@@ -74,7 +74,7 @@ export default class SubredditCard extends React.Component {
                 }}
               /> */}
             <Timestamp time={created_utc} to={"#" + id} />
-            <Button type="primary" onClick={this.toggleSubscribe}>
+            <Button primary onClick={this.toggleSubscribe}>
               {this.state.subscribed ? "Leave" : "Join"}
             </Button>
           </Body>

@@ -12,6 +12,10 @@ export const setThemePrefs = (prefs) => ({
   type: "SET_THEME_PREFS",
   prefs,
 })
+export const setLayoutPrefs = (prefs) => ({
+  type: "SET_LAYOUT_PREFS",
+  prefs,
+})
 
 export const setUserPrefs = (prefs) => ({
   type: "SET_USER_PREFS",
@@ -31,6 +35,16 @@ export const setMultireddits = (multis) => ({
 export const setDefaults = (defaults) => ({
   type: "SET_DEFAULTS",
   defaults,
+});
+
+export const setPostListingSettings = (settings) => ({
+  type: "SET_POST_LISTING_SETTINGS",
+  settings,
+});
+
+export const setThreadSettings = (settings) => ({
+  type: "SET_THREAD_SETTINGS",
+  settings,
 });
 
 export const setLocation = (location) => {

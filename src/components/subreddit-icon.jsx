@@ -1,17 +1,9 @@
 import React from "react";
 import { connect } from "react-redux";
+import { PropTypes } from "prop-types";
 import styled, { withTheme } from "styled-components";
 import { genSubIconColor } from "../style/gen-theme";
 import { meetsContrastGuidelines } from "polished";
-
-import { ReactComponent as LogoSVG } from "../icons/logo.svg";
-import { PropTypes } from "prop-types";
-
-export const Logo = (props) => (
-  <Circle {...props}>
-    <LogoSVG />
-  </Circle>
-);
 
 const SubredditIcon = ({
   subName = "",
@@ -60,7 +52,7 @@ const SubredditIcon = ({
     <div ref={passRef}>
       <Circle
         size={size}
-        flat={url ? undefined : flat}
+        flat={!url || flat ? "true" : undefined}
         color={color}
         bgColor={bgColor}
         url={url}

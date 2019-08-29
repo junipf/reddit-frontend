@@ -1,19 +1,23 @@
 import React, { useMemo, useState, useEffect } from "react";
-import styled from "styled-components";
 import { connect } from "react-redux";
-import { setLocation } from "../store/actions";
+import {
+  setLocation,
+  setPostListingSettings,
+  setThreadSettings,
+} from "../store/actions";
 import PostListing from "./post-listing";
-import CommentListing from "./comment-listing";
-import Button, { Group } from "../components/button";
-import Icon from "../components/icon";
+import thread from "./comment-listing";
 import ReactTooltip from "react-tooltip";
 import { Column } from "./column";
-import SubredditThemeProvider from "./sub-theme-provider";
+import SubredditThemeProvider from "../style/sub-theme-provider";
 
 const SplitView = ({
   match: { params: path } = {},
   location: { search },
   setLocation,
+  layoutPrefs: { split },
+  setPostListingSettings,
+  setThreadSettings,
 }) => {
   const searchParams = useMemo(() => {
     return new URLSearchParams(search);
@@ -23,56 +27,46 @@ const SplitView = ({
     postListing: {
       controlsPath: path.id === undefined,
       visible: path.id === undefined,
-      subName: path.id === undefined ? path.subName || null : null,
-      sort: path.sort || "hot",
-      time: searchParams.get("t") || "all",
     },
-    commentListing: {
+    thread: {
       visible: path.id !== undefined,
-      id: path.id,
-      subName: path.id ? path.subName || null : null,
-      sort: searchParams.get("sort"),
     },
+  });
+
+  const [visible, setVisible] = useState({
+    postListing: !path.id,
+    thread: !!path.id,
   });
 
   useEffect(() => {
     if (path.id === undefined) {
-      setState((state) => ({
-        ...state,
-        commentListing: {
-          ...state.commentListing,
-          visible: false,
-        },
-        postListing: {
-          ...state.postListing,
-          visible: true,
-          controlsPath: true,
-          subName: path.subName || null,
-          sort: path.sort || "hot",
-          time: searchParams.get("t") || "all",
-        },
-      }));
+      setVisible({
+        postListing: true,
+        thread: false,
+      });
       setLocation({
         name: path.subName || "Frontpage",
         type: path.subName ? "subreddit" : "listing",
       });
+      setPostListingSettings({
+        subName: path.subName,
+        sort: path.sort || "hot",
+        time: searchParams.get("t") || "all",
+      });
     } else {
-      setState((state) => ({
-        ...state,
-        commentListing: {
-          ...state.commentListing,
-          visible: true,
-          id: path.id,
-          subName: path.subName || null,
-          sort: searchParams.get("sort") || "best",
-        },
-        postListing: {
-          ...state.postListing,
-          controlsPath: false,
-        },
-      }));
+      setThreadSettings({
+        id: path.id,
+        subName: path.subName,
+        sort: searchParams.get("sort") || "best",
+      });
     }
-  }, [path, searchParams, setLocation]);
+  }, [
+    path,
+    searchParams,
+    setLocation,
+    setPostListingSettings,
+    setThreadSettings,
+  ]);
 
   const togglePostListing = () => {
     setState((state) => ({
@@ -80,31 +74,31 @@ const SplitView = ({
       postListing: {
         ...state.postListing,
         visible: !state.postListing.visible,
-        controlsPath: !state.commentListing.visible,
+        controlsPath: !state.thread.visible,
       },
-      commentListing: {
-        ...state.commentListing,
-        // If postListing is hidden, enable commentListing
+      thread: {
+        ...state.thread,
+        // If postListing is hidden, enable thread
         visible: state.postListing.visible
           ? true
-          : state.commentListing.visible,
+          : state.thread.visible,
       },
     }));
   };
 
-  const toggleCommentListing = () => {
+  const togglethread = () => {
     setState((state) => ({
       ...state,
-      commentListing: {
-        ...state.commentListing,
-        visible: !state.commentListing.visible,
+      thread: {
+        ...state.thread,
+        visible: !state.thread.visible,
       },
       postListing: {
         ...state.postListing,
-        visible: state.commentListing.visible
+        visible: state.thread.visible
           ? true
           : state.postListing.visible,
-        controlsPath: state.commentListing.visible ? true : false,
+        controlsPath: state.thread.visible ? true : false,
       },
     }));
   };
@@ -114,114 +108,32 @@ const SplitView = ({
     ReactTooltip.rebuild();
   });
 
-  const modes = {
-    split: {
-      name: "split",
-      icon: "columns",
-      types: {
-        postListing: "primary",
-        commentListing: "primary",
-      },
-    },
-    splitLeft: {
-      name: "split left",
-      icon: "sidebar",
-      rotateIcon: "180deg",
-      types: {
-        postListing: "primary",
-        commentListing: "secondary",
-      },
-    },
-    splitRight: {
-      name: "split right",
-      icon: "sidebar",
-      types: {
-        postListing: "secondary",
-        commentListing: "primary",
-      },
-    },
-    overlay: {
-      name: "overlay",
-      icon: "square",
-      types: {
-        postListing: "primary",
-        commentListing: "primary",
-      },
-    },
-  };
-  const [viewMode, setViewMode] = useState(modes.split);
-  const updateMode = (value) => setViewMode(value);
-
   return (
     <>
       <SubredditThemeProvider subName={state.postListing.subName}>
         <Column
-          type={viewMode.types.postListing}
+          type={split === "even" || split === "left" ? "primary" : "secondary"}
           className={state.postListing.visible ? "shown" : "hidden"}
         >
           <PostListing {...state.postListing} hideSelf={togglePostListing} />
         </Column>
       </SubredditThemeProvider>
-      <SubredditThemeProvider subName={state.commentListing.subName}>
+      <SubredditThemeProvider subName={state.thread.subName}>
         <Column
-          type={viewMode.types.commentListing}
-          className={state.commentListing.visible ? "shown" : "hidden"}
+          type={split === "even" || split === "right" ? "primary" : "secondary"}
+          className={state.thread.visible ? "shown" : "hidden"}
         >
-          <CommentListing
-            {...state.commentListing}
-            hideSelf={toggleCommentListing}
+          <thread
+            {...state.thread}
+            hideSelf={togglethread}
           />
         </Column>
       </SubredditThemeProvider>
-      <Navbar>
-        <Group>
-          <Button
-            label="PostListing"
-            onClick={togglePostListing}
-            type={state.postListing.visible ? "primary" : "secondary"}
-          />
-          <Button
-            label="CommentListing"
-            onClick={toggleCommentListing}
-            type={state.commentListing.visible ? "primary" : "secondary"}
-          />
-        </Group>
-        <Group>
-          {Object.entries(modes).map(([key, mode]) => (
-            <Button
-              label={mode.name}
-              hideLabel
-              key={mode.name}
-              type={viewMode.name === mode.name ? "primary" : "secondary"}
-              value={mode}
-              onClick={updateMode}
-            >
-              <Icon icon={mode.icon} rotate={mode.rotateIcon} />
-            </Button>
-          ))}
-        </Group>
-      </Navbar>
     </>
   );
 };
 
 export default connect(
-  null,
-  { setLocation }
+  ({ layoutPrefs }) => ({ layoutPrefs }),
+  { setLocation, setThreadSettings, setPostListingSettings }
 )(SplitView);
-
-const Navbar = styled.div`
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  justify-content: center;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100vw;
-  height: 2rem;
-  background-color: ${({ theme }) => theme.card.bg};
-  border-top: 1px solid ${({ theme }) => theme.card.border};
-  text-align: center;
-`;

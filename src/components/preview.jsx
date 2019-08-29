@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import { toggleLightboxIsOpen } from "../store/actions";
 import Button from "./button";
 import { Body } from "./body";
-import { Video, Gif, GifVideo } from "./reddit-video";
+import Video, { Gif, GifVideo } from "./reddit-video";
 import Tweet from "./tweet";
 
 const previewMaxHeight = 512;

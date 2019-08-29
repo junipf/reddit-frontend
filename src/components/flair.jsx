@@ -32,8 +32,8 @@ const StyledFlair = styled.span`
   border-radius: 0.125rem;
   color: ${({ backgroundColor, theme, color }) =>
     backgroundColor === "transparent"
-      ? theme.color
-      : theme.flairColor || color || theme.color};
+      ? theme.text
+      : theme.flairColor || color || theme.text};
   background-color: ${({ backgroundColor, theme }) =>
     backgroundColor || theme.card.innerBg};
 `;

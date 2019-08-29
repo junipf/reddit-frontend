@@ -3,32 +3,30 @@ import { tests } from "../test";
 import Icon from "../components/icon";
 import Button from "../components/button";
 import Dropdown from "../components/dropdown";
-import { withRouter } from "react-router-dom";
 
-const TestNav = ({ location: { pathname } }) => {
-  const buttons = tests.map(({ name, icon }) => {
-    const path = `/test/${name.toLowerCase()}`;
-    return (
-      <Button
-        to={path}
-        key={name}
-        type={path === pathname ? "primary" : "secondary"}
-      >
-        <Icon icon={icon} />
-        {name}
-      </Button>
-    );
-  });
-
-  return process.env.NODE_ENV === "development" ? (
-    pathname.startsWith("/test/") ? (
-      buttons
-    ) : (
-      <Dropdown label="Tests" icon="code" hideLabel iconAfter="none">
-        {buttons}
-      </Dropdown>
-    )
+const TestNav = ({ location: { pathname }, match: { params } }) =>
+  process.env.NODE_ENV === "development" ? (
+    <Dropdown
+      label={params.test || "tests"}
+      icon={tests[params.test].icon || "code"}
+    >
+      {Object.entries(tests).map(([key, { name, icon }]) => {
+        const path = `/test/${name.toLowerCase()}`;
+        return (
+          <Button
+            to={path}
+            key={name}
+            flat
+            primary
+            toggle
+            toggled={path === pathname}
+          >
+            <Icon icon={icon} />
+            {name}
+          </Button>
+        );
+      })}
+    </Dropdown>
   ) : null;
-};
 
-export default withRouter(TestNav);
+export default TestNav;

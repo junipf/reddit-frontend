@@ -211,7 +211,7 @@ const Card = styled.div`
   /* margin-bottom: 0; */
   background: ${({theme}) => theme.card.bg};
   border: 1px solid ${({theme}) => theme.card.border};
-  color: ${({theme}) => theme.color};
+  color: ${({theme}) => theme.text};
   border-radius: 0.5rem;
   flex: 1 1 auto;
 `;
@@ -219,7 +219,7 @@ const Card = styled.div`
 const Sticky = styled.div`
   background: ${({theme}) => theme.card.bg};
   border-bottom: 1px solid ${({theme}) => theme.card.border};
-  color: ${({theme}) => theme.color};
+  color: ${({theme}) => theme.text};
   position: sticky;
   top: 0;
   z-index: 2;
@@ -388,7 +388,7 @@ const IconPage = (props) => {
             <Dropdown
               size="fill"
               label=""
-              type="flat"
+              flat
               onSelect={usePreset}
               data-tip="Presets"
             >
@@ -408,7 +408,7 @@ const IconPage = (props) => {
               </Button>
             </Dropdown>
             <Button
-              type="flat"
+              flat
               size="fill"
               icon="x"
               onClick={clearAll}

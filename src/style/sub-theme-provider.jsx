@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { ThemeProvider, withTheme } from "styled-components";
-import { addSubredditTheme } from "./../store/actions";
+import { addSubredditTheme } from "../store/actions";
 
 const SubredditThemeProvider = ({
   theme: inheritedTheme,

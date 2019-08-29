@@ -166,7 +166,7 @@ const Reply = ({ autoFocus, onSubmit, onCancel, draft = "" }) => {
         />
         <MDPreview value={value} />
       </Split>
-      <Button type="primary" label="Reply" onClick={submit} />
+      <Button primary label="Reply" onClick={submit} />
       {onCancel ? <Button label="Cancel" onClick={cancel} /> : null}
       {process.env.NODE_ENV === "development" ? (
         <Button onClick={debugFreshPrince}>

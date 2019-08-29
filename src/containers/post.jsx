@@ -43,7 +43,7 @@ const PostWrapper = styled.div.attrs(({ id }) => ({
   margin: 0.5rem;
   margin-top: ${({ compact }) => (compact ? "0" : "0.5rem")};
   background: ${({ theme }) => theme.card.bg};
-  color: ${({ theme }) => theme.color};
+  color: ${({ theme }) => theme.text};
   border-width: 1px;
   border-style: solid;
   border-color: ${({ theme }) => theme.card.border};
@@ -92,7 +92,7 @@ const Title = ({ compact, to, children }) => (
 const StyledTitle = styled.span`
   a {
     display: block;
-    color: ${({ theme }) => theme.titleColor};
+    color: ${({ theme }) => theme.title};
     font-size: ${({ compact }) => (compact ? "0.85rem" : "1.2rem")};
     font-weight: 400;
     text-decoration: none;
@@ -392,7 +392,8 @@ const Post = ({
           )}
           <ActionBar>
             <Button
-              // type="primary"
+              primary
+              flat
               label={numComments}
               to={permalink}
               onClick={navigateToPost}
@@ -409,9 +410,10 @@ const Post = ({
             {loggedIn || compact ? (
               <>
                 <Button
-                  type="flat"
+                  flat
                   hideLabel
                   fill={saved}
+                  toggle
                   toggled={saved}
                   label={saved ? "unsave" : "save"}
                   icon="star"
@@ -419,8 +421,9 @@ const Post = ({
                   key="2"
                 />
                 <Button
-                  type="flat"
+                  flat
                   hideLabel
+                  toggle
                   toggled={hidden}
                   label={hidden ? "show" : "hide"}
                   icon={hidden ? "eyeOff" : "eye"}
@@ -428,7 +431,7 @@ const Post = ({
                   key="3"
                 />
                 <Button
-                  type="flat"
+                  flat
                   hideLabel
                   label="report"
                   icon="flag"
@@ -437,7 +440,7 @@ const Post = ({
               </>
             ) : null}
             <Button
-              type="flat"
+              flat
               label="view on reddit"
               hideLabel
               icon="externalLink"
@@ -447,7 +450,7 @@ const Post = ({
             {process.env.NODE_ENV === "development" ? (
               <>
                 <Button
-                  type="flat"
+                  flat
                   hideLabel
                   label="Log submission object to console"
                   icon="terminal"
@@ -455,7 +458,7 @@ const Post = ({
                   key="6"
                 />
                 <Button
-                  type="flat"
+                  flat
                   hideLabel
                   label="Copy submission to clipboard"
                   icon="clipboard"

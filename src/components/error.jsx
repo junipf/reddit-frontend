@@ -1,8 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 import Icon from "./icon";
+import Card from "./card";
+import Button from "./button";
 
-const Error = ({ e, name, type }) => {
+const Error = ({ e, name, type, onClose, ...props }) => {
   const message = {
     403: `You aren't allowed to access this ${type}`,
     404: `${name} does not exist.`,
@@ -33,7 +35,7 @@ const Error = ({ e, name, type }) => {
       ? message[e.message]
       : e.message.charAt(0) === 4
       ? "Something went wrong."
-      : e.message.charAt(0) === 4
+      : e.message.charAt(0) === 5
       ? "Something went wrong with reddit."
       : `Error ${e.message}`;
 
@@ -50,16 +52,56 @@ const Error = ({ e, name, type }) => {
 
   const icon = type === "subreddit" && e.message === "403" ? "lock" : "frown";
 
+  const reportable =
+    e.message.includes("ratelimit") || e.message.charAt(0) === "4";
+
+  const reportUrl = `https://github.com/junipf/reddit-frontend/issues/new?labels=bug&title=[Bug:+${encodeURIComponent(type)}]&body=${encodeURIComponent(`## Expected Behavior
+
+
+  ## Actual Behavior
+  
+  
+  ## Steps to Reproduce the Problem
+  
+    1.
+    2.
+    3.
+  
+  ## Specifications
+  
+  message: ${e.message}
+  type: ${type}
+  path: ${document.location.pathname}
+  origin: ${document.location.origin}
+  
+  ## Specifications
+  
+  browser: ${navigator.userAgent}`)}`;
+
   return (
-    <StyledError>
+    <StyledError {...props}>
       <Icon icon={icon} size="xl" />
       <Title>{title}</Title>
       {details ? <Details>{details}</Details> : null}
+      <Actions>
+        {reportable ? <Button href={reportUrl}>report bug</Button> : null}
+        <Button primary onClick={onClose}>
+          dismiss
+        </Button>
+      </Actions>
     </StyledError>
   );
 };
 
 export default Error;
+
+const Actions = styled.div`
+  margin-left: auto;
+  float: right;
+  /* display: flex; */
+  /* flex-flow: row wrap; */
+  /* justify-content: space-between; */
+`;
 
 const Title = styled.h1`
   font-size: 1.25rem;
@@ -72,12 +114,9 @@ const Details = styled.div`
   opacity: 0.6;
 `;
 
-const StyledError = styled.div`
-  width: auto;
-  background-color: ${({ theme }) => theme.card.bg};
+const StyledError = styled(Card)`
   text-align: center;
   padding: 1rem;
-  border-radius: 0.15rem;
   width: 400px;
   margin: 1rem auto;
 `;

@@ -258,36 +258,33 @@ const List = styled.div`
 `;
 
 const SubredditIconTest = () => (
-    <>
-      <h1>Generated subreddit icons</h1>
-      <SectionCard>
-        <List>
-          <SubredditIcon subName="Aa" subreddit={{}} size="small" />
-          <SubredditIcon subName="Bb" subreddit={{}} size="normal" />
-          <SubredditIcon subName="Cc" subreddit={{}} size="large" />
-          <SubredditIcon subName="Dd" subreddit={{}} size="xl" />
-        </List>
-      </SectionCard>
-    </>
-  );
-
-const ComponentsTest = () => (
   <>
-    <DropdownTest />
-    <TagTest />
-    <SubredditIconTest />
+    <h1>Generated subreddit icons</h1>
+    <SectionCard>
+      <List>
+        <SubredditIcon subName="Aa" subreddit={{}} size="small" />
+        <SubredditIcon subName="Bb" subreddit={{}} size="normal" />
+        <SubredditIcon subName="Cc" subreddit={{}} size="large" />
+        <SubredditIcon subName="Dd" subreddit={{}} size="xl" />
+      </List>
+    </SectionCard>
+  </>
+);
+
+const ButtonTest = () => (
+  <>
     <h1>Buttons</h1>
     <SectionCard>
       <h2>Types</h2>
-      <Button type="primary">Primary</Button>
-      <Button type="primary" color="#32b58d">
+      <Button primary>Primary</Button>
+      <Button primary color="#32b58d">
         Custom color!
       </Button>
-      <Button type="primary" color="#ffffaa">
+      <Button primary color="#ffffaa">
         Super bright custom color!
       </Button>
       <Button>Button</Button>
-      <Button type="flat">Flat</Button>
+      <Button flat>Flat</Button>
       <h2>Icons</h2>
       <Button hideLabel label="With icon, label hidden!" icon="star" />
       <Button label="Icon, label!" icon="lock" />
@@ -297,6 +294,11 @@ const ComponentsTest = () => (
         icon="star"
       />
     </SectionCard>
+  </>
+);
+
+const AlignmentTest = () => (
+  <>
     <h1>SVG Alignment</h1>
     <SectionCard>
       <Alignment>
@@ -307,6 +309,16 @@ const ComponentsTest = () => (
         <HighlightedIcon icon="trendingUp" noMargin />
       </Alignment>
     </SectionCard>
+  </>
+);
+
+const ComponentsTest = () => (
+  <>
+    <DropdownTest />
+    <TagTest />
+    <SubredditIconTest />
+    <ButtonTest />
+    <AlignmentTest />
   </>
 );
 

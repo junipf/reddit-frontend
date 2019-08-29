@@ -3,64 +3,15 @@ import {
   hsl,
   parseToHsl,
   saturate,
-  meetsContrastGuidelines,
+  // meetsContrastGuidelines,
+  readableColor,
 } from "polished";
 import themes from "./themes";
 
-export const genSubIconColor = color => saturate(0.3, color);
-
-const pickContrastingColor = (background, light, dark) => {
-  if (light && meetsContrastGuidelines(background, light).AALarge) return light;
-  if (meetsContrastGuidelines(background, "#fff").AALarge) return "#fff";
-  if (dark && meetsContrastGuidelines(background, dark).AALarge) return dark;
-  return "#000";
-};
-
-// secondary: {
-//   color: colors.grey900,
-//   bg: colors.grey300,
-//   hover: colors.grey200,
-//   active: colors.grey400,
-// },
-// flat: {
-//   color: colors.grey900,
-//   bg: "transparent",
-//   hover: colors.grey200,
-//   active: colors.grey300,
-// },
-
-export const genButtonColors = ({ color, dark, levels }) => {
-  const theme = dark ? themes.dark : themes.light;
-  if (!color || color === "") return { ...theme.button };
-
-  const { hue, saturation } = parseToHsl(color);
-
-  const lightText = hsl(hue, 0.8, 0.1);
-  const darkText = hsl(hue, 0.8, 0.9);
-
-  const mod = dark ? 0 : 0.5;
-
-  let primary = {
-    bg: hsl(hue, saturation, 0.6),
-    hover: hsl(hue, saturation, 0.7),
-    active: hsl(hue, saturation, 0.5),
-  };
-  primary.color = pickContrastingColor(primary.bg, lightText, darkText);
-
-  let secondary = {
-    bg: hsl(hue, 0.05, mod + 0.2),
-    hover: hsl(hue, 0.05, mod + 0.3),
-    active: hsl(hue, 0.05, mod + 0.1),
-  };
-  secondary.color = pickContrastingColor(secondary.bg, lightText, darkText);
-
-  return { primary, secondary, flat: { ...secondary, bg: "transparent" } };
-};
-
-// 1, 0.618, 0.382, 0.236, 0.146, 0.09
+export const genSubIconColor = (color) => saturate(0.3, color);
 
 const genTheme = ({ color, name, simple }) =>
-  new Promise(resolve => {
+  new Promise((resolve) => {
     if (!color || color === "" || color === "transparent") return null;
     const { hue, saturation } = parseToHsl(color);
     const hueAdj = 11.25;
@@ -85,6 +36,32 @@ const genTheme = ({ color, name, simple }) =>
         border: color,
       },
     };
+
+    const lightText = hsl(hue, 0.8, 0.1);
+    const darkText = hsl(hue, 0.8, 0.9);
+
+    let primary = {
+      base: hsl(hue, saturation, 0.6),
+      hover: hsl(hue, saturation, 0.7),
+      active: hsl(hue, saturation, 0.5),
+    };
+    primary.text = readableColor(primary.base, lightText, darkText);
+
+    let button = {
+      light: {
+        bg: hsl(hue, 0.05, 0.7),
+        hover: hsl(hue, 0.05, 0.8),
+        active: hsl(hue, 0.05, 0.6),
+      },
+      dark: {
+        bg: hsl(hue, 0.05, 0.2),
+        hover: hsl(hue, 0.05, 0.3),
+        active: hsl(hue, 0.05, 0.1),
+      },
+    };
+    button.light.text = readableColor(button.light.bg, lightText, darkText);
+    button.dark.text = readableColor(button.dark.bg, lightText, darkText);
+
     const generatedThemes = {
       color: color,
       icon: "droplet",
@@ -95,16 +72,15 @@ const genTheme = ({ color, name, simple }) =>
         icon: "droplet",
         link: hsl(hue, 0.8, 0.35),
         color: hsl(hue, 0.8, 0.15),
-        button: genButtonColors({ color, dark: false, levels: levels.light }),
+        bg: hsl(hue + hueAdj, 0.05, 0.8),
+        primary,
+        button: button.light,
         card: {
           ...themes.light.card,
           bg: levels.light[0],
           innerBg: levels.light[1],
           border: hsl(hue, saturation * 0.62, 0.62),
           innerBorder: hsl(hue, saturation * 0.38, 0.62),
-        },
-        column: {
-          bg: hsl(hue + hueAdj, 0.05, 0.8),
         },
         header: {
           bg: hsl(hue, 0.05, 0.7),
@@ -118,16 +94,14 @@ const genTheme = ({ color, name, simple }) =>
         icon: "droplet",
         link: hsl(hue, 0.8, 0.85),
         color: hsl(hue, 0.8, 0.8),
-        button: genButtonColors({ color, dark: true, levels: levels.dark }),
+        bg: hsl(hue + hueAdj, 0.05, 0.1),
+        button: button.dark,
         card: {
           ...themes.dark.card,
           bg: levels.dark[0],
           innerBg: levels.dark[1],
           border: hsl(hue, 0.5, 0.22),
           innerBorder: hsl(hue, 0.25, 0.22),
-        },
-        column: {
-          bg: hsl(hue + hueAdj, 0.05, 0.1),
         },
         header: {
           bg: hsl(hue + hueAdj, 0.05, 0.2),
