@@ -388,6 +388,7 @@ const Post = ({
               isSelf={is_self}
               html={selftext_html}
               nightmode={theme.dark}
+              title={title}
             />
           )}
           <ActionBar>

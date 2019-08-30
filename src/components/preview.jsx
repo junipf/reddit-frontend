@@ -21,6 +21,7 @@ const Preview = ({
   spoiler,
   isSelf,
   html,
+  title,
 }) => {
   const [Preview, setPreview] = useState(undefined);
 
@@ -178,6 +179,7 @@ const Preview = ({
     }
     if (Preview) {
       Preview.props.blur = nsfw && inListing && !showObscured;
+      Preview.props.title = title;
     }
     setPreview(Preview);
   }, [
@@ -192,6 +194,7 @@ const Preview = ({
     html,
     isSelf,
     showObscured,
+    title,
   ]);
 
   // const showMedia = Preview ? visible : false;

@@ -24,6 +24,7 @@ const Video = ({
   blur,
   poster,
   theme,
+  title,
 }) => {
   // Reddit splits the audio track into a separate file to force people
   // to share direct reddit links in order to share reddit videos.
@@ -354,11 +355,8 @@ scrubber: ${scrubberUrl}
         <Overlay show={showBigPlayButton}>
           <Icon icon="play" size="xl" />
         </Overlay>
-        <FullscreenInfo
-          show={showControls}
-          // show={fullscreen && showControls}
-        >
-          Fullscreen info
+        <FullscreenInfo show={fullscreen && showControls}>
+          {title}
         </FullscreenInfo>
         <Controls show={showControls}>
           <ControlsBackground />
@@ -713,7 +711,7 @@ const Overlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  color: ${({theme}) => theme.text};
+  color: ${({ theme }) => theme.text};
   pointer-events: ${({ usePointerEvents }) =>
     usePointerEvents ? null : "none"};
   background-color: rgba(0, 0, 0, 0.5);
