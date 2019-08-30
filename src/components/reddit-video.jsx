@@ -316,6 +316,7 @@ scrubber: ${scrubberUrl}
           height={height}
           width={width}
           onClick={controls.paused ? play : pause}
+          onDoubleClick={toggleFullscreen}
           onError={updateError}
           onLoadedMetadata={syncStates}
           onPlay={syncStates}
@@ -687,7 +688,7 @@ const Controls = styled.div`
 const FullscreenInfo = styled(Controls)`
   user-select: auto;
   bottom: unset;
-  height: auto;
+  height: 3rem;
   top: ${({ show }) => (show ? "0%" : `-${controlsHeight}em`)};
   background: linear-gradient(black, transparent);
 `;
