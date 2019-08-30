@@ -16,9 +16,9 @@ const Indent = styled.div`
 
 const ColorDot = styled.div`
   display: inline-block;
-  width: ${({ size }) => size || 0.75}rem;
-  height: ${({ size }) => size || 0.75}rem;
-  margin: auto 0.5rem auto 0;
+  width: 1em;
+  height: 1em;
+  margin: 0 0.35em 0 0;
   border-radius: 50%;
   background-color: ${({ theme, color }) => color || theme.highlight};
 `;
@@ -94,9 +94,7 @@ const PrefMenu = ({
         iconAfter={darkSystem ? "moon" : "sun"}
       >
         <Icon icon={syncSystemTheme ? "checkCircle" : "circle"} />
-        {/* <Icon icon="settings" /> */}
         System
-        {/* <Icon icon={} noMargin /> */}
       </Button>
       {themeSets.map(({ name, dark, set }) => (
         <React.Fragment key={name}>
@@ -112,15 +110,6 @@ const PrefMenu = ({
                 !syncSystemTheme && useDarkThemes === dark
                   ? "checkCircle"
                   : "circle"
-                // syncSystemTheme
-                //   ? darkSystem === dark
-                //     ? "settings"
-                //     : useDarkThemes === dark
-                //     ? "disc"
-                //     : "circle"
-                //   : useDarkThemes === dark
-                //   ? "checkCircle"
-                //   : "circle"
               }
             />
             {name}
@@ -147,15 +136,6 @@ const PrefMenu = ({
                             ? "checkCircle"
                             : "xCircle"
                           : "circle"
-                        // darkTheme === theme.id || lightTheme === theme.id
-                        //   ? syncSystemTheme
-                        //     ? darkSystem === theme.dark
-                        //       ? "settings"
-                        //       : "disc"
-                        //     : useDarkThemes === theme.dark
-                        //     ? "checkCircle"
-                        //     : "disc"
-                        //   : "circle"
                       }
                     />
                     {theme.name}
@@ -170,8 +150,8 @@ const PrefMenu = ({
       <Dropdown
         toggle={
           <Button flat size="fill">
-            <Icon icon="chevronLeft" />
-            <ColorDot size={0.75} /> Color
+            <Icon icon="chevronLeft" align="none"/>
+            <ColorDot /> Color
           </Button>
         }
         iconAfter="none"
@@ -189,7 +169,7 @@ const PrefMenu = ({
               key={id}
               flat
             >
-              <Icon icon={colorTheme === id ? "checkCircle" : "circle"} />
+              <Icon icon={colorTheme === id ? "checkCircle" : "circle"} align="none"/>
               <ThemeProvider
                 theme={{
                   ...themes.light,
@@ -201,14 +181,14 @@ const PrefMenu = ({
                 }}
                 key={id}
               >
-                <ColorDot size={0.75} />
+                <ColorDot />
               </ThemeProvider>
               {name}
             </Button>
           );
         })}
       </Dropdown>
-      <Divider />
+      {/* <Divider /> */}
       <Button
         onClick={setThemePrefs}
         value={{ useSubredditThemes: !useSubredditThemes }}
@@ -223,17 +203,6 @@ const PrefMenu = ({
         <Icon icon={useFlairThemes ? "checkSquare" : "square"} />
         Use flair themes
       </Button>
-      {/* <Divider /> */}
-      {/* {user ? (
-        <Button
-          onClick={setThemePrefs}
-          value={{ syncRedditTheme: !syncRedditTheme }}
-        >
-          <Icon icon={syncRedditTheme ? "checkSquare" : "square"} />
-          Sync with reddit
-          <Icon icon={redditPrefs.nightmode ? "moon" : "sun"} noMargin />
-        </Button>
-      ) : null} */}
     </Dropdown>
     {user ? (
       <Dropdown label={user.name} expand>
