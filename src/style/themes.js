@@ -97,7 +97,6 @@ const dark = {
   },
   header: {
     bg: colors.darkSurface900,
-    overlay: "transparent", //overridden by subreddit themes
     border: colors.darkSurface100,
   },
   scrollbar: colors.grey800 + " " + colors.grey700,

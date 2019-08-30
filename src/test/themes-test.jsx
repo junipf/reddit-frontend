@@ -55,6 +55,7 @@ const Dot = styled.div`
 const Header = styled.div`
   width: 100%;
   border-bottom: 1px solid ${({ theme }) => theme.header.border};
+  background-color: ${({ theme }) => theme.header.bg};
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -62,21 +63,6 @@ const Header = styled.div`
   flex: 0 0 auto;
   opacity: 1;
   position: relative;
-`;
-
-const HeaderBase = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  background-color: ${({ theme }) => theme.header.bg};
-`;
-
-const HeaderOverlay = styled(HeaderBase)`
-  background-color: ${({ theme }) => theme.header.overlay};
 `;
 
 const HeaderSection = styled.section`
@@ -122,8 +108,6 @@ const Media = styled.div`
 const SampleComponents = ({ children }) => (
   <Column>
     <Header>
-      <HeaderBase />
-      <HeaderOverlay />
       <HeaderSection>{children}</HeaderSection>
     </Header>
     <SectionCard>

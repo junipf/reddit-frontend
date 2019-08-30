@@ -204,7 +204,6 @@ class App extends React.Component {
               />
               <AppWrapper>
                 <Header>
-                  <HeaderBackground />
                   <Section>
                     <NavigationMenu />
                     <Switch>
@@ -271,7 +270,9 @@ class App extends React.Component {
 const Header = styled.div`
   width: 100vw;
   color: ${({ theme }) => theme.text};
-  border-bottom: 1px solid ${({ theme }) => theme.header.border};
+  border-bottom: 1px solid
+    ${({ theme }) => theme && theme.header && theme.header.border};
+  background-color: ${({ theme }) => theme && theme.header && theme.header.bg};
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -280,19 +281,6 @@ const Header = styled.div`
   opacity: 1;
   position: relative;
   z-index: 100;
-  /* backdrop-filter: blur(25px); */
-`;
-
-const HeaderBackground = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  background-color: ${({ theme }) => theme.header.bg};
-  /* opacity: 0.85; */
 `;
 
 const Section = styled.section`
@@ -332,6 +320,6 @@ const connectedApp = connect(
   }
 )(App);
 
-export default (process.env.NODE_ENV === "development"
+export default process.env.NODE_ENV === "development"
   ? hot(module)(connectedApp)
-  : connectedApp);
+  : connectedApp;
