@@ -7,11 +7,11 @@ import Dropdown from "../components/dropdown";
 const TestNav = ({ location: { pathname }, match: { params } }) =>
   process.env.NODE_ENV === "development" ? (
     <Dropdown
-      label={params.test || "tests"}
+      label={tests[params.test].name || "tests"}
       icon={tests[params.test].icon || "code"}
     >
       {Object.entries(tests).map(([key, { name, icon }]) => {
-        const path = `/test/${name.toLowerCase()}`;
+        const path = `/test/${name.toLowerCase().replace(/ /g, "-")}`;
         return (
           <Button
             to={path}

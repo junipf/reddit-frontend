@@ -34,6 +34,13 @@ const VideoGifPost = () => (
   </>
 );
 
+const VideoNoAudio = () => (
+  <>
+    <h1>Video no audio</h1>
+    <Post post={posts.videoNoAudio} compact />
+  </>
+);
+
 const Page = styled.div`
   width: 100%;
   margin: 0 auto;
@@ -45,6 +52,11 @@ export const tests = {
   markdown: { name: "Markdown", Component: MarkdownTest, icon: "italic" },
   themes: { name: "Themes", Component: ThemesTest, icon: "layout" },
   video: { name: "Video", Component: VideoPost, icon: "video" },
+  "video-no-audio": {
+    name: "Video No Audio",
+    Component: VideoNoAudio,
+    icon: "volumeX",
+  },
   gif: { name: "Gif", Component: VideoGifPost, icon: "repeat" },
   tweet: { name: "Tweet", Component: TwitterPost, icon: "twitter" },
 };
@@ -59,7 +71,7 @@ const TestPage = ({ setLocation }) => {
         <Switch>
           {Object.entries(tests).map(([key, { name, Component }]) => (
             <Route
-              path={`/test/${name.toLowerCase()}`}
+              path={`/test/${name.toLowerCase().replace(/ /g, "-")}`}
               component={Component}
               key={name}
             />

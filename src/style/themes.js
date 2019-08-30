@@ -133,7 +133,7 @@ const dark = {
 
 const blueDark = {
   ...dark,
-  name: "Blue Dark",
+  name: "Blue",
   icon: "Sunset",
   id: "blueDark",
   dark: true,
@@ -229,6 +229,12 @@ const black = {
   header: {
     ...dark.header,
     bg: "#000",
+  },
+  button: {
+    text: colors.grey100,
+    bg: colors.grey900,
+    hover: colors.grey800,
+    active: colors.grey900,
   },
 };
 

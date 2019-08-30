@@ -109,15 +109,18 @@ const PrefMenu = ({
           >
             <Icon
               icon={
-                syncSystemTheme
-                  ? darkSystem === dark
-                    ? "settings"
-                    : useDarkThemes === dark
-                    ? "disc"
-                    : "circle"
-                  : useDarkThemes === dark
+                !syncSystemTheme && useDarkThemes === dark
                   ? "checkCircle"
                   : "circle"
+                // syncSystemTheme
+                //   ? darkSystem === dark
+                //     ? "settings"
+                //     : useDarkThemes === dark
+                //     ? "disc"
+                //     : "circle"
+                //   : useDarkThemes === dark
+                //   ? "checkCircle"
+                //   : "circle"
               }
             />
             {name}
@@ -138,12 +141,21 @@ const PrefMenu = ({
                         darkTheme === theme.id || lightTheme === theme.id
                           ? syncSystemTheme
                             ? darkSystem === theme.dark
-                              ? "settings"
-                              : "disc"
+                              ? "checkCircle"
+                              : "xCircle"
                             : useDarkThemes === theme.dark
                             ? "checkCircle"
-                            : "disc"
+                            : "xCircle"
                           : "circle"
+                        // darkTheme === theme.id || lightTheme === theme.id
+                        //   ? syncSystemTheme
+                        //     ? darkSystem === theme.dark
+                        //       ? "settings"
+                        //       : "disc"
+                        //     : useDarkThemes === theme.dark
+                        //     ? "checkCircle"
+                        //     : "disc"
+                        //   : "circle"
                       }
                     />
                     {theme.name}

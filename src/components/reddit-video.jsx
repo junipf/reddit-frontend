@@ -55,7 +55,7 @@ const Video = ({
 
   const setMediaState = (state, media = [$video.current, $audio.current]) => {
     media.forEach((media) => {
-      if (!media) return;
+      if (!media || isNaN(media.duration)) return;
       Object.entries(state).forEach(([key, value]) => {
         if (media[key] !== value) {
           media[key] = value;
@@ -67,6 +67,13 @@ const Video = ({
 
   const updateCurrentTime = ({ target: { currentTime } }) =>
     setControlsState({ currentTime });
+
+  const [hasAudio, setHasAudio] = useState(!!audioUrl);
+
+  const initialize = (e) => {
+    if ($audio.current.networkState === 3) setHasAudio(false);
+    syncStates(e);
+  };
 
   const syncStates = ({
     target,
@@ -82,7 +89,10 @@ const Video = ({
     } = {},
   }) => {
     const syncMedia =
-      target === $video.current && $audio && $audio.current
+      target === $video.current &&
+      $audio &&
+      $audio.current &&
+      !isNaN($audio.current.duration)
         ? $audio.current
         : target === $audio.current && $video && $video.current
         ? $video.current
@@ -180,13 +190,13 @@ const Video = ({
 
   const play = () => {
     [$video.current, $audio.current].forEach((media) => {
-      if (media) media.play();
+      if (media && !isNaN(media.duration)) media.play();
     });
   };
 
   const pause = () => {
     [$video.current, $audio.current].forEach((media) => {
-      if (media) media.pause();
+      if (media && !isNaN(media.duration)) media.pause();
     });
   };
 
@@ -244,8 +254,27 @@ const Video = ({
   const handleMouseEnter = () => setHovering(true);
   const handleMouseLeave = () => setHovering(false);
 
+  const [stillMouse, setStillMouse] = useState(false);
+  const stillTimeout = useRef(() => {
+    setTimeout(() => {
+      setStillMouse(true);
+    }, 2000);
+  });
+  const handleMouseMove = (e) => {
+    setStillMouse(false);
+    clearInterval(stillTimeout.current);
+    stillTimeout.current = setTimeout(() => {
+      setStillMouse(true);
+    }, 2000);
+  };
+
   const showControls =
-    draggingVolume || seeking || lockControls || (hovering && !error);
+    !error &&
+    (draggingVolume ||
+      seeking ||
+      lockControls ||
+      (hovering && !stillMouse) ||
+      controls.paused);
 
   const [hoveringVolume, setHoveringVolume] = useState(false);
   const hoverVolume = () => setHoveringVolume(true);
@@ -272,6 +301,8 @@ scrubber: ${scrubberUrl}
         ref={$wrapper}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onMouseMove={handleMouseMove}
+        hideMouse={fullscreen && stillMouse && hovering && !controls.paused}
       >
         <StyledVideo
           ref={$video}
@@ -292,7 +323,7 @@ scrubber: ${scrubberUrl}
           onVolumeChange={syncStates}
           onRateChange={syncStates}
           onTimeUpdate={updateCurrentTime}
-          onCanPlay={syncStates}
+          onCanPlay={initialize}
           onAbort={(e) => console.log(e)}
         >
           <source src={url} />
@@ -323,6 +354,12 @@ scrubber: ${scrubberUrl}
         <Overlay show={showBigPlayButton}>
           <Icon icon="play" size="xl" />
         </Overlay>
+        <FullscreenInfo
+          show={showControls}
+          // show={fullscreen && showControls}
+        >
+          Fullscreen info
+        </FullscreenInfo>
         <Controls show={showControls}>
           <ControlsBackground />
           <Section>
@@ -330,51 +367,65 @@ scrubber: ${scrubberUrl}
               onClick={controls.paused ? play : pause}
               primary
               flat
-              toggle
-              toggled={controls.paused}
+              // toggle
+              // toggled={controls.paused}
             >
               <Icon icon={controls.paused ? "play" : "pause"} />
             </Button>
-            <VolumePopout
-              onMouseEnter={hoverVolume}
-              onMouseLeave={stopHoverVolume}
-              show={showVolume}
+            <Button
+              onClick={setMediaState}
+              value={{ loop: !controls.loop }}
+              primary
+              toggle
+              flat
+              toggled={controls.loop}
+              label="loop"
+              hideLabel
             >
-              <Button
-                onClick={setMediaState}
-                value={{ muted: !controls.muted }}
-                flat
-                primary
-                toggle
-                nomargin
-                toggled={controls.muted}
-              >
-                <Icon
-                  icon={
-                    controls.muted
-                      ? "volumeX"
-                      : controls.volume >= 0.66
-                      ? "volume2"
-                      : controls.volume >= 0.33
-                      ? "volume1"
-                      : "volume"
-                  }
-                />
-              </Button>
-
-              <Volume
+              <Icon icon="repeat" />
+            </Button>
+            {hasAudio ? (
+              <VolumePopout
+                onMouseEnter={hoverVolume}
+                onMouseLeave={stopHoverVolume}
                 show={showVolume}
-                ref={$volume}
-                onMouseDown={handleVolumeDrag}
               >
-                <VolumeBar>
-                  <VolumeSlider
-                    muted={controls.muted}
-                    volume={controls.volume}
+                <Button
+                  onClick={setMediaState}
+                  value={{ muted: !controls.muted }}
+                  flat
+                  primary
+                  toggle
+                  nomargin
+                  toggled={controls.muted}
+                >
+                  <Icon
+                    icon={
+                      controls.muted
+                        ? "volumeX"
+                        : controls.volume >= 0.66
+                        ? "volume2"
+                        : controls.volume >= 0.33
+                        ? "volume1"
+                        : "volume"
+                    }
                   />
-                </VolumeBar>
-              </Volume>
-            </VolumePopout>
+                </Button>
+
+                <Volume
+                  show={showVolume}
+                  ref={$volume}
+                  onMouseDown={handleVolumeDrag}
+                >
+                  <VolumeBar>
+                    <VolumeSlider
+                      muted={controls.muted}
+                      volume={controls.volume}
+                    />
+                  </VolumeBar>
+                </Volume>
+              </VolumePopout>
+            ) : null}
             <Time>{formatMs(Math.round(controls.currentTime))}</Time>
           </Section>
           <Seekbar ref={$progress} onMouseDown={handleSeek}>
@@ -388,30 +439,56 @@ scrubber: ${scrubberUrl}
           </Seekbar>
           <Section>
             <Time>{formatMs(Math.round(controls.duration))}</Time>
-            <Button
-              onClick={setMediaState}
-              value={{ loop: !controls.loop }}
-              primary
-              toggle
-              flat
-              toggled={controls.loop}
-            >
-              <Icon icon="repeat" />
-            </Button>
             <Dropdown
-              label={`${controls.playbackRate}x`}
+              label="Playback speed"
+              hideLabel
+              iconAfter="moreHorizontal"
               onSelect={setMediaState}
               up
               left
               flat
               primary
             >
-              Playback speed
-              <Button value={{ playbackRate: 0.5 }} label="Slow (0.5x)" />
-              <Button value={{ playbackRate: 1 }} label="Normal (1.0x)" />
-              <Button value={{ playbackRate: 1.25 }} label="Fast (1.25x)" />
-              <Button value={{ playbackRate: 1.5 }} label="Faster (1.5x)" />
-              <Button value={{ playbackRate: 2 }} label="Ludicrous (2.0x)" />
+              <Button
+                value={{ playbackRate: 0.5 }}
+                label="Slow (0.5x)"
+                primary
+                flat
+                toggle
+                toggled={controls.playbackRate === 0.5}
+              />
+              <Button
+                value={{ playbackRate: 1 }}
+                label="Normal (1.0x)"
+                primary
+                flat
+                toggle
+                toggled={controls.playbackRate === 1}
+              />
+              <Button
+                value={{ playbackRate: 1.25 }}
+                label="Fast (1.25x)"
+                primary
+                flat
+                toggle
+                toggled={controls.playbackRate === 1.25}
+              />
+              <Button
+                value={{ playbackRate: 1.5 }}
+                label="Faster (1.5x)"
+                primary
+                flat
+                toggle
+                toggled={controls.playbackRate === 1.5}
+              />
+              <Button
+                value={{ playbackRate: 2 }}
+                label="Ludicrous (2.0x)"
+                primary
+                flat
+                toggle
+                toggled={controls.playbackRate === 2}
+              />
             </Dropdown>
             {process.env.NODE_ENV === "development" ? (
               <Dropdown
@@ -478,6 +555,7 @@ const Wrapper = styled.div`
   width: 100%;
   margin: 0;
   display: block;
+  cursor: ${({ hideMouse }) => (hideMouse ? "none" : "default")};
   &:hover {
     .controls {
       opacity: 1;
@@ -550,9 +628,9 @@ const VolumeSlider = styled(ProgressBar).attrs(({ volume, muted }) => ({
 
 const Volume = styled(Seekbar)`
   padding: 0.25em 0;
-  background: ${({theme}) => theme.card.bg};
+  background: ${({ theme }) => theme.card.bg};
   height: ${({ show }) => (show ? 5 : 0)}em;
-  opacity: ${({ show }) => show ? 1 : 0};
+  opacity: ${({ show }) => (show ? 1 : 0)};
   width: 100%;
   position: absolute;
   left: 0;
@@ -585,7 +663,7 @@ const ControlsBackground = styled.div`
   height: 100%;
   background-color: ${({ theme }) => theme.card.bg};
   opacity: 0.85;
-  z-index: -1;
+  z-index: 0;
 `;
 
 const Controls = styled.div`
@@ -608,9 +686,17 @@ const Controls = styled.div`
   user-select: none;
 `;
 
+const FullscreenInfo = styled(Controls)`
+  user-select: auto;
+  bottom: unset;
+  height: auto;
+  top: ${({ show }) => (show ? "0%" : `-${controlsHeight}em`)};
+  background: linear-gradient(black, transparent);
+`;
+
 const Section = styled.div`
   flex: 0 0 auto;
-  /* margin: 0 0.5em; */
+  z-index: 1;
 `;
 
 const Time = styled.span`

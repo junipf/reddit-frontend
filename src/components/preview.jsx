@@ -67,25 +67,23 @@ const Preview = ({
             },
           }
         : preview && preview.reddit_video_preview
-        ? {
-            Component: Video,
-            props: {
-              video: preview.reddit_video_preview,
-              height: preview.reddit_video_preview.height,
-              width: preview.reddit_video_preview.width,
-            },
-          }
-        : media &&
-          media.oembed &&
-          (media.type === "youtube.com" || media.type === "m.youtube.com")
-        ? {
-            Component: Embed,
-            props: {
-              dangerouslySetInnerHTML: { __html: media.oembed.html },
-              height: previewMaxHeight,
-              width: media.oembed.width,
-            },
-          }
+        ? preview.reddit_video_preview.is_gif
+          ? {
+              Component: GifVideo,
+              props: {
+                video: preview.reddit_video_preview,
+                height: preview.reddit_video_preview.height,
+                width: preview.reddit_video_preview.width,
+              },
+            }
+          : {
+              Component: Video,
+              props: {
+                video: preview.reddit_video_preview,
+                height: preview.reddit_video_preview.height,
+                width: preview.reddit_video_preview.width,
+              },
+            }
         : media && media.oembed && media.type === "twitter.com"
         ? {
             Component: Tweet,
@@ -93,6 +91,19 @@ const Preview = ({
               id: media.oembed.url.match(
                 /https:\/\/twitter.com\/(?:.*)\/status\/([^/]*)/
               )[1],
+              width: media.oembed.width,
+            },
+          }
+        : media &&
+          media.oembed &&
+          !preview.reddit_video_preview &&
+          !media.reddit_video
+        ? // (media.type === "youtube.com" || media.type === "m.youtube.com")
+          {
+            Component: Embed,
+            props: {
+              dangerouslySetInnerHTML: { __html: media.oembed.html },
+              height: previewMaxHeight,
               width: media.oembed.width,
             },
           }
@@ -290,7 +301,7 @@ const ObscurePlaceholder = styled.div`
   z-index: 2;
 `;
 
-const Image = props => (
+const Image = (props) => (
   <ImageWrapper>
     <StyledImage {...props} />
   </ImageWrapper>
