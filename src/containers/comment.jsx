@@ -29,6 +29,7 @@ const Collapse = styled.div`
   width: 1rem;
   display: flex;
   justify-content: center;
+  cursor: pointer;
   :hover > * {
     opacity: 0.5;
   }
@@ -75,8 +76,13 @@ const Body = styled.div`
   }
 `;
 
-const Comment = ({ comment, username, loggedIn }) => {
-  const {
+const More = styled.div`
+  margin: 0.25em 0;
+`;
+
+const Comment = ({
+  comment,
+  comment: {
     permalink,
     id,
     // primary_color,
@@ -104,8 +110,11 @@ const Comment = ({ comment, username, loggedIn }) => {
     author_flair_background_color,
     locked,
     stickied,
-  } = comment;
-
+  },
+  username,
+  loggedIn,
+  compact,
+}) => {
   const [mod, setMod] = useState(likes === true ? 1 : likes === false ? -1 : 0);
   const [saved, setSaved] = useState(inheritedSaved);
   const [hidden, setHidden] = useState(inheritedHidden);
@@ -119,12 +128,12 @@ const Comment = ({ comment, username, loggedIn }) => {
   };
 
   const reply = (value) => {
-    comment.reply(value).then(
-      (reply) => {
+    comment
+      .reply(value)
+      .then((reply) => {
         setReplies([reply, ...replies]);
-      },
-      (error) => console.error(error)
-    );
+      })
+      .catch(console.error);
     setShowReply(false);
   };
 
@@ -154,36 +163,44 @@ const Comment = ({ comment, username, loggedIn }) => {
 
   const depth = inheritedDepth || 0;
 
+  const loadMore = () =>
+    replies
+      .fetchMore({ amount: 25 })
+      .then(setReplies)
+      .catch(console.error);
+
   const own = username === authorName;
   return (
     <StyledComment id={id}>
-      <Left>
-        {collapse ? (
-          <Button
-            size="small"
-            flat
-            icon={collapse ? "plus" : "minus"}
-            label={collapse ? "plusSquare" : "minusSquare"}
-            hideLabel
-            noMargin
-            onClick={toggleCollapse}
-          />
-        ) : (
-          <>
-            <Votes
-              own={own}
-              mod={mod}
-              upvote={upvote}
-              downvote={downvote}
+      {!compact ? (
+        <Left>
+          {collapse ? (
+            <Button
               size="small"
-              disabled={!loggedIn}
+              flat
+              icon={collapse ? "plus" : "minus"}
+              label={collapse ? "plusSquare" : "minusSquare"}
+              hideLabel
+              noMargin
+              onClick={toggleCollapse}
             />
-            <Collapse onClick={toggleCollapse}>
-              <Threadline />
-            </Collapse>
-          </>
-        )}
-      </Left>
+          ) : (
+            <>
+              <Votes
+                own={own}
+                mod={mod}
+                upvote={upvote}
+                downvote={downvote}
+                size="small"
+                disabled={!loggedIn}
+              />
+              <Collapse onClick={toggleCollapse}>
+                <Threadline />
+              </Collapse>
+            </>
+          )}
+        </Left>
+      ) : null}
       <Right>
         <Tagline>
           <Author
@@ -206,7 +223,7 @@ const Comment = ({ comment, username, loggedIn }) => {
               {formatNumber(score + mod, "point")}
             </span>
           )}
-          <Timestamp time={created_utc} to={"#" + id} />
+          <Timestamp time={created_utc} to={permalink} />
           {edited ? (
             <Timestamp
               time={edited}
@@ -227,45 +244,51 @@ const Comment = ({ comment, username, loggedIn }) => {
                 __html: body_html,
               }}
             />
-            {loggedIn ? (
+
+            {!compact ? (
               <Actions>
-                {!locked ? (
-                  <Button
-                    label="Reply"
-                    flat
-                    size="small"
-                    icon="cornerDownRight"
-                    onClick={toggleShowReply}
-                    key="reply"
-                  />
+                {loggedIn ? (
+                  <>
+                    {!locked ? (
+                      <Button
+                        label="Reply"
+                        flat
+                        size="small"
+                        icon="cornerDownRight"
+                        onClick={toggleShowReply}
+                        key="reply"
+                      />
+                    ) : null}
+                    <Button
+                      hideLabel
+                      flat
+                      toggled={saved}
+                      label={saved ? "unsave" : "save"}
+                      icon="star"
+                      onClick={save}
+                      key="save"
+                    />
+                    <Button
+                      hideLabel
+                      flat
+                      toggled={hidden}
+                      label={hidden ? "unhide" : "hide"}
+                      icon="star"
+                      onClick={hide}
+                      key="hide"
+                    />
+                    <Button
+                      label="view on reddit"
+                      hideLabel
+                      flat
+                      size="small"
+                      icon="externalLink"
+                      href={"https://www.reddit.com" + permalink}
+                      key="onReddit"
+                    />
+                  </>
                 ) : null}
-                <Button
-                  hideLabel
-                  flat
-                  toggled={saved}
-                  label={saved ? "unsave" : "save"}
-                  icon="star"
-                  onClick={save}
-                  key="save"
-                />
-                <Button
-                  hideLabel
-                  flat
-                  toggled={hidden}
-                  label={hidden ? "unhide" : "hide"}
-                  icon="star"
-                  onClick={hide}
-                  key="hide"
-                />
-                <Button
-                  label="view on reddit"
-                  hideLabel
-                  flat
-                  size="small"
-                  icon="externalLink"
-                  href={"https://www.reddit.com" + permalink}
-                  key="onReddit"
-                />
+
                 {process.env.NODE_ENV === "development" ? (
                   <Button
                     label="Log to console"
@@ -297,6 +320,14 @@ const Comment = ({ comment, username, loggedIn }) => {
                   loggedIn={loggedIn}
                 />
               ))}
+              {replies && !replies.isFinished && replies._more ? (
+                <More>
+                  <Button onClick={loadMore}>
+                    Load {replies && replies._more ? replies._more.count : null}
+                    more
+                  </Button>
+                </More>
+              ) : null}
             </Context>
           </>
         )}

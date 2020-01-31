@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { isFragment } from "react-is";
 import styled from "styled-components";
-import Button from "./button";
+import Button, { buttonMargin } from "./button";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
-import ReactTooltip from 'react-tooltip';
+import ReactTooltip from "react-tooltip";
 
 const Dropdown = ({
   children,
@@ -24,6 +24,9 @@ const Dropdown = ({
   left,
   right,
   center,
+  noMargin,
+  closeOnSelect,
+  fill,
   ...rest
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -31,8 +34,8 @@ const Dropdown = ({
 
   const toggleDropdown = () => {
     setShowDropdown((bool) => !bool);
-    ReactTooltip.hide();
-  }
+    ReactTooltip.rebuild();
+  };
   const closeDropdown = () => setShowDropdown(false);
 
   const dir = {
@@ -60,9 +63,10 @@ const Dropdown = ({
       : !dir.x && !dir.y
       ? "moreHorizontal"
       : "chevronDown",
-    size: sub ? "fill" : size ? size : undefined,
-    toggle: "true",
+    size: size ? size : undefined,
+    fill: fill || sub,
     toggled: showDropdown,
+    noMargin: "true",
     ...rest,
   };
 
@@ -79,11 +83,18 @@ const Dropdown = ({
   const wrapper = useRef(null);
 
   return (
-    <Wrapper ref={wrapper} size={props.size}>
+    <Wrapper
+      ref={wrapper}
+      size={props.size}
+      noMargin={noMargin}
+      className="button"
+      fill={fill || sub}
+    >
       {useToggle}
       {showDropdown || open ? (
         <Menu
           onSelect={onSelect}
+          closeOnSelect={closeOnSelect}
           closeDropdown={closeDropdown}
           showDropdown={showDropdown}
           sub={sub || (dir.x && !dir.y)}
@@ -93,6 +104,7 @@ const Dropdown = ({
           toggle={useToggle}
           items={children}
           label={hideLabel && label}
+          fill={fill || sub}
         >
           {expand ? useToggle : null}
           {children}
@@ -111,15 +123,16 @@ export default Dropdown;
 const Menu = ({
   children,
   onSelect,
+  closeOnSelect,
   sub,
   closeDropdown,
   wrapper,
   dir,
   expand,
   toggle,
-  label
+  label,
 }) => {
-  const menu = useRef(null);
+  const $menu = useRef(null);
   const [pos, setPos] = useState({
     init: false,
     left: null,
@@ -128,8 +141,9 @@ const Menu = ({
   const [subMenuPositioning, setSubMenuPositioning] = useState("right");
 
   useLayoutEffect(() => {
+    if (!wrapper.current) return;
     if (pos.init) return;
-    const { clientWidth: menuWidth, clientHeight: menuHeight } = menu.current;
+    const { clientWidth: menuWidth, clientHeight: menuHeight } = $menu.current;
     const { clientWidth: bodyWidth, clientHeight: bodyHeight } = document.body;
     const button = wrapper.current.getBoundingClientRect();
 
@@ -172,13 +186,11 @@ const Menu = ({
     });
 
     if (overflow.right || dir.x === "left") setSubMenuPositioning("left");
-
-    // setPos(newPos);
   }, [wrapper, sub, expand, dir, pos.init]);
 
   useEffect(() => {
     const handleClick = (e) => {
-      if (menu.current && menu.current.contains(e.target)) return;
+      if ($menu.current && $menu.current.contains(e.target)) return;
       closeDropdown();
     };
 
@@ -190,8 +202,51 @@ const Menu = ({
 
   const selectAndClose = (value) => {
     onSelect && onSelect(value);
-    closeDropdown();
+    if (closeOnSelect) closeDropdown();
   };
+
+  useEffect(() => {
+    ReactTooltip.rebuild();
+  }, [])
+
+  // const [focus, setFocus] = useState(0);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      console.log(e);
+      if (e.key === "ArrowDown") {
+        console.log("🔽");
+        if ($menu.current && $menu.current.contains(e.target)) {
+
+        }
+        // setFocus(f => f + 1)
+      }
+      if (e.key === "ArrowUp") {
+        console.log("🔼");
+        // setFocus(f => f - 1)
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  })
+
+  // useEffect(() => {
+    // if (!$menu.current || $menu.current.children) return;
+    // const items = $menu.current.children;
+    // const map = [];
+    // const unwrap = (el) => {
+    //   if (el.tabIndex !== -1) return el;
+    //   if (el.children.length > 0) return unwrap(el);
+    //   return null;
+    // }
+    // items.map((el, i) => map[i] = unwrap(el));
+
+    // console.log(map);
+
+    // if (focus > items.length - 1) items[0].firstChild.focus()
+    // else if (focus < 0) items[items.length - 1 ].firstChild.focus()
+    // else items[focus].firstChild.focus()
+  // }, [focus])
 
   const mapChildrenByType = (childrenToMap) =>
     React.Children.map(childrenToMap, (child) => {
@@ -202,7 +257,7 @@ const Menu = ({
           return (
             <li>
               {React.cloneElement(child, {
-                size: "fill",
+                fill: true,
                 // type: child.props.type === "primary" ? "primary" : "flat",
                 flat: true,
                 hideLabel: false,
@@ -215,7 +270,7 @@ const Menu = ({
           return (
             <li>
               {React.cloneElement(child, {
-                size: "fill",
+                fill: true,
                 // type: child.props.type ? child.props.type : "flat",
                 flat: true,
                 align: "left",
@@ -239,17 +294,22 @@ const Menu = ({
     });
 
   return (
-    <StyledMenu pos={pos} sub={sub} ref={menu} expand={expand}>
-      {label ? <li><CategoryTitle>{label}</CategoryTitle></li> : null}
+    <StyledMenu pos={pos} sub={sub} ref={$menu} expand={expand}>
+      {label ? (
+        <li>
+          <CategoryTitle>{label}</CategoryTitle>
+        </li>
+      ) : null}
       {mapChildrenByType(children)}
     </StyledMenu>
   );
 };
 
-const Wrapper = styled.div`
+export const Wrapper = styled.div`
   position: relative;
   display: inline-block;
-  width: ${({ size }) => (size === "fill" ? "100%" : null)};
+  width: ${({ fill }) => (fill ? "100%" : null)};
+  ${buttonMargin};
 `;
 
 const StyledEntry = styled(Button)`
@@ -287,12 +347,12 @@ export const LinkEntry = styled(Link)`
   }
 `;
 
-const menuPadding = "0.35em";
+const menuPadding = 0.35; //em
 
 export const Divider = styled.div`
   height: 1px;
   width: 100%;
-  margin: ${menuPadding} 0;
+  margin: ${menuPadding}em 0;
   border-top: 1px solid ${({ theme }) => theme.card.innerBorder};
 `;
 
@@ -300,7 +360,7 @@ export const StyledMenu = styled.ul.attrs(
   ({ pos: { left, top } = {}, sub, expand }) => ({
     style: {
       left: left,
-      top: top ? top : sub || expand ? `-${menuPadding}` : null,
+      top: top ? top : sub || expand ? `-${menuPadding}em` : null,
     },
   })
 )`
@@ -320,7 +380,7 @@ export const StyledMenu = styled.ul.attrs(
   position: absolute;
   max-height: calc(100vh - 3rem);
   scrollbar-width: thin;
-  padding: ${menuPadding} 0;
+  padding: ${menuPadding}em 0;
   display: flex;
   flex-flow: column nowrap;
   scrollbar-color: ${({ theme }) => theme.scrollbar};
@@ -337,17 +397,14 @@ export const Search = styled.div`
 `;
 
 export const CategoryTitle = styled.div`
-  /* padding: 0 0.5rem 0.125rem 1rem; */
-  /* text-align: center; */
-  /* margin-top: 0.5rem; */
-  padding: ${menuPadding} 1em;
-  margin-bottom: ${menuPadding};
+  padding: 0 1em ${menuPadding}em 1em;
+  margin-bottom: ${menuPadding}em;
+  background: ${({ theme }) => theme.card.bg};
   border-bottom: 1px solid ${({ theme }) => theme.card.innerBorder};
   font-size: 0.75em;
   color: inherit;
   white-space: nowrap;
   position: sticky;
-  top: 2.8rem;
-  background-color: inherit;
+  top: 0;
   z-index: 99;
 `;

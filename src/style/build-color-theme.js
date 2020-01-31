@@ -1,3 +1,7 @@
+import {
+  transparentize
+} from "polished";
+
 import { colorGroups } from "./material-design-color-palette";
 
 export default (color, dark) =>
@@ -6,7 +10,7 @@ export default (color, dark) =>
         highlight: colorGroups[color][500],
         link: colorGroups[color][dark ? 300 : 500],
         focus: {
-          glow: colorGroups[color].A100,
+          glow: transparentize(0.5, colorGroups[color].A100),
           border: colorGroups[color][dark ? 300 : 500],
         },
         primary: {

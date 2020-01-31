@@ -10,6 +10,11 @@ import Tag from "./tags";
 
 const SubredditBanner = ({
   subreddit,
+  subreddit: {
+    community_icon: communityIcon,
+    icon_img: iconImg,
+    icon_url: iconUrl,
+  },
   subName = null,
   user,
   subscriptionNames,
@@ -18,27 +23,23 @@ const SubredditBanner = ({
   const subIcon = useRef(null);
   const [img, setImg] = useState(null);
 
-  const { community_icon, icon_img, icon_url } = subreddit;
-
   document.querySelector('link[rel="shortcut icon"]').href =
-    community_icon ||
-    icon_img ||
-    icon_url ||
+    communityIcon ||
+    iconImg ||
+    iconUrl ||
     img ||
     require("../icons/favicon.png");
 
   useEffect(() => {
-    if (!subreddit.community_icon && !subreddit.icon_img && !subreddit.icon_url)
+    if (!communityIcon && !iconImg && !iconUrl)
       html2canvas(subIcon.current, { backgroundColor: null }).then((canvas) =>
         setImg(canvas.toDataURL("image/png"))
       );
-  }, [subreddit, subIcon]);
+  }, [communityIcon, iconImg, iconUrl, subIcon]);
 
   const goToSub = () => {
     history.push(`/r/${subName}`);
   };
-
-  console.log("SubredditBanner", subreddit);
 
   return (
     <>
@@ -50,7 +51,7 @@ const SubredditBanner = ({
         <BarContent>
           <section>
             <Button disabled={!user}>
-              {subscriptionNames.includes(subName.toLowerCase())
+              {subscriptionNames && subscriptionNames.includes(subName.toLowerCase())
                 ? "Leave"
                 : "Join"}
             </Button>

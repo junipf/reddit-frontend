@@ -7,42 +7,69 @@ import Button from "./button";
 import SubredditIcon from "./subreddit-icon";
 import Logo from "./logo";
 
-const NavigationMenu = ({ location, subreddits, theme }) => {
-  const [label, setLabel] = useState("Reddit");
+const NavigationMenu = ({
+  location,
+  match,
+  match: { params: path },
+  location: { search, pathname },
+  subreddits,
+  theme,
+}) => {
+  const [label, setLabel] = useState(null);
+  const defaultFavicon = require("../icons/favicon.png");
 
   useEffect(() => {
-    const loc = location.name.toLowerCase();
-    if (subreddits[loc] === undefined) {
-      document.title = location.title || location.name;
-      document.querySelector(
-        'link[rel="shortcut icon"]'
-      ).href = require("../icons/favicon.png");
-      setLabel(
-        <>
-          <Logo color={theme.primary.base} />
-          {location.name}
-        </>
-      );
+    const setFavicon = (href = defaultFavicon) =>
+      (document.querySelector('link[rel="shortcut icon"]').href = href);
+
+    const searchParams = new URLSearchParams(search);
+
+    let title = "";
+    title += pathname.includes("/search/")
+      ? searchParams.get("q") + " - search "
+      : "";
+    title += path.subName ? "r/" + path.subName : "";
+    title += path.username ? "u/" + path.username : "";
+    if (title === "") title = "Frontpage";
+    document.title = title;
+
+    const subname = path.subName ? path.subName.toLowerCase() : null;
+
+    if (subreddits[subname] === undefined) {
+      setFavicon();
+      setLabel(path.subName ? "r/" + path.subName : path.page || "Frontpage");
     } else {
-      const sub = subreddits[loc];
-      document.title = (sub.curator ? " m/" : " r/") + sub.display_name;
+      const sub = subreddits[subname];
       setLabel(
         <>
-          <SubredditIcon subName={loc} size="small" />
+          <SubredditIcon subName={subname} size="small" />
           {(sub.curator ? " m/" : " r/") + sub.display_name}
         </>
       );
     }
-  }, [location, subreddits, theme.primary.base]);
+  }, [
+    defaultFavicon,
+    search,
+    pathname,
+    path.subName,
+    path.page,
+    path.username,
+    subreddits,
+    theme.primary.base,
+  ]);
 
   return (
-    <Dropdown toggle={<Button size="large">{label}</Button>}>
-      <SubscriptionList fromMenu />
-    </Dropdown>
+    <>
+      <Button size="large" flat to="/">
+        <Logo color={theme.primary.base} />
+      </Button>
+      <Dropdown toggle={<Button>{label}</Button>}>
+        <SubscriptionList fromMenu />
+      </Dropdown>
+    </>
   );
 };
 
-export default connect(({ location, subreddits }) => ({
-  location,
+export default connect(({ subreddits }) => ({
   subreddits,
 }))(withTheme(NavigationMenu));

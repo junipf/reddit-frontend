@@ -251,23 +251,6 @@ const VSContents = styled.div`
   margin: 0 auto;
 `;
 
-function mapStateToProps(state) {
-  const {
-    subreddits,
-    lightboxIsOpen,
-    themesBySubreddit,
-    themesByColor,
-    currentPost,
-  } = state;
-  return {
-    subreddits,
-    lightboxIsOpen,
-    themesBySubreddit,
-    themesByColor,
-    currentPost,
-  };
-}
-
 export default connect(
   ({
     subreddits,

@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { hot } from "react-hot-loader";
 import { connect } from "react-redux";
-import { Route, Switch } from "react-router-dom";
+import { Route, Redirect, Switch } from "react-router-dom";
 import ReactTooltip from "react-tooltip";
 import queryString from "query-string";
 
@@ -26,12 +26,19 @@ import ComponentTestPage from "../test";
 // Import components
 import { SpinnerPage } from "../components/spinner";
 import NavigationMenu from "../components/navigation-menu";
-import QuickNavigation from "../components/quick-navigation";
+// import QuickNavigation from "../components/quick-navigation";
 import PrefMenu from "../components/pref-menu";
 import SplitView from "./split-view";
 import TestNav from "../test/test-nav";
 import UserPage from "./user-page";
-import PostListingSettings from "./post-listing-settings";
+// import PostListingSettings from "./post-listing-settings";
+// import UserPageSettings from "./user-page-settings";
+import SubscriptionsPage from "./subscriptions-page";
+import Search from "../components/search";
+import SearchPage from "./search-page";
+import MessagesMenu from "../components/messages-menu";
+// import SearchSettings from "./search-settings";
+import Settings from "./settings";
 
 // Import Styles and Fonts
 import "normalize.css";
@@ -148,7 +155,10 @@ class App extends React.Component {
     } = this.props;
     if (process.env.NODE_ENV === "development") r.config({ debug: true });
     if (noUser) {
-      r.getDefaultSubreddits().then((subs) => setDefaults(subs));
+      r.getDefaultSubreddits().then((subs) => {
+        console.log(subs);
+        setDefaults(subs);
+      });
     } else {
       r.getMe().then((user) => setUser(user));
       r.getPreferences().then((prefs) => setUserPrefs(prefs));
@@ -189,6 +199,65 @@ class App extends React.Component {
       state: pathname,
     });
     if (requester) window.r = requester;
+
+    // const listingSorts = [
+    //   "hot",
+    //   "best",
+    //   "new",
+    //   "rising",
+    //   "controversial",
+    //   "top",
+    // ];
+
+    // const listingPaths = [
+    //   "/r/:subName/comments/:id/:title/:commentId?",
+    //   "/r/:subName/:sort?",
+    //   "/tb/:id",
+    //   "/hot",
+    //   "/best",
+    //   "/new",
+    //   "/rising",
+    //   "/controversial",
+    //   "/top",
+    //   "/",
+    // ];
+    // const searchPaths = [
+    //   "/r/:subName/comments/:id/:title/:commentId?",
+    //   "/r/:subName/:search?/:sort?/:time?",
+    //   "/:search/:sort?/:time?",
+    //   "/:page?",
+    // ];
+    // const userPaths = [
+    //   "/user/:username?",
+    //   "/u/:username?",
+    //   "/u/me",
+    //   "/user/me",
+    // ];
+    // const threadPaths = [
+    //   "/r/:subName/comments/:id/:title/:commentId?",
+    //   "/r/:subName/:sort?",
+    //   "/tb/:id",
+    //   "/:sort?",
+    // ];
+
+    const sort = ":sort(hot||best||new||rising||controversial||top)";
+    const searchSort = ":sort(relevance||new||comments||top)";
+    const time = ":time(hour||day||week||month||year||all)";
+
+    const listingPaths = [
+      "/r/:subName/comments/:id/:title/:commentId?",
+      `/r/:subName/${sort}?`,
+      "/tb/:id",
+      `/${sort}`,
+    ];
+
+    const searchPaths = [
+      `/r/:subName/search/${searchSort}?`,
+      `/search/${searchSort}?`,
+    ];
+
+    const userPaths = ["/user/:username/:type?", "/u/:username/:type?"];
+
     return (
       <GlobalThemeProvider>
         <div>
@@ -205,55 +274,70 @@ class App extends React.Component {
               <AppWrapper>
                 <Header>
                   <Section>
-                    <NavigationMenu />
+                    <Route
+                      path={[
+                        ...userPaths,
+                        ...searchPaths,
+                        ...listingPaths,
+                        "/:page?",
+                      ]}
+                      component={NavigationMenu}
+                    />
+                    {/* <NavigationMenu /> */}
                     <Switch>
+                      <Route path="/test/:test" component={TestNav} />
                       <Route
                         path={[
-                          "/r/:subName/comments/:id/:title/:commentId?",
-                          "/r/:subName/:sort?/",
-                          "/tb/:id",
-                          "/hot",
-                          "/best",
-                          "/new",
-                          "/rising",
-                          "/controversial",
-                          "/top",
+                          ...userPaths,
+                          ...searchPaths,
+                          ...listingPaths,
+                          "/:page?",
                         ]}
+                        component={Settings}
+                      />
+                    </Switch>
+                    {/* <Switch>
+                      <Route
+                        path={searchPaths}
+                        component={SearchSettings}
+                      />
+                      <Route
+                        path={listingPaths}
                         component={PostListingSettings}
                       />
                       <Route path="/test/:test" component={TestNav} />
-                    </Switch>
-                    <QuickNavigation />
+                      <Route path={userPaths} component={UserPageSettings} />
+                    </Switch> */}
+                    {/* <QuickNavigation /> */}
                   </Section>
+                  <Route
+                    path={[
+                      "/r/:subName/comments/:id/:title/:commentId?",
+                      ...searchPaths,
+                      "/:page?",
+                    ]}
+                    component={Search}
+                  />
                   <Section>
+                    <MessagesMenu />
                     <PrefMenu authURL={authURL} logout={this.logout} />
                   </Section>
                 </Header>
                 <Columns>
                   <Switch>
+                    <Route path={searchPaths} component={SearchPage} />
                     <Route
-                      path={[
-                        "/user/:username?",
-                        "/u/:username?",
-                        "/u/me",
-                        "/user/me",
-                      ]}
-                      component={UserPage}
+                      path="/subscriptions"
+                      component={SubscriptionsPage}
                     />
+                    <Redirect from="/u/:username" to="/user/:username" />
+                    <Route path={userPaths} component={UserPage} />
                     <Route path="/message/:sort?" component={MessagesPage} />
                     <Route
                       path="/test/:subTest?"
                       component={ComponentTestPage}
                     />
-                    <Route
-                      path={[
-                        "/r/:subName/comments/:id/:title/:commentId?",
-                        "/r/:subName/:sort?/",
-                        "/tb/:id",
-                        "/:sort?",
-                      ]}
-                      component={SplitView}
-                    />
+                    <Route path={listingPaths} component={SplitView} />
                   </Switch>
                 </Columns>
               </AppWrapper>
@@ -267,20 +351,22 @@ class App extends React.Component {
   }
 }
 
-const Header = styled.div`
-  width: 100vw;
+const Header = styled.header`
+  width: 100%;
   color: ${({ theme }) => theme.text};
-  border-bottom: 1px solid
-    ${({ theme }) => theme && theme.header && theme.header.border};
-  background-color: ${({ theme }) => theme && theme.header && theme.header.bg};
+  border-bottom: 1px solid ${({ theme }) => theme?.header?.border};
+  background-color: ${({ theme }) => theme?.header?.bg};
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: top;
   justify-content: space-between;
   flex: 0 0 auto;
   opacity: 1;
   position: relative;
   z-index: 100;
+  font-size: 1.1em;
+  height: 3rem;
+  padding: 0 0.25rem;
 `;
 
 const Section = styled.section`
@@ -288,7 +374,7 @@ const Section = styled.section`
   flex-direction: inherit;
   align-items: center;
   height: inherit;
-  margin: 0.25rem;
+  /* margin: 0.25rem; */
   z-index: 10;
 `;
 

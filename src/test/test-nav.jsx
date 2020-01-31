@@ -18,7 +18,6 @@ const TestNav = ({ location: { pathname }, match: { params } }) =>
             key={name}
             flat
             primary
-            toggle
             toggled={path === pathname}
           >
             <Icon icon={icon} />

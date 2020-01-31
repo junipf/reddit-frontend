@@ -10,6 +10,7 @@ export const Column = styled.div`
     type === "primary" ? "62vw" : type === "secondary" ? "38vw" : "auto"};
   scrollbar-color: ${({ theme }) => theme.scrollbar};
   transition: flex-basis 250ms ease-in-out;
+  position: relative;
   &.hidden {
     animation: 250ms ease slide-out;
       flex: 0 0 0;

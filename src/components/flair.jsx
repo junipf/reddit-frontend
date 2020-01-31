@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-const Emoji = styled.div.attrs(({url}) => ({
+const Emoji = styled.div.attrs(({ url }) => ({
   style: { backgroundImage: "url(" + url + ")" },
 }))`
   padding: 0;
@@ -16,8 +16,6 @@ const Emoji = styled.div.attrs(({url}) => ({
   outline: none;
 `;
 
-const Text = styled.span``;
-
 const StyledFlair = styled.span`
   margin-right: 0.25em;
   display: inline-block;
@@ -31,9 +29,7 @@ const StyledFlair = styled.span`
   vertical-align: baseline;
   border-radius: 0.125rem;
   color: ${({ backgroundColor, theme, color }) =>
-    backgroundColor === "transparent"
-      ? theme.text
-      : theme.flairColor || color || theme.text};
+    backgroundColor === "transparent" ? theme.text : color || theme.text};
   background-color: ${({ backgroundColor, theme }) =>
     backgroundColor || theme.card.innerBg};
 `;
@@ -64,7 +60,7 @@ const Flair = ({
           type === "emoji" ? (
             <Emoji url={url} data-tip={emojiText} key={i} />
           ) : type === "text" && text !== "" ? (
-            <Text key={i}>{text}</Text>
+            <span key={i}>{text}</span>
           ) : null
         )
       : type === "text"
@@ -75,7 +71,7 @@ const Flair = ({
     return (
       <StyledFlair
         backgroundColor={bgColor}
-        color={color === "light" ? "#fff" : "#000"}
+        color={bgColor ? (color === "light" ? "#fff" : "#000") : null}
         id={templateId}
       >
         {content}

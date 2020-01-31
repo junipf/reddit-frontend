@@ -40,14 +40,16 @@ const StyledPost = styled.div`
 const PostWrapper = styled.div.attrs(({ id }) => ({
   id: id,
 }))`
-  margin: 0.5rem;
+  margin: 1rem;
+  /* margin: 0.5rem; */
   margin-top: ${({ compact }) => (compact ? "0" : "0.5rem")};
   background: ${({ theme }) => theme.card.bg};
   color: ${({ theme }) => theme.text};
   border-width: 1px;
   border-style: solid;
   border-color: ${({ theme }) => theme.card.border};
-  border-radius: 0.25rem;
+  border-radius: 0.5rem;
+  /* border-radius: 0.25rem; */
   font-size: 0.85rem;
   /* max-width: 75rem; */
 `;
@@ -60,9 +62,9 @@ const Left = styled.div`
   background-color: ${({ theme }) => theme.card.innerBg};
   grid-area: left;
   padding-top: 0.5rem;
-  min-width: 2rem;
+  min-width: 3rem;
   font-size: 1rem;
-  border-radius: 0.25rem 0 0 0.25rem;
+  border-radius: 0.5rem 0 0 0.5rem;
 `;
 
 const Tagline = styled.span`
@@ -93,10 +95,9 @@ const StyledTitle = styled.span`
   a {
     display: block;
     color: ${({ theme }) => theme.title};
-    font-size: ${({ compact }) => (compact ? "0.85rem" : "1.2rem")};
+    font-size: ${({ compact }) => (compact ? "1.15rem" : "1.25rem")};
     font-weight: 400;
     text-decoration: none;
-    font-size: 1.62rem;
   }
 `;
 
@@ -122,6 +123,19 @@ const ActionBar = styled.div`
 const Comments = styled.div`
   margin: 0 0.75rem 0.75rem 0.5rem;
 `;
+
+// const Expando = styled.div`
+//   position: ${({ expanded }) => expanded ? "absolute" : "static"};
+//   top: 0;
+//   right: 0;
+//   bottom: 0;
+//   left: 0;
+//   width: ${({expanded}) => expanded ? "100%" : undefined};
+//   height: ${({expanded}) => expanded ? "100%" : undefined};
+//   z-index: ${({ expanded }) => expanded ? 999 : undefined};
+//   background-color: ${({expanded}) => expanded ? "black" : undefined};
+//   overflow-y: ${({expanded}) => expanded ? "scroll" : "visible"};
+// `;
 
 const Post = ({
   post,
@@ -291,7 +305,12 @@ const Post = ({
     );
   const debugPostToConsole = () => console.log({ ...post, comments: [] });
 
+  // const [expanded, setExpanded] = useState(false);
+  // const toggleExpanded = () => setExpanded(expanded => !expanded);
+
   return (
+
+    // <Expando expanded={expanded}>
     <ThemeProvider theme={theme}>
       <PostWrapper inListing={inListing}>
         <StyledPost id={id} compact={compact} showComments={showComments}>
@@ -310,14 +329,14 @@ const Post = ({
                 mod={mod}
                 upvote={upvote}
                 downvote={downvote}
-                score={score + mod}
+                score={score}
                 disabled={!loggedIn || archived}
                 data-tip={
                   !loggedIn
                     ? "You must be logged in to vote"
                     : archived
                     ? "You can't vote on archived posts"
-                    : "Voting disabled"
+                    : undefined
                 }
                 data-event="click"
               />
@@ -326,6 +345,9 @@ const Post = ({
               {locked ? <Tag.Locked /> : null}
               {hidden ? <Tag.Hidden /> : null}
               {saved ? <Tag.Saved /> : null}
+              {/* <Button onClick={toggleExpanded}>
+                <Icon icon={expanded ? "minimize2" : "maximize2"} />
+              </Button> */}
             </Left>
           )}
           <Tagline>
@@ -414,7 +436,6 @@ const Post = ({
                   flat
                   hideLabel
                   fill={saved}
-                  toggle
                   toggled={saved}
                   label={saved ? "unsave" : "save"}
                   icon="star"
@@ -424,7 +445,6 @@ const Post = ({
                 <Button
                   flat
                   hideLabel
-                  toggle
                   toggled={hidden}
                   label={hidden ? "show" : "hide"}
                   icon={hidden ? "eyeOff" : "eye"}
@@ -500,6 +520,7 @@ const Post = ({
         ) : null}
       </PostWrapper>
     </ThemeProvider>
+    // </Expando>
   );
 };
 

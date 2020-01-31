@@ -8,7 +8,7 @@ const GlobalStyle = createGlobalStyle`
     word-wrap: break-word;
     box-sizing: border-box;
     margin: 0;
-    font-size: 16px;
+    font-size: ${({theme}) => theme.fontSize || 16}px;
   }
   
   :root,
@@ -57,12 +57,18 @@ const GlobalStyle = createGlobalStyle`
   }
   /* Markdown bodies returned from reddit */
   .md {
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     line-height: 1.25rem;
     font-weight: 400;
     color: ${({ theme }) => (theme.dark ? "#fff" : "#000")};
     p {
-      margin: 0.25em 0;
+      margin: 1em 0;
+    }
+    & > p:first-of-type {
+      margin-top: 0;
+    }
+    & > p:last-of-type {
+      margin-bottom: 0;
     }
     blockquote {
       margin: 0.5em;
@@ -71,6 +77,16 @@ const GlobalStyle = createGlobalStyle`
         margin {
           margin: 0.25em 0.25em;
         }
+      }
+    }
+    .md-spoiler-text {
+      color: black;
+      background-color: black;
+      padding: 0.0625em 0.32em;
+      display: inline-block;
+      transition: color 250ms ease;
+      &:hover {
+        color: white;
       }
     }
   }

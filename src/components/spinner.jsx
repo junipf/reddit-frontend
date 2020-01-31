@@ -1,10 +1,11 @@
 import React from "react";
 import styled from "styled-components";
 
-const SVGWrapepr = styled.div`
+const SVGWrapper = styled.div`
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 1.5em;
+  height: 1.5em;
+  margin: auto auto;
 
   svg {
     z-index: 2;
@@ -46,12 +47,12 @@ const SVGWrapepr = styled.div`
   }
 `;
 
-export const Spinner = (props) => (
-  <SVGWrapepr>
+export const Spinner = ({forwardRef, ...props}) => (
+  <SVGWrapper ref={forwardRef} {...props}>
     <svg viewBox="0 0 50 50">
       <circle cx="25" cy="25" r="20" fill="none" />
     </svg>
-  </SVGWrapepr>
+  </SVGWrapper>
 );
 
 export const SpinnerPage = (props) => (

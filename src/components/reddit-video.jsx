@@ -1,13 +1,13 @@
-import React, { useState, useRef, useMemo, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
-import Button from "./button";
+import Button, { buttonMargin, Group } from "./button";
 import Dropdown from "./dropdown";
 import Icon from "./icon";
 import Error from "./error";
 import formatMs from "../utils/format-ms";
 import DarkThemeProvider from "../style/dark-theme-provider";
 
-const Video = ({
+export default ({
   video: {
     is_gif: isGif,
     duration,
@@ -54,7 +54,7 @@ const Video = ({
 
   const setControlsState = (state) => setControls((c) => ({ ...c, ...state }));
 
-  const setMediaState = (state, media = [$video.current, $audio.current]) => {
+  const setMediaState = (state, media = [$video.current, $audio.current]) =>
     media.forEach((media) => {
       if (!media || isNaN(media.duration)) return;
       Object.entries(state).forEach(([key, value]) => {
@@ -64,7 +64,6 @@ const Video = ({
         }
       });
     });
-  };
 
   const updateCurrentTime = ({ target: { currentTime } }) =>
     setControlsState({ currentTime });
@@ -104,7 +103,7 @@ const Video = ({
         {
           loop,
           playbackRate,
-          volume,
+          volume: !muted && volume === 0 ? prevVolume : volume,
           muted,
         },
         [syncMedia]
@@ -165,8 +164,10 @@ const Video = ({
   };
 
   const [draggingVolume, setDraggingVolume] = useState(false);
+  const [prevVolume, setPrevVolume] = useState(0.5);
   const handleVolumeDrag = (e) => {
     setDraggingVolume(true);
+    setPrevVolume($video.current.volume);
     const changeVolume = ({ clientY }) => {
       const { y, height } = $volume.current.getBoundingClientRect();
       const { volume } = $video.current;
@@ -188,6 +189,11 @@ const Video = ({
     document.addEventListener("mouseup", finish);
     changeVolume(e);
   };
+
+  // useEffect(() => {
+  //   if (!controls.muted && controls.volume === 0)
+  //     setMediaState({ volume: prevVolume });
+  // }, [controls.muted, controls.volume, prevVolume, setMediaState]);
 
   const play = () => {
     [$video.current, $audio.current].forEach((media) => {
@@ -244,9 +250,10 @@ const Video = ({
 
   const autoPlay = blur ? null : isGif;
 
-  const showBigPlayButton = controls.currentTime === 0 && controls.paused;
+  const showBigPlayButton =
+    !blur && controls.currentTime === 0 && controls.paused;
 
-  const showReplayButton = controls.ended;
+  const showReplayButton = !blur && controls.ended;
 
   const [lockControls, setLockControls] = useState(false);
   const toggleLockControls = () => setLockControls((l) => !l);
@@ -270,6 +277,7 @@ const Video = ({
   };
 
   const showControls =
+    !blur &&
     !error &&
     (draggingVolume ||
       seeking ||
@@ -295,6 +303,17 @@ fallback: ${fallbackUrl}
 scrubber: ${scrubberUrl}
    audio: ${audioUrl}`
     );
+
+  const playbackRates = [0.5, 1, 1.25, 1.5, 2.0];
+  // const playbackRates = [
+  //   ["Slow", 0.5],
+  //   ["Normal", 1],
+  //   ["Fast", 1.25],
+  //   ["Faster", 1.5],
+  //   ["Ludicrous", 2.0],
+  // ];
+
+  const rateIndex = playbackRates.indexOf(controls.playbackRate);
 
   return (
     <DarkThemeProvider>
@@ -349,7 +368,7 @@ scrubber: ${scrubberUrl}
         >
           <source src={audioUrl} />
         </Audio>
-        <Poster poster={poster} show={showBigPlayButton} />
+        <Poster blur={blur} poster={poster} show={showBigPlayButton} />
         <Overlay show={showReplayButton}>
           <Icon icon="rotateCCW" size="xl" />
         </Overlay>
@@ -366,45 +385,32 @@ scrubber: ${scrubberUrl}
               onClick={controls.paused ? play : pause}
               primary
               flat
-              // toggle
               // toggled={controls.paused}
             >
               <Icon icon={controls.paused ? "play" : "pause"} />
-            </Button>
-            <Button
-              onClick={setMediaState}
-              value={{ loop: !controls.loop }}
-              primary
-              toggle
-              flat
-              toggled={controls.loop}
-              label="loop"
-              hideLabel
-            >
-              <Icon icon="repeat" />
             </Button>
             {hasAudio ? (
               <VolumePopout
                 onMouseEnter={hoverVolume}
                 onMouseLeave={stopHoverVolume}
                 show={showVolume}
+                className="button"
               >
                 <Button
                   onClick={setMediaState}
                   value={{ muted: !controls.muted }}
                   flat
                   primary
-                  toggle
-                  nomargin
+                  noMargin
                   toggled={controls.muted}
                 >
                   <Icon
                     icon={
                       controls.muted
                         ? "volumeX"
-                        : controls.volume >= 0.66
+                        : controls.volume >= 0.75
                         ? "volume2"
-                        : controls.volume >= 0.33
+                        : controls.volume >= 0.25
                         ? "volume1"
                         : "volume"
                     }
@@ -439,55 +445,83 @@ scrubber: ${scrubberUrl}
           <Section>
             <Time>{formatMs(Math.round(controls.duration))}</Time>
             <Dropdown
-              label="Playback speed"
+              label="Options"
               hideLabel
               iconAfter="moreHorizontal"
-              onSelect={setMediaState}
               up
               left
               flat
               primary
             >
               <Button
-                value={{ playbackRate: 0.5 }}
-                label="Slow (0.5x)"
+                onClick={setMediaState}
+                value={{ loop: !controls.loop }}
                 primary
                 flat
-                toggle
-                toggled={controls.playbackRate === 0.5}
-              />
-              <Button
-                value={{ playbackRate: 1 }}
-                label="Normal (1.0x)"
-                primary
-                flat
-                toggle
-                toggled={controls.playbackRate === 1}
-              />
-              <Button
-                value={{ playbackRate: 1.25 }}
-                label="Fast (1.25x)"
-                primary
-                flat
-                toggle
-                toggled={controls.playbackRate === 1.25}
-              />
-              <Button
-                value={{ playbackRate: 1.5 }}
-                label="Faster (1.5x)"
-                primary
-                flat
-                toggle
-                toggled={controls.playbackRate === 1.5}
-              />
-              <Button
-                value={{ playbackRate: 2 }}
-                label="Ludicrous (2.0x)"
-                primary
-                flat
-                toggle
-                toggled={controls.playbackRate === 2}
-              />
+                toggled={controls.loop}
+                label="loop"
+                hideLabel
+              >
+                <Icon icon="repeat" />
+              </Button>
+              <Group>
+                <Button
+                  flat
+                  primary
+                  onClick={setMediaState}
+                  disabled={rateIndex === 0}
+                  align="center"
+                  value={{
+                    playbackRate:
+                      rateIndex === 0
+                        ? playbackRates[playbackRates.length - 1]
+                        : playbackRates[rateIndex - 1],
+                  }}
+                >
+                  <Icon icon="minusCircle" />
+                </Button>
+                <Button
+                  flat
+                  primary
+                  toggled={controls.playbackRate === 1}
+                  onClick={setMediaState}
+                  align="center"
+                  value={1}
+                >
+                  {`${controls.playbackRate.toFixed(2)}x`}
+                </Button>
+                <Button
+                  flat
+                  primary
+                  onClick={setMediaState}
+                  disabled={rateIndex === playbackRates.length - 1}
+                  align="center"
+                  value={{
+                    playbackRate:
+                      rateIndex === playbackRates.length - 1
+                        ? playbackRates[0]
+                        : playbackRates[rateIndex + 1],
+                  }}
+                >
+                  <Icon icon="plusCircle" />
+                </Button>
+              </Group>
+              {/* Speed
+              {[
+                ["Slow (0.5x)", 0.5],
+                ["Normal (1.0x)", 1.0],
+                ["Fast (1.25x)", 1.25],
+                ["Faster (1.5x)", 1.5],
+                ["Ludicrous (2.0x)", 2.0],
+              ].map(([label, playbackRate]) => (
+                <Button
+                  value={{ playbackRate }}
+                  label={label}
+                  primary
+                  flat
+                  toggled={controls.playbackRate === playbackRate}
+                />
+              ))} */}
             </Dropdown>
             {process.env.NODE_ENV === "development" ? (
               <Dropdown
@@ -526,7 +560,6 @@ scrubber: ${scrubberUrl}
                 onClick={toggleFullscreen}
                 flat
                 primary
-                toggle
                 toggled={fullscreen}
               >
                 <Icon icon={fullscreen ? "minimize" : "maximize"} />
@@ -544,9 +577,52 @@ scrubber: ${scrubberUrl}
   );
 };
 
-export default Video;
+// Gif converted to video (post.preview.images[0].variants.mp4)
+// Does not come with is_gif and uses different src names
+export const Gif = ({
+  video: {
+    width,
+    height,
+    url,
+    hls_url: hlsUrl,
+    dash_url: dashUrl,
+    fallback_url: fallbackUrl,
+  },
+  blur,
+}) => {
+  const [paused, setPaused] = useState(false);
+  const handleClick = (e) => {
+    if (e.target.paused) e.target.play();
+    else e.target.pause();
+    setPaused(e.target.paused);
+  };
+  return (
+    <GifWrapper>
+      <StyledGif
+        autoPlay={!blur}
+        muted
+        controls={false}
+        preload={blur ? "auto" : null}
+        loop={true}
+        height={height}
+        width={width}
+        onClick={handleClick}
+        blur={blur}
+      >
+        <source src={url} />
+        <source src={hlsUrl} type="application/vnd.apple.mpegURL" />
+        <source src={dashUrl} />
+        <source src={fallbackUrl} />
+        Gif failed to load
+      </StyledGif>
+      <Overlay show={paused}>
+        <Icon icon="pause" size="xl" />
+      </Overlay>
+    </GifWrapper>
+  );
+};
 
-const controlsHeight = 2; //em
+const controlsHeight = 1.75; //em
 
 const Wrapper = styled.div`
   max-width: inherit;
@@ -566,7 +642,7 @@ const Wrapper = styled.div`
 const Seekbar = styled.div`
   width: auto;
   height: 1.5em;
-  margin: auto 0;
+  margin: auto 0.75em;
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
@@ -600,9 +676,9 @@ const ProgressBar = styled.div.attrs(({ progress }) => ({
   style: { width: progress },
 }))`
   height: 0.25em;
-  background-color: ${({ theme }) => theme.highlight};
+  background-color: ${({ theme }) => theme.focus.border};
   border-radius: 1em;
-  box-shadow: 0 0 0.35em 0 ${({ theme }) => theme.focus.glow};
+  box-shadow: 0 0 0.3em 0 ${({ theme }) => theme.focus.glow};
   position: absolute;
   left: 0;
   top: 0;
@@ -622,19 +698,20 @@ const VolumeSlider = styled(ProgressBar).attrs(({ volume, muted }) => ({
   box-shadow: none;
   top: unset;
   bottom: 0;
-  /* transform: translateY(${({ show }) => (show ? "-5em" : "0")}); */
 `;
 
 const Volume = styled(Seekbar)`
+  margin: 0;
   padding: 0.25em 0;
   background: ${({ theme }) => theme.card.bg};
   height: ${({ show }) => (show ? 5 : 0)}em;
   opacity: ${({ show }) => (show ? 1 : 0)};
+  visibility: ${({ show }) => (show ? "visible" : "hidden")};
   width: 100%;
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 1.75em;
+  bottom: 100%;
   overflow: hidden;
   display: inline-block;
   transition: all 150ms ease-out;
@@ -642,14 +719,9 @@ const Volume = styled(Seekbar)`
 `;
 
 const VolumePopout = styled.div`
-  display: inline-flex;
-  flex-flow: column-reverse nowrap;
-  align-items: center;
-  justify-content: center;
   position: relative;
-  border-radius: 0.25em;
-  margin-top: -0.25em;
-  bottom: -0.125em;
+  display: inline-block;
+  ${buttonMargin};
 `;
 
 const ControlsBackground = styled.div`
@@ -673,14 +745,14 @@ const Controls = styled.div`
   width: 100%;
   height: ${controlsHeight}em;
   color: white;
-  padding: 0.125em 0.25em;
   display: flex;
   flex-flow: row nowrap;
   color: "#fff";
   opacity: ${({ show }) => (show ? 1 : 0)};
   bottom: ${({ show }) => (show ? "0%" : `-${controlsHeight}em`)};
   transition: all 250ms ease;
-  font-size: 1.15em;
+  /* font-size: 1.25em; */
+  font-size: 1rem;
   backdrop-filter: blur(25px);
   user-select: none;
 `;
@@ -689,19 +761,18 @@ const FullscreenInfo = styled(Controls)`
   user-select: auto;
   bottom: unset;
   height: 3rem;
-  top: ${({ show }) => (show ? "0%" : `-${controlsHeight}em`)};
+  top: ${({ show }) => (show ? 0 : -3)}em;
   background: linear-gradient(black, transparent);
 `;
 
 const Section = styled.div`
   flex: 0 0 auto;
   z-index: 1;
+  display: inline-block;
 `;
 
 const Time = styled.span`
-  margin: 0 0.5em;
   font-size: 0.75em;
-  color: white;
 `;
 
 const Overlay = styled.div`
@@ -720,7 +791,6 @@ const Overlay = styled.div`
   justify-content: center;
   align-items: center;
   opacity: ${({ show }) => (show ? 1 : 0)};
-  /* transition: opacity 0.5s ease; */
   animation: ${({ show }) => (show ? null : "expandFade 0.25s ease")};
   @keyframes expandFade {
     from {
@@ -740,69 +810,25 @@ const Poster = styled(Overlay)`
   background: url(${({ poster }) => poster}) center no-repeat;
   background-size: contain;
   visibility: ${({ show }) => (show ? "visible" : "hidden")};
+  filter: ${({ blur }) => (blur ? "blur(20px)" : null)};
 `;
-
-// Gif converted to video (post.preview.images[0].variants.mp4)
-// Does not come with is_gif and uses different src names
-export const Gif = ({ video }) => (
-  <Wrapper>
-    <StyledVideo
-      autoPlay={true}
-      muted
-      controls={false}
-      preload="auto"
-      loop={true}
-      height={video.height}
-      width={video.width}
-    >
-      <source src={video.url} />
-      Gif failed to load
-    </StyledVideo>
-  </Wrapper>
-);
-
-export const GifVideo = ({
-  video: {
-    url,
-    dash_url: dashUrl,
-    fallback_url: fallbackUrl,
-    hls_url: hlsUrl,
-    width,
-    height,
-  },
-}) => {
-  const handleClick = (e) =>
-    e.target.paused ? e.target.play() : e.target.pause();
-  return (
-    <Wrapper>
-      <StyledVideo
-        autoPlay={true}
-        muted
-        controls={false}
-        preload="auto"
-        loop={true}
-        height={height}
-        width={width}
-        onClick={handleClick}
-      >
-        <source src={url} />
-        <source src={hlsUrl} type="application/vnd.apple.mpegURL" />
-        <source src={dashUrl} />
-        <source src={fallbackUrl} />
-        Gif failed to load
-      </StyledVideo>
-    </Wrapper>
-  );
-};
 
 const StyledVideo = styled.video`
   max-width: inherit;
   height: 100%;
   width: 100%;
-  /* width: auto; */
   margin: 0 auto;
   background-color: black;
   filter: ${({ blur }) => (blur ? "blur(20px)" : null)};
+`;
+
+const StyledGif = styled(StyledVideo)`
+  background-color: ${({ theme }) => theme.card.innerBg};
+  filter: ${({ blur }) => (blur ? "blur(20px)" : null)};
+`;
+
+const GifWrapper = styled(Wrapper)`
+  width: auto;
 `;
 
 const Audio = styled.audio`

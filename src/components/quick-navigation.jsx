@@ -3,16 +3,9 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { connect } from "react-redux";
 import SubredditIcon from "./subreddit-icon";
-import uniqueId from "../utils/unique-id";
-import Button from "./button";
+// import uniqueId from "../utils/unique-id";
 import ReactTooltip from "react-tooltip";
-
-const Navigation = styled.div`
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  /* height: 100%; */
-`;
+import BasicNavigation from "./basic-navigation";
 
 const Favorite = styled.div`
   border-bottom: 2px solid
@@ -48,7 +41,7 @@ const QuickNavigation = ({ favorites = [], location }) => {
       favorites.slice(0, 5).map((sub) => (
         <IconLink
           to={"/r/" + sub.display_name}
-          key={uniqueId()}
+          key={sub.display_name}
           data-tip={"r/" + sub.display_name + " <br /> " + sub.title}
           data-multiline={true}
           data-place="right"
@@ -64,61 +57,14 @@ const QuickNavigation = ({ favorites = [], location }) => {
   useEffect(() => {
     ReactTooltip.rebuild();
   }, [favoriteIcons]);
-  
+
   return (
-    <Navigation>
-      <Button
-        icon="home"
-        data-tip="Frontpage <br /> Your joined communities"
-        data-multiline={true}
-        data-delay-show={0}
-        to="/"
-        size="large"
-        toggle
-        toggled={location.name === "Frontpage"}
-        primary
-        flat
-      />
-      <Button
-        icon="trendingUp"
-        data-tip="r/popular <br /> Reddit's most active communities"
-        data-multiline={true}
-        data-delay-show={0}
-        to="/r/popular/"
-        size="large"
-        toggle
-        toggled={location.name === "popular"}
-        primary
-        flat
-      />
-      <Button
-        icon="barChart2"
-        data-tip="r/all <br /> All communities of reddit"
-        data-multiline={true}
-        data-delay-show={0}
-        to="/r/all/"
-        size="large"
-        toggle
-        toggled={location.name === "all"}
-        primary
-        flat
-      />
-      {process.env.NODE_ENV === "development" ?
-        <Button 
-          icon="code"
-          data-tip="test <br /> Test pages"
-          data-multiline={true}
-          data-delay-show="0"
-          to="/test/components"
-          size="large"
-          toggle
-          toggled={location.name === "Test"}
-          primary
-          flat
-        />
-      : null}
+    <>
+      {/* <Navigation> */}
+      <BasicNavigation />
       {favoriteIcons}
-    </Navigation>
+      {/* </Navigation> */}
+    </>
   );
 };
 

@@ -3,9 +3,11 @@ const initialState = {
   user: null,
   userPrefs: { nightmode: false },
   subreddits: {},
-  subscriptionNames: [],
-  favoriteNames: [],
-  defaultNames: [],
+  subscriptions: [],
+  defaults: [],
+  // subscriptionNames: [],
+  // favoriteNames: [],
+  // defaultNames: [],
   multireddits: [],
   currentPost: null,
   location: {
@@ -107,29 +109,26 @@ const store = (state = initialState, action) => {
         layoutPrefs: { ...state.layoutPrefs, ...action.prefs },
       };
     case "SET_SUBSCRIPTIONS":
-      let favoriteNames = [];
-      const subscriptionNames = action.subscriptions.reduce(
-        (names, subscription) => {
-          // Adds the subreddit info to the subreddits store
-          subreddits[subscription.display_name.toLowerCase()] = subscription;
-
-          if (subscription.user_has_favorited) {
-            favoriteNames.push(subscription.display_name.toLowerCase());
-          } else {
-            names.push(subscription.display_name.toLowerCase());
-          }
-          return names;
-        },
-        []
-      );
-      return { ...state, subreddits, subscriptionNames, favoriteNames };
-    case "SET_DEFAULTS":
-      console.log("Storing defaults");
-      const defaultNames = action.defaults.map((sub) => {
-        subreddits[sub.display_name.toLowerCase()] = sub;
-        return sub.display_name.toLowerCase();
+      action.subscriptions.forEach((sub) => {
+        const subName = sub.display_name.toLowerCase();
+        subreddits[subName] = sub;
       });
-      return { ...state, subreddits, defaultNames };
+      return { ...state, subreddits, subscriptions: action.subscriptions };
+      // let favoriteNames = [];
+      // let subscriptionNames = action.subscriptions;
+      // subscriptionNames.forEach((sub, i, array) => {
+      //   const subName = sub.display_name.toLowerCase();
+      //   subreddits[subName] = sub;
+      //   array[i] = subName;
+      //   if (sub.user_has_favorited) favoriteNames.push(subName);
+      // });
+      // return { ...state, subreddits, subscriptionNames, favoriteNames };
+    case "SET_DEFAULTS":
+      action.defaults.forEach((sub) => {
+        const subName = sub.display_name.toLowerCase();
+        subreddits[subName] = sub;
+      });
+      return { ...state, subreddits, defaults: action.defaults };
     case "SET_MULTIREDDITS":
       return { ...state, multireddits: action.multis };
     case "ADD_SUBREDDIT":

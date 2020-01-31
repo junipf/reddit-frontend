@@ -11,13 +11,13 @@ const Thumbnail = ({ preview: { images } = {}, width, height, url }) => {
         images[0].resolutions[1] ||
         images[0].resolutions[0];
 
-  if (thumb.height > 140) {
-  }
-  return (
+  // if (thumb.height > 140) {
+  // }
+  return thumb ? (
     <Thumb width={width} height={height} as={url ? "a" : "div"} href={url}>
       <img width={width} height={height} src={thumb.url} alt="thumbnail" />
     </Thumb>
-  );
+  ) : null;
 };
 
 const Thumb = styled.div`
@@ -32,7 +32,7 @@ const Thumb = styled.div`
   width: ${({ width }) => width + "px"};
   height: ${({ height }) => height + "px"};
   &[href]:hover {
-    border-color: ${({theme}) => theme.focus.border};
+    border-color: ${({ theme }) => theme.focus.border};
     opacity: 0.9;
   }
 `;

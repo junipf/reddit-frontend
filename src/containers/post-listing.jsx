@@ -39,41 +39,62 @@ const PostListing = ({
   setLocation,
   visible,
   controlsPath,
-  settings: { sort, time, subName },
+  match: { params: path },
+  location: { search },
+  // settings: { sort, time, subName },
 }) => {
   const r = useContext(Requester);
 
+  const [listing, setListing] = useState([]);
+  // const [listSettings, setListSettings] = useState({});
+  // const fetching = useMemo(() => listing.length === 0, [listing]);
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [listing, setListing] = useState([]);
-  const [listSettings, setListSettings] = useState({});
-  const fetching = useMemo(() => listing.length === 0, [listing]);
+  const [settings, setSettings] = useState({
+    sort: path.subName ? "hot" : "best",
+    time: "all",
+    subreddit: undefined,
+  });
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(search);
+    setSettings({
+      sort: path.sort || path.subName ? "hot" : "best",
+      time: searchParams.get("t") || "all",
+      subName: path.subName,
+    });
+  }, [search, path]);
 
   const fetchListing = useCallback(() => {
-    if (
-      sort !== listSettings.sort ||
-      subName !== listSettings.subName ||
-      time !== listSettings.time
-    ) {
-      setListSettings({ sort, subName, time });
-      setListing([]);
-      setError(null);
-      r._getSortedFrontpage(sort, subName, {
-        time,
-      }).then(
-        (listing) => {
-          setListing(listing);
-        },
-        (e) => {
-          setError({
-            name: `r/${subName}`,
-            e,
-            type: "subreddit",
-          });
-        }
-      );
-    }
-  }, [r, sort, time, subName, listSettings]);
+    // if (
+    //   sort !== listSettings.sort ||
+    //   subName !== listSettings.subName ||
+    //   time !== listSettings.time
+    // ) {
+    // setListSettings({ sort, subName, time });
+    const { sort, subName, time } = settings;
+    setListing([]);
+    setError(null);
+    setLoading(true);
+    r._getSortedFrontpage(sort, subName, {
+      time,
+    })
+      .then((listing) => {
+        setLoading(false);
+        setListing(listing);
+      })
+      .catch((e) => {
+        setLoading(false);
+        setError({
+          name: `r/${subName}`,
+          e,
+          type: "subreddit",
+        });
+      });
+    // }
+  }, [r, settings]);
 
   const fetchSubreddit = useCallback(
     (subName) => {
@@ -114,42 +135,36 @@ const PostListing = ({
           );
       }
     },
-    [
-      addSubreddit,
-      r,
-      addSubredditTheme,
-      subreddits,
-      themesBySubreddit,
-    ]
+    [addSubreddit, r, addSubredditTheme, subreddits, themesBySubreddit]
   );
 
-  const path = useMemo(() => {
-    const pathSubName =
-      subName && subreddits[subName.toLowerCase()]
-        ? subreddits[subName.toLowerCase()].display_name
-        : subName;
-    let path = pathSubName ? "/r/" + pathSubName : "";
-    path += sort && sort !== "hot" ? "/" + sort : "/";
-    path +=
-      (sort === "controversial" || sort === "top") && time ? "?t=" + time : "";
-    return path;
-  }, [subName, sort, time, subreddits]);
+  // const path = useMemo(() => {
+  //   const pathSubName =
+  //     subName && subreddits[subName.toLowerCase()]
+  //       ? subreddits[subName.toLowerCase()].display_name
+  //       : subName;
+  //   let path = pathSubName ? "/r/" + pathSubName : "";
+  //   path += sort && sort !== "hot" ? "/" + sort : "/";
+  //   path +=
+  //     (sort === "controversial" || sort === "top") && time ? "?t=" + time : "";
+  //   return path;
+  // }, [subName, sort, time, subreddits]);
 
-  const updatePath = useCallback(() => {
-    if (path !== window.location.pathname) {
-      const pathName = window.location.pathname.toLowerCase();
-      if (
-        path.toLowerCase() === pathName ||
-        path.toLowerCase() === pathName + "/"
-      ) {
-        history.replace(path);
-        console.info(`updatePath REPLACE: ${pathName} -> ${path}`);
-      } else {
-        history.push(path);
-        console.info(`updatePath PUSH: ${path}`);
-      }
-    }
-  }, [path, history]);
+  // const updatePath = useCallback(() => {
+  //   if (path !== window.location.pathname) {
+  //     const pathName = window.location.pathname.toLowerCase();
+  //     if (
+  //       path.toLowerCase() === pathName ||
+  //       path.toLowerCase() === pathName + "/"
+  //     ) {
+  //       history.replace(path);
+  //       console.info(`updatePath REPLACE: ${pathName} -> ${path}`);
+  //     } else {
+  //       history.push(path);
+  //       console.info(`updatePath PUSH: ${path}`);
+  //     }
+  //   }
+  // }, [path, history]);
 
   // useEffect(() => {
   //   if (controlsPath) updatePath();
@@ -169,11 +184,11 @@ const PostListing = ({
 
   useEffect(() => {
     if (visible) fetchListing();
-  }, [subName, sort, time, visible, fetchListing]);
+  }, [settings, visible, fetchListing]);
 
   useEffect(() => {
-    fetchSubreddit(subName);
-  }, [subName, fetchSubreddit]);
+    fetchSubreddit(settings.subName);
+  }, [settings.subName, fetchSubreddit]);
 
   // LISTING
   useEffect(() => {
@@ -243,19 +258,21 @@ const PostListing = ({
   if (!visible) return null;
   return (
     <>
-      {subreddits && subName && subreddits[subName.toLowerCase()] ? (
-        <SubredditBanner subName={subName} />
+      {subreddits &&
+      settings.subName &&
+      subreddits[settings.subName.toLowerCase()] ? (
+        <SubredditBanner subName={settings.subName} />
       ) : null}
       {error ? (
         <Error {...error} />
-      ) : fetching ? (
+      ) : loading ? (
         <SpinnerPage />
       ) : (
         <ScrollWrapper>
           <Listing>
             {listing.map((post, i) => (
               <Post
-                inSubreddit={subName === post.subreddit.display_name}
+                inSubreddit={settings.subName === post.subreddit.display_name}
                 post={post}
                 key={i}
                 inListing
@@ -291,16 +308,16 @@ const ScrollWrapper = styled.div`
 export default connect(
   ({
     subreddits,
-    lgihtboxIsOpen,
+    lightboxIsOpen,
     themesBySubreddit,
     themesByColor,
-    postListingSettings,
+    // postListingSettings,
   }) => ({
     subreddits,
-    lgihtboxIsOpen,
+    lightboxIsOpen,
     themesBySubreddit,
     themesByColor,
-    settings: postListingSettings,
+    // settings: postListingSettings,
   }),
   {
     addSubreddit,

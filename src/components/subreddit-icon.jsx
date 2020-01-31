@@ -7,22 +7,22 @@ import { meetsContrastGuidelines } from "polished";
 
 const SubredditIcon = ({
   subName = "",
-  subreddit,
-  size,
-  flat,
-  theme,
-  passRef,
-  ...props
-}) => {
-  if (!subreddit) return;
-  const {
+  sub,
+  sub: {
     primary_color = null,
     key_color = null,
     banner_background_color = null,
     community_icon = null,
     icon_img = null,
     icon_url = null,
-  } = subreddit;
+  } = {},
+  size,
+  flat,
+  theme,
+  passRef,
+  ...props
+}) => {
+  if (!sub) return null;
 
   const subColor =
     primary_color || key_color || banner_background_color || null;
@@ -64,16 +64,12 @@ const SubredditIcon = ({
   );
 };
 
-function mapStateToProps(state, { subName }) {
-  const { subreddits } = state;
-
-  if (subName && subreddits[subName.toLowerCase()]) {
-    return { subreddit: subreddits[subName.toLowerCase()] };
-  }
-  return { subreddit: {} };
-}
-
-export default connect(mapStateToProps)(withTheme(SubredditIcon));
+export default connect(({ subreddits }, { subName, sub }) => {
+  if (sub) return { sub };
+  if (subName && subreddits[subName.toLowerCase()])
+    return { sub: subreddits[subName.toLowerCase()] };
+  return { sub: {} };
+})(withTheme(SubredditIcon));
 
 SubredditIcon.propTypes = {
   size: PropTypes.oneOf(["small", "normal", "large", "xl"]),

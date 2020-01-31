@@ -6,11 +6,14 @@ import { PropTypes } from "prop-types";
 const IconWrapper = styled.span`
   /* Aligns icons to font */
   position: relative;
-  bottom: ${({ align }) => (align === "none" ? "0" : "-0.083em")};
-  margin-top: ${({ align }) => (align === "none" ? "0" : "-0.083em")};
+  bottom: ${({ inline }) => (inline ? "-0.166em" : "0")};
+  /* margin-top: 0; */
+  margin-top: ${({ inline }) => (inline ? "0.083em" : "0")};
+  /* bottom: ${({ inline }) => (inline ? "-0.083em" : null)}; */
+  /* margin-top: ${({ inline }) => (inline ? "-0.083em" : null)}; */
   display: inline-block;
-  width: ${({ size }) => (size === "xl" ? "4rem" : "1em")};
-  height: ${({ size }) => (size === "xl" ? "4rem" : "1em")};
+  width: ${({ size }) => (size === "xl" ? "4em" : "1em")};
+  height: ${({ size }) => (size === "xl" ? "4em" : "1em")};
   color: ${({ color }) => color || "inherit"};
   margin-right: ${({ marginRight }) => (marginRight ? "0.25em" : "0")};
   svg {
@@ -55,5 +58,5 @@ Icon.propTypes = {
     }
   },
   size: PropTypes.oneOf(["small", "normal", "large", "xl"]),
-  align: PropTypes.oneOf(["baseline", "none"]),
+  inline: PropTypes.bool,
 };

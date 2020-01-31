@@ -6,7 +6,7 @@ import {
   setThreadSettings,
 } from "../store/actions";
 import PostListing from "./post-listing";
-import thread from "./comment-listing";
+import Thread from "./thread";
 import ReactTooltip from "react-tooltip";
 import { Column } from "./column";
 import SubredditThemeProvider from "../style/sub-theme-provider";
@@ -27,23 +27,24 @@ const SplitView = ({
     postListing: {
       controlsPath: path.id === undefined,
       visible: path.id === undefined,
+      subName: path.subName,
     },
     thread: {
       visible: path.id !== undefined,
     },
   });
 
-  const [visible, setVisible] = useState({
-    postListing: !path.id,
-    thread: !!path.id,
-  });
+  // const [visible, setVisible] = useState({
+  //   postListing: !path.id,
+  //   thread: !!path.id,
+  // });
 
   useEffect(() => {
     if (path.id === undefined) {
-      setVisible({
-        postListing: true,
-        thread: false,
-      });
+      // setVisible({
+      //   postListing: true,
+      //   thread: false,
+      // });
       setLocation({
         name: path.subName || "Frontpage",
         type: path.subName ? "subreddit" : "listing",
@@ -53,6 +54,13 @@ const SplitView = ({
         sort: path.sort || "hot",
         time: searchParams.get("t") || "all",
       });
+      setState((state) => ({
+        ...state,
+        postListing: {
+          ...state.postListing,
+          subName: path.subName,
+        },
+      }));
     } else {
       setThreadSettings({
         id: path.id,
@@ -79,9 +87,7 @@ const SplitView = ({
       thread: {
         ...state.thread,
         // If postListing is hidden, enable thread
-        visible: state.postListing.visible
-          ? true
-          : state.thread.visible,
+        visible: state.postListing.visible ? true : state.thread.visible,
       },
     }));
   };
@@ -95,9 +101,7 @@ const SplitView = ({
       },
       postListing: {
         ...state.postListing,
-        visible: state.thread.visible
-          ? true
-          : state.postListing.visible,
+        visible: state.thread.visible ? true : state.postListing.visible,
         controlsPath: state.thread.visible ? true : false,
       },
     }));
@@ -123,10 +127,7 @@ const SplitView = ({
           type={split === "even" || split === "right" ? "primary" : "secondary"}
           className={state.thread.visible ? "shown" : "hidden"}
         >
-          <thread
-            {...state.thread}
-            hideSelf={togglethread}
-          />
+          <Thread {...state.thread} hideSelf={togglethread} />
         </Column>
       </SubredditThemeProvider>
     </>

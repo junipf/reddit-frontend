@@ -1,11 +1,11 @@
 import React from "react";
 import styled from "styled-components";
 import Icon from "./icon";
-// import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-// const User = styled(Link)`
-const User = styled.span`
-  color: ${({ type }) => (type ? "#fff" : null)};
+// const User = styled.span`
+const User = styled(Link)`
+  color: ${({ type, theme }) => (type ? "#fff" : theme.highlight)};
   padding: ${({ type }) => (type ? "0 0.25em" : null)};
   border-radius: ${({ type }) => (type ? "0.25em" : null)};
   background-color: ${({ type, theme }) => theme.author[type] || "transparent"};
@@ -30,7 +30,7 @@ export const Author = ({
   <span>
     <User
       type={distinguished ? distinguished : is_submitter ? "submitter" : null}
-      // to={"/u/" + authorName}
+      to={"/user/" + authorName}
       // data-delay-show="500"
       // data-tip={`Go to ${authorName}'s page`}
     >

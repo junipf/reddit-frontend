@@ -28,20 +28,28 @@ const GlobalThemeProvider = ({
       syncRedditTheme,
     } = themePrefs;
     const useDark = syncSystemTheme
-      ? darkSystem
-      : syncRedditTheme
-      ? userPrefs.nightmode
-      : useDarkThemes;
-    const base =
-      useSubredditThemes && subredditTheme
-        ? useDark
-          ? subredditTheme.dark
-          : subredditTheme.light
-        : themes[useDark ? darkTheme : lightTheme];
-    return {
-      ...base,
-      ...buildColorTheme(colorTheme, useDark),
-    };
+    ? darkSystem
+    : syncRedditTheme
+    ? userPrefs.nightmode
+    : useDarkThemes;
+    return useSubredditThemes && subredditTheme
+      ? useDark
+        ? subredditTheme.dark
+        : subredditTheme.light
+      : {
+          ...themes[useDark ? darkTheme : lightTheme],
+          ...buildColorTheme(colorTheme, useDark),
+        };
+    // const base =
+    //   useSubredditThemes && subredditTheme
+    //     ? useDark
+    //       ? subredditTheme.dark
+    //       : subredditTheme.light
+    //     : themes[useDark ? darkTheme : lightTheme];
+    // return {
+    //   ...base,
+    //   ...buildColorTheme(colorTheme, useDark),
+    // };
   }, [themePrefs, userPrefs.nightmode, subredditTheme]);
 
   useEffect(() => {

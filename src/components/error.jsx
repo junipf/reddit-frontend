@@ -85,9 +85,9 @@ const Error = ({ e, name, type, onClose, ...props }) => {
       {details ? <Details>{details}</Details> : null}
       <Actions>
         {reportable ? <Button href={reportUrl}>report bug</Button> : null}
-        <Button primary onClick={onClose}>
+        {onClose ? <Button primary onClick={onClose}>
           dismiss
-        </Button>
+        </Button> : null}
       </Actions>
     </StyledError>
   );

@@ -14,11 +14,20 @@ export const formatNumber = (number, singular = "", plural = "") => {
     { letter: "k", limit: 999 },
   ]) {
     if (num > limit) {
-      string = String(sign * (num / (limit + 1)).toFixed(1) + letter);
+      string = String(
+        (sign * (num / (limit + 1))).toFixed(1) + letter
+      );
       break;
     }
   }
 
-  string += number === 1 ? singular : plural;
+  const sing = singular !== "" ? " " + singular.trim() : "";
+  const plur =
+    plural !== "" ? " " + plural.trim() : sing !== "" ? sing + "s" : "";
+
+  string += number === 1 ? sing : plur;
   return string;
 };
+
+window.formatNumber = (number, singular, plural) =>
+  formatNumber(number, singular, plural);

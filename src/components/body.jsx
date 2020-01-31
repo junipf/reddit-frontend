@@ -16,7 +16,7 @@ const Text = styled.div`
     width: 100%;
     height: 5rem;
     background: ${({ theme }) =>
-      "linear-gradient(transparent 0%, " + theme.card.innerBg + " 78%)"};
+      "linear-gradient(transparent 0%, " + theme.card.bg + " 78%)"};
     position: absolute;
     bottom: 0;
     left: 0;
@@ -39,7 +39,7 @@ const Actions = styled.div`
   overflow: visible;
 `;
 
-export const Body = ({ inListing, html, ...rest }) => {
+export const Body = ({ inListing, html, title, ...rest }) => {
   const [overflow, setOverflow] = useState(undefined);
   const [showAll, setShowAll] = useState(!inListing || undefined);
   const toggleShowAll = () => setShowAll(!showAll);
@@ -62,8 +62,8 @@ export const Body = ({ inListing, html, ...rest }) => {
         <Actions>
           <Button
             flat
+            fill
             align="center"
-            size="fill"
             icon={showAll ? "chevronUp" : "chevronDown"}
             onClick={toggleShowAll}
           />

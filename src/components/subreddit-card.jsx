@@ -1,87 +1,71 @@
-import React from "react";
+import React, { useState } from "react";
 import Button from "./button";
 import SubredditIcon from "./subreddit-icon";
-import { Link } from "react-router-dom";
-import { Timestamp } from "./timestamp";
+// import { Timestamp } from "./timestamp";
 import styled from "styled-components";
 import { formatNumber } from "../utils/format-number";
+import Card from "./card";
+import SubredditThemeProvider from "../style/sub-theme-provider";
 
 const Body = styled.div``;
 
-const Card = styled.div``;
+const Banner = styled.div.attrs(({ banner, bg }) => ({
+  style: {
+    backgroundImage: `url(${banner})`,
+    backgroundColor: bg,
+  },
+}))`
+  height: 2rem;
+`;
 
-const Banner = styled.div.attrs(props => ({
-  backgroundImage: "url(" + props.backgroundImage + ")",
-  backgroundColor: props.backgroundColor,
-}))``;
-
-export default class SubredditCard extends React.Component {
-  constructor(props) {
-    super(props);
-    const { user_is_subscriber } = props;
-    this.state = {
-      subscribed: user_is_subscriber,
-    };
-    this.toggleSubscribe = this.toggleSubscribe.bind(this);
-  }
-  toggleSubscribe() {
-    this.setState({
-      subscribed: !this.state.subscribed,
-    });
-  }
-  render() {
-    const {
-      banner_background_color,
-      banner_background_image,
-      display_name_prefixed,
-      // display_name,
-      // header_title,
-      // header_img,
-      // community_icon,
-      // icon_img,
-      primary_color,
-      key_color,
-      id,
-      subscribers,
-      accounts_active,
-      created_utc,
-      url,
-      // title,
-      // public_description_html,
-    } = this.props;
-    const backgroundColor =
-      banner_background_color || primary_color || key_color || null;
-    if (id) {
-      return (
-        <Card>
-          <Banner
-            backgroundColor={backgroundColor}
-            backgroundImage={banner_background_image}
-          />
-          <Body>
-            <SubredditIcon subName={this.props.display_name} />
-            <Link to={url} className="subreddit-name">
-              {display_name_prefixed}
-            </Link>
-            <span>{formatNumber(subscribers, "user")}</span>
-            {accounts_active !== null ? (
-              <span>{formatNumber(accounts_active, "active user")}</span>
-            ) : null}
-            {/* <span
-                className="body"
-                dangerouslySetInnerHTML={{
-                  __html: public_description_html,
-                }}
-              /> */}
-            <Timestamp time={created_utc} to={"#" + id} />
-            <Button primary onClick={this.toggleSubscribe}>
-              {this.state.subscribed ? "Leave" : "Join"}
-            </Button>
-          </Body>
-        </Card>
-      );
-    } else {
-      return null;
-    }
-  }
-}
+export default ({
+  sub,
+  sub: {
+    banner_background_color: bannerBg,
+    banner_background_image: banner,
+    display_name: subName,
+    // header_title,
+    // header_img,
+    // community_icon,
+    // icon_img,
+    primary_color: primaryColor,
+    key_color: keyColor,
+    id,
+    subscribers,
+    accounts_active: accountsActive,
+    created_utc: created,
+    url,
+    // title,
+    public_description_html: descriptionHtml,
+    user_is_subscriber: isSubscriber,
+  },
+}) => {
+  const [subscribed, setSubscribed] = useState(isSubscriber);
+  const toggleSubscribe = () => setSubscribed((bool) => !bool);
+  const bg = bannerBg || primaryColor || keyColor || null;
+  return (
+    <SubredditThemeProvider sub={sub}>
+      <Card>
+        <Banner bg={bg} banner={banner} />
+        <Body>
+          <SubredditIcon sub={sub} />
+          <Button to={url}>{`r/${subName}`}</Button>
+          <span>{formatNumber(subscribers, "user")}</span>
+          {accountsActive !== null ? (
+            <span>{formatNumber(accountsActive, "active user")}</span>
+          ) : null}
+          {/* <span
+              className="body"
+              dangerouslySetInnerHTML={{
+                __html: descriptionHtml,
+              }}
+            /> */}
+          {/* <Timestamp time={created} to={"#" + id} /> */}
+          <Button primary onClick={toggleSubscribe}>
+            {subscribed ? "Leave" : "Join"}
+          </Button>
+        </Body>
+      </Card>
+    </SubredditThemeProvider>
+  );
+};

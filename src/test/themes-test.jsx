@@ -235,7 +235,7 @@ const ThemesTest = () => {
                       <Button
                         onClick={removeColor}
                         value={color}
-                        size="fill"
+                        fill
                         primary
                       >
                         <Dot color={color} />

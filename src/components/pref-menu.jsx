@@ -1,5 +1,5 @@
 import React from "react";
-import styled, { ThemeProvider, withTheme } from "styled-components";
+import styled, { ThemeProvider } from "styled-components";
 import { connect } from "react-redux";
 import { setUserPrefs, setThemePrefs, setLayoutPrefs } from "../store/actions";
 
@@ -73,9 +73,9 @@ const PrefMenu = ({
         <Button
           flat
           primary
-          toggle
           toggled={split === mode}
           value={{ split: mode }}
+          key={mode}
         >
           <Icon icon={icon} rotate={rotate} />
           {description}
@@ -101,7 +101,7 @@ const PrefMenu = ({
           <Button
             onClick={setThemePrefs}
             value={{ useDarkThemes: dark, syncSystemTheme: false }}
-            size="fill"
+            fill
             flat
             iconAfter={dark ? "moon" : "sun"}
           >
@@ -149,7 +149,7 @@ const PrefMenu = ({
       <Divider />
       <Dropdown
         toggle={
-          <Button flat size="fill">
+          <Button flat fill>
             <Icon icon="chevronLeft" align="none"/>
             <ColorDot /> Color
           </Button>
@@ -165,7 +165,7 @@ const PrefMenu = ({
             <Button
               onClick={setThemePrefs}
               value={{ colorTheme: id }}
-              size="fill"
+              fill
               key={id}
               flat
             >
@@ -212,7 +212,7 @@ const PrefMenu = ({
         <Button label="Log out" icon="logout" onClick={logout} />
       </Dropdown>
     ) : (
-      <Button primary href={authURL} icon="login" label="Login" size="large" />
+      <Button primary href={authURL} icon="login" label="Login" />
     )}
   </>
 );

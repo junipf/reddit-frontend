@@ -386,7 +386,7 @@ const IconPage = (props) => {
             wide
           >
             <Dropdown
-              size="fill"
+              fill
               label=""
               flat
               onSelect={usePreset}
@@ -409,7 +409,7 @@ const IconPage = (props) => {
             </Dropdown>
             <Button
               flat
-              size="fill"
+              fill
               icon="x"
               onClick={clearAll}
               label="Clear all"
@@ -418,7 +418,7 @@ const IconPage = (props) => {
             <Button
               icon="search"
               label="Submit"
-              size="fill"
+              fill
               hideLabel
               value={value}
               onClick={submit}
