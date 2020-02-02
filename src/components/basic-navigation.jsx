@@ -59,7 +59,7 @@ const BasicNavigation = ({ location: { name = "" } = {}, inList }) => {
           data-delay-show="0"
           to={to}
           toggled={name.toLowerCase().startsWith(to.toLowerCase())}
-          fill={inList}
+          fill={inList ? "true" : null}
           primary
           flat
         />

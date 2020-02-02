@@ -188,14 +188,14 @@ const UserPage = ({
               ...user,
               cakeday: new Date(user.created * 1000),
             });
-            console.log("user", user);
+            // console.log("user", user);
           },
           (e) => setError({ e, type: "user", name: username })
         );
         user.getTrophies().then(
           (trophies) => {
             setFetchedTrophies(trophies);
-            console.log("Trophies", trophies);
+            // console.log("Trophies", trophies);
           },
           (e) => setError({ e, type: "trophies", name: username })
         );

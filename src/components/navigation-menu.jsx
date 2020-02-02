@@ -63,7 +63,7 @@ const NavigationMenu = ({
       <Button size="large" flat to="/">
         <Logo color={theme.primary.base} />
       </Button>
-      <Dropdown toggle={<Button>{label}</Button>}>
+      <Dropdown preRender toggle={<Button>{label}</Button>}>
         <SubscriptionList fromMenu />
       </Dropdown>
     </>

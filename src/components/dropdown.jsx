@@ -27,6 +27,7 @@ const Dropdown = ({
   noMargin,
   closeOnSelect,
   fill,
+  preRender,
   ...rest
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -88,11 +89,13 @@ const Dropdown = ({
       size={props.size}
       noMargin={noMargin}
       className="button"
-      fill={fill || sub}
+      fill={fill || sub ? "true" : null}
     >
       {useToggle}
-      {showDropdown || open ? (
+      {showDropdown || open || preRender ? (
         <Menu
+          preRender={preRender}
+          open={open}
           onSelect={onSelect}
           closeOnSelect={closeOnSelect}
           closeDropdown={closeDropdown}
@@ -104,7 +107,7 @@ const Dropdown = ({
           toggle={useToggle}
           items={children}
           label={hideLabel && label}
-          fill={fill || sub}
+          fill={fill || sub ? "true" : null}
         >
           {expand ? useToggle : null}
           {children}
@@ -131,6 +134,9 @@ const Menu = ({
   expand,
   toggle,
   label,
+  preRender,
+  showDropdown,
+  open,
 }) => {
   const $menu = useRef(null);
   const [pos, setPos] = useState({
@@ -213,16 +219,16 @@ const Menu = ({
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      console.log(e);
+      // console.log(e);
       if (e.key === "ArrowDown") {
-        console.log("🔽");
+        // console.log("🔽");
         if ($menu.current && $menu.current.contains(e.target)) {
 
         }
         // setFocus(f => f + 1)
       }
       if (e.key === "ArrowUp") {
-        console.log("🔼");
+        // console.log("🔼");
         // setFocus(f => f - 1)
       }
     }
@@ -294,7 +300,7 @@ const Menu = ({
     });
 
   return (
-    <StyledMenu pos={pos} sub={sub} ref={$menu} expand={expand}>
+    <StyledMenu pos={pos} sub={sub} ref={$menu} expand={expand} open={open || showDropdown} preRender={preRender}>
       {label ? (
         <li>
           <CategoryTitle>{label}</CategoryTitle>
@@ -357,10 +363,11 @@ export const Divider = styled.div`
 `;
 
 export const StyledMenu = styled.ul.attrs(
-  ({ pos: { left, top } = {}, sub, expand }) => ({
+  ({ pos: { left, top } = {}, sub, expand, open, preRender }) => ({
     style: {
       left: left,
       top: top ? top : sub || expand ? `-${menuPadding}em` : null,
+      display: preRender && !open ? "none" : open ? "flex" : "flex",
     },
   })
 )`

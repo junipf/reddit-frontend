@@ -1,9 +1,14 @@
-import React, { useState, useContext, useEffect, useRef } from "react";
+import React, {
+  useState,
+  // useContext,
+  useEffect,
+  useRef,
+} from "react";
 import styled from "styled-components";
 
 // import UniqueId from "../utils/unique-id";
-import { Requester } from "./requester";
-import Button from "./button";
+// import { Requester } from "./requester";
+// import Button from "./button";
 // import Icon from "./icon";
 // import Dropdown from "./dropdown";
 import Input from "./input";
@@ -22,82 +27,82 @@ import ReactTooltip from "react-tooltip";
 //   { type: "keyword", query: "so on" },
 // ];
 
-const SubSearch = ({ query, nsfw: includeNsfw, setAutocomplete, focus }) => {
-  const r = useContext(Requester);
-  const [suggestions, setSuggestions] = useState([]);
-  const $suggestions = useRef(null);
+// const SubSearch = ({ query, nsfw: includeNsfw, setAutocomplete, focus }) => {
+//   const r = useContext(Requester);
+//   const [suggestions, setSuggestions] = useState([]);
+//   const $suggestions = useRef(null);
 
-  useEffect(() => {
-    setFocusItem(-1);
-    r.searchSubredditNames({ query, includeNsfw }).then((result) => {
-      setSuggestions(
-        result.map((suggestion) => {
-          for (let i = query.length; i > 0; i--) {
-            const shortQuery = query.slice(0, i);
-            if (suggestion.toLowerCase().startsWith(shortQuery.toLowerCase()))
-              return {
-                matched: shortQuery,
-                afterMatch: suggestion.slice(i),
-                suggestion,
-              };
-          }
-          return {
-            matched: "",
-            afterMatch: suggestion,
-            suggestion,
-          };
-        })
-      );
-    });
-  }, [r, query, includeNsfw]);
+//   useEffect(() => {
+//     setFocusItem(-1);
+//     r.searchSubredditNames({ query, includeNsfw }).then((result) => {
+//       setSuggestions(
+//         result.map((suggestion) => {
+//           for (let i = query.length; i > 0; i--) {
+//             const shortQuery = query.slice(0, i);
+//             if (suggestion.toLowerCase().startsWith(shortQuery.toLowerCase()))
+//               return {
+//                 matched: shortQuery,
+//                 afterMatch: suggestion.slice(i),
+//                 suggestion,
+//               };
+//           }
+//           return {
+//             matched: "",
+//             afterMatch: suggestion,
+//             suggestion,
+//           };
+//         })
+//       );
+//     });
+//   }, [r, query, includeNsfw]);
 
-  // console.log(suggestions);
+//   // console.log(suggestions);
 
-  const [focusItem, setFocusItem] = useState(-1);
+//   const [focusItem, setFocusItem] = useState(-1);
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "ArrowDown") {
-        setFocusItem((f) =>
-          f + 1 > suggestions.length - 1 ? suggestions.length - 1 : f + 1
-        );
-        // console.log("🔽");
-      }
-      if (e.key === "ArrowUp") {
-        setFocusItem((f) => (f - 1 < -1 ? -1 : f - 1));
-        // console.log("🔼");
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  });
+//   useEffect(() => {
+//     const handleKeyDown = (e) => {
+//       if (e.key === "ArrowDown") {
+//         setFocusItem((f) =>
+//           f + 1 > suggestions.length - 1 ? suggestions.length - 1 : f + 1
+//         );
+//         // console.log("🔽");
+//       }
+//       if (e.key === "ArrowUp") {
+//         setFocusItem((f) => (f - 1 < -1 ? -1 : f - 1));
+//         // console.log("🔼");
+//       }
+//     };
+//     document.addEventListener("keydown", handleKeyDown);
+//     return () => document.removeEventListener("keydown", handleKeyDown);
+//   });
 
-  setAutocomplete(
-    suggestions[focusItem] ? suggestions[focusItem].suggestion : ""
-  );
+//   setAutocomplete(
+//     suggestions[focusItem] ? suggestions[focusItem].suggestion : ""
+//   );
 
-  console.log(suggestions);
+//   console.log(suggestions);
 
-  return suggestions.length > 0 && focus ? (
-    <Suggestions ref={$suggestions}>
-      {suggestions.map(({ matched, afterMatch, suggestion }, i) => (
-        <Button
-          key={i}
-          fill
-          onClick={setAutocomplete}
-          value={`r/${suggestion}`}
-          flat={i !== focusItem}
-        >
-          <span>
-            r/
-            {matched}
-            <HighlightSpan>{afterMatch}</HighlightSpan>
-          </span>
-        </Button>
-      ))}
-    </Suggestions>
-  ) : null;
-};
+//   return suggestions.length > 0 && focus ? (
+//     <Suggestions ref={$suggestions}>
+//       {suggestions.map(({ matched, afterMatch, suggestion }, i) => (
+//         <Button
+//           key={i}
+//           fill
+//           onClick={setAutocomplete}
+//           value={`r/${suggestion}`}
+//           flat={i !== focusItem}
+//         >
+//           <span>
+//             r/
+//             {matched}
+//             <HighlightSpan>{afterMatch}</HighlightSpan>
+//           </span>
+//         </Button>
+//       ))}
+//     </Suggestions>
+//   ) : null;
+// };
 
 // const Query = styled.span`
 //   position: relative;
@@ -107,23 +112,23 @@ const SubSearch = ({ query, nsfw: includeNsfw, setAutocomplete, focus }) => {
 //   position: relative;
 // `;
 
-const Suggestions = styled.div`
-  position: absolute;
-  top: 100%;
-  /* left: 0; */
-  /* max-width: 30rem; */
-  width: 10rem;
-  border: 1px solid ${({ theme }) => theme.card.border};
-  background-color: ${({ theme }) => theme.card.bg};
-  padding: 0.25em 0;
-  border-radius: 0.25em;
-`;
+// const Suggestions = styled.div`
+//   position: absolute;
+//   top: 100%;
+//   /* left: 0; */
+//   /* max-width: 30rem; */
+//   width: 10rem;
+//   border: 1px solid ${({ theme }) => theme.card.border};
+//   background-color: ${({ theme }) => theme.card.bg};
+//   padding: 0.25em 0;
+//   border-radius: 0.25em;
+// `;
 
 export const sorts = ["relevance", "top", "new", "comments"];
 export const times = ["hour", "day", "week", "month", "year", "all"];
 
 export default ({ history, location, match: { params: path } }) => {
-  const r = useContext(Requester);
+  // const r = useContext(Requester);
 
   const searchParams = new URLSearchParams(location.search);
 
@@ -413,18 +418,18 @@ const Wrapper = styled.div`
 //   border-radius: 0.25rem;
 // `;
 
-const Content = styled.div`
-  height: ${({ focus }) => (focus ? "30em" : "0")};
-  overflow: hidden;
-  transition: height 250ms ease;
-  width: 100%;
-`;
+// const Content = styled.div`
+//   height: ${({ focus }) => (focus ? "30em" : "0")};
+//   overflow: hidden;
+//   transition: height 250ms ease;
+//   width: 100%;
+// `;
 
-const HighlightSpan = styled.span`
-  color: ${({ theme }) => theme.primary.text};
-  /* background-color: ${({ theme }) => theme.primary.base}; */
-  /* color: ${({ theme }) => theme.primary.overlay}; */
-`;
+// const HighlightSpan = styled.span`
+//   color: ${({ theme }) => theme.primary.text};
+//   /* background-color: ${({ theme }) => theme.primary.base}; */
+//   /* color: ${({ theme }) => theme.primary.overlay}; */
+// `;
 
 // const SearchExpando = styled.div`
 //   background: ${({ expand, theme }) =>

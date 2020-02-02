@@ -20,7 +20,7 @@ import {
 import AppOnlyOAuth from "../utils/app-only-oauth";
 
 // Import pages
-import MessagesPage from "./messages-page";
+// import MessagesPage from "./messages-page";
 import ComponentTestPage from "../test";
 
 // Import components
@@ -36,7 +36,7 @@ import UserPage from "./user-page";
 import SubscriptionsPage from "./subscriptions-page";
 import Search from "../components/search";
 import SearchPage from "./search-page";
-import MessagesMenu from "../components/messages-menu";
+// import MessagesMenu from "../components/messages-menu";
 // import SearchSettings from "./search-settings";
 import Settings from "./settings";
 
@@ -156,7 +156,7 @@ class App extends React.Component {
     if (process.env.NODE_ENV === "development") r.config({ debug: true });
     if (noUser) {
       r.getDefaultSubreddits().then((subs) => {
-        console.log(subs);
+        // console.log(subs);
         setDefaults(subs);
       });
     } else {
@@ -171,15 +171,17 @@ class App extends React.Component {
   };
   noUserOauth = () => {
     AppOnlyOAuth().then((requester) => {
-      this.setState({ requester, noUser: true }, () =>
-        console.log(this.state.requester)
+      this.setState({ requester, noUser: true }
+        // , () =>console.log(this.state.requester)
       );
       this.interval = setInterval(() => {
         AppOnlyOAuth().then((r) => {
           console.info("updateRequester ran ...");
           const requester = this.state.requester;
           requester.access_token = r.access_token;
-          this.setState({ requester }, () => console.log(this.state.requester));
+          this.setState({ requester }, 
+            // () => console.log(this.state.requester)
+            );
         });
       }, 3540000); //59 minutes
     });
@@ -242,7 +244,7 @@ class App extends React.Component {
 
     const sort = ":sort(hot||best||new||rising||controversial||top)";
     const searchSort = ":sort(relevance||new||comments||top)";
-    const time = ":time(hour||day||week||month||year||all)";
+    // const time = ":time(hour||day||week||month||year||all)";
 
     const listingPaths = [
       "/r/:subName/comments/:id/:title/:commentId?",
@@ -319,7 +321,7 @@ class App extends React.Component {
                     component={Search}
                   />
                   <Section>
-                    <MessagesMenu />
+                    {/* <MessagesMenu /> */}
                     <PrefMenu authURL={authURL} logout={this.logout} />
                   </Section>
                 </Header>
@@ -332,7 +334,7 @@ class App extends React.Component {
                     />
                     <Redirect from="/u/:username" to="/user/:username" />
                     <Route path={userPaths} component={UserPage} />
-                    <Route path="/message/:sort?" component={MessagesPage} />
+                    {/* <Route path="/message/:sort?" component={MessagesPage} /> */}
                     <Route
                       path="/test/:subTest?"
                       component={ComponentTestPage}

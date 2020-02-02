@@ -32,7 +32,7 @@ const ModTools = ({ setLocationName, ...props }) => {
       .getUserFlairList({ name: "antabaka" })
       .then(
         (result) => {
-          console.log(result);
+          // console.log(result);
           storeUserFlairs(result);
         },
         (e) => setError({ e })
@@ -44,7 +44,7 @@ const ModTools = ({ setLocationName, ...props }) => {
       .getUserFlairTemplates()
       .then(
         (result) => {
-          console.log(result);
+          // console.log(result);
           setTemplates(result);
         },
         (e) => setError({ e })

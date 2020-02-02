@@ -59,9 +59,9 @@ const Thread = ({
       if (subName)
         setLocation({ name: subName, title: `r/${subName}`, type: "thread" });
       if (!visible || (post && post.id === id)) return;
-      if (post && post.id)
-        console.log(`Post id updated from ${post.id}, fetching ${id}`);
-      else console.log(`cL got first post Id! Fetching ${id}`);
+      // if (post && post.id)
+      //   console.log(`Post id updated from ${post.id}, fetching ${id}`);
+      // else console.log(`cL got first post Id! Fetching ${id}`);
       if (error) setError(null);
       if (post) setPost(null);
       r.getSubmission(id)

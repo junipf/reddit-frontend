@@ -33,11 +33,11 @@ const HighlightSpan = ({ string, highlight, prefix = "" }) => {
   )
     return <span>{prefix + string}</span>;
 
-  const regex = new RegExp(highlight, "g");
+  // const regex = new RegExp(highlight, "g");
 
-  const parts = string.matchAll(regex);
+  // const parts = string.matchAll(regex);
 
-  if (parts.length > 0) console.log(parts[0], parts[1]);
+  // if (parts.length > 0) console.log(parts[0], parts[1]);
 
   return (
     <span>
@@ -116,9 +116,10 @@ const SubscriptionList = ({
   setDefaults,
 }) => {
   const r = useContext(Requester);
-  const [filter, setFilter] = useState("" );
+  const [filter, setFilter] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const handleInput = (e) => setFilter(e.target.value.toLowerCase().trim());
+  const handleInput = (e) =>
+    setFilter(e.target.value.toLowerCase().trim() || "");
 
   /* --> TODO <-- */
   // - Cache results per letter
@@ -142,7 +143,7 @@ const SubscriptionList = ({
 
   const filteredFavorites = useMemo(() => {
     const favorites = subscriptions.filter((sub) => sub.user_has_favorited);
-    console.log("favorites", favorites);
+    // console.log("favorites", favorites);
     return filterList(favorites, filter);
   }, [subscriptions, filterList, filter]);
 
@@ -189,7 +190,7 @@ const SubscriptionList = ({
   useEffect(() => {
     if (filter !== "") {
       r.searchSubreddits({ query: filter }).then((results) => {
-        console.log(results);
+        // console.log(results);
         // setSearchResults(filterSearch(results));
         setSearchResults(results);
       });
@@ -198,7 +199,6 @@ const SubscriptionList = ({
 
   const $scrollWrapper = useRef(null);
 
-  // useEffect(() => {
   // console.log(defaults);
   // r.getDefaultSubreddits().then(setDefaults);
   // if (entry.isIntersecting && results && !results.isFinished) {
@@ -225,11 +225,13 @@ const SubscriptionList = ({
   const fetchMore = useCallback(() => {
     if (fetchingMore) return;
     if (last) {
+      console.log(last);
       setFetchingMore(true);
       last.listing.fetchMore({ amount: 25 }).then((result) => {
         setFetchingMore(false);
-        console.log(result);
+        // console.log(result);
         last.dispatch(result);
+        // setLast(result);
       });
     }
   }, [fetchingMore, last]);
@@ -299,14 +301,20 @@ const SubscriptionList = ({
         {(searchResults && !searchResults.isFinished) ||
         (defaults && !defaults.isFinished) ||
         (subscriptions && !subscriptions.isFinished) ? (
-          <LoadMoreSpinner onIntersect={fetchMore} parent={$scrollWrapper} />
-        ) : null}
+          <LoadMoreSpinner
+            spin={fetchingMore}
+            onIntersect={fetchMore}
+            parent={$scrollWrapper}
+          />
+        ) : (
+          "finished!~"
+        )}
       </ScrollWrapper>
     </>
   );
 };
 
-const LoadMoreSpinner = ({ onIntersect, parent }) => {
+const LoadMoreSpinner = ({ onIntersect, parent, spin }) => {
   const [$spinner, entry] = useIntersect({
     root: parent.current,
     threshold: 0.1,
@@ -314,12 +322,12 @@ const LoadMoreSpinner = ({ onIntersect, parent }) => {
 
   useEffect(() => {
     if (entry.intersectionRatio > 0.1) {
-      console.log(entry.intersectionRatio);
       onIntersect();
     }
+    return onIntersect();
   }, [entry, onIntersect]);
 
-  return <Spinner forwardRef={$spinner} />;
+return <><Spinner forwardRef={$spinner} />{spin ? "spin" : "____"}</>;
 };
 
 const Highlight = styled.span`

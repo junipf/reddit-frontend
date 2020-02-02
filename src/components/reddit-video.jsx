@@ -132,9 +132,9 @@ export default ({
   const handleSeek = (e) => {
     const playAfterSeek = !$video.current.paused;
     setSeeking(true);
-    console.log(
-      `pbs: ${playAfterSeek} -> video paused: ${$video.current.paused}`
-    );
+    // console.log(
+    //   `pbs: ${playAfterSeek} -> video paused: ${$video.current.paused}`
+    // );
     const seek = ({ clientX }) => {
       const { x, width } = $progress.current.getBoundingClientRect();
       const { duration, currentTime: videoTime } = $video.current;
@@ -345,7 +345,7 @@ scrubber: ${scrubberUrl}
           onRateChange={syncStates}
           onTimeUpdate={updateCurrentTime}
           onCanPlay={initialize}
-          onAbort={(e) => console.log(e)}
+          // onAbort={(e) => console.log(e)}
         >
           <source src={url} />
           <source src={hlsUrl} type="application/vnd.apple.mpegURL" />

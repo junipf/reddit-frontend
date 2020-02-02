@@ -283,12 +283,12 @@ export default connect(
   { toggleLightboxIsOpen }
 )(Preview);
 
-const DebugControls = styled.div`
+// const DebugControls = styled.div`
   /* position: absolute; */
   /* top: 0;
   right: 0; */
   /* grid-area: actions; */
-`;
+// `;
 
 export const blur = css`
   filter: ${({ blur }) => (blur ? "blur(30px)  grayscale(30%)" : null)};

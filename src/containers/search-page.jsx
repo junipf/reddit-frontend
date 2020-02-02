@@ -19,7 +19,10 @@ import { Requester } from "../components/requester";
 // import genTheme from "../style/gen-theme";
 // import ReactTooltip from "react-tooltip";
 // import SubredditBanner from "../components/subreddit-banner";
-import { addSubreddit, addSubredditTheme } from "../store/actions";
+import {
+  addSubreddit,
+  // addSubredditTheme
+} from "../store/actions";
 import Post, { PostPlaceholder } from "./post";
 import useIntersect from "../utils/use-intersect";
 import Error from "../components/error";
@@ -150,7 +153,7 @@ export default connect(
             // let listing = [...results];
             // listing.search = search;
             setListing(listing);
-            console.log("Search results", listing);
+            // console.log("Search results", listing);
             setLoading(false);
           })
           .catch((e) => {

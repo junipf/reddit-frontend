@@ -3,7 +3,7 @@ import React, {
   useContext,
   useEffect,
   useCallback,
-  useMemo,
+  // useMemo,
 } from "react";
 import { withRouter } from "react-router-dom";
 import { connect } from "react-redux";

@@ -28,7 +28,7 @@ const AppOnlyOAuth = (clientId) => {
       .then((response) => response.json())
       .then((response) => {
         if (response.error) console.error(response.error);
-        console.log(response);
+        // console.log(response);
         resolve(new snoowrap({ clientId, ...response }));
       })
       .catch((error) => reject(error));

@@ -39,7 +39,6 @@ const Votes = ({
       <Icon
         icon="upvote"
         fill
-        // fill={mod === 1 ? true : undefined}
         color={mod === 1 ? props.theme.votes.up : undefined}
       />
     </Button>

@@ -17,7 +17,7 @@ export default ({
   clear,
   submit,
   submitIcon = "search",
-  prefix,
+  // prefix,
   autocomplete,
   value = "",
   onChange,
@@ -74,7 +74,7 @@ export default ({
   };
 
   useEffect(() => {
-    console.log($input.current.selectionStart);
+    // console.log($input.current.selectionStart);
     $input.current.setRangeText(
       autocomplete,
       value.length,
@@ -199,10 +199,10 @@ const Controls = styled.span`
   flex-flow: row nowrap;
 `;
 
-const Prefix = styled.span`
-  line-height: 1;
-  margin: 0.25em -0.25em 0.25em 0.25em;
-`;
+// const Prefix = styled.span`
+//   line-height: 1;
+//   margin: 0.25em -0.25em 0.25em 0.25em;
+// `;
 
 export const StyledInput = styled.div`
   display: inline-flex;
