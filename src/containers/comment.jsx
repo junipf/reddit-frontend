@@ -233,8 +233,8 @@ const Comment = ({
             />
           ) : null}
           <Tags>
-            {stickied ? <Tag.Stickied /> : null}
-            {locked ? <Tag.Locked /> : null}
+            {stickied ? <Tag type="stickied" /> : null}
+            {locked ? <Tag type="locked" /> : null}
           </Tags>
         </Tagline>
         {!collapse && (

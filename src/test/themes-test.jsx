@@ -111,16 +111,16 @@ const SampleComponents = ({ children }) => (
       <HeaderSection>{children}</HeaderSection>
     </Header>
     <SectionCard>
-      <Tag.NSFW />
-      <Tag.Spoiler />
-      <Tag.OC />
-      <Tag.Quarantine />
-      <Tag.Stickied />
-      <Tag.Hidden />
-      <Tag.Archived />
-      <Tag.Locked />
-      <Tag.Approved />
-      <Tag.Removed />
+    <Tag type="nsfw" />
+        <Tag type="spoiler" />
+        <Tag type="oc" />
+        <Tag type="quarantine" />
+        <Tag type="stickied" />
+        <Tag type="hidden" />
+        <Tag type="archived" />
+        <Tag type="locked" />
+        <Tag type="approved" />
+        <Tag type="removed" />
       <div>
         <Button>Button</Button>
         <Button primary>Primary</Button>

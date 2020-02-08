@@ -139,12 +139,12 @@ const Comments = styled.div`
 
 const Post = ({
   post,
-  inListing,
-  inSubreddit,
-  compact,
+  inListing = false,
+  inSubreddit = false,
+  compact = false,
   theme: inheritedTheme,
   themes,
-  showComments,
+  showComments = false,
   showTitle = true,
   setCurrentPost,
   user,
@@ -165,18 +165,18 @@ const Post = ({
     likes,
     domain,
 
-    saved: redditSaved,
-    hidden: redditHidden,
-    locked,
+    saved: redditSaved = false,
+    hidden: redditHidden = false,
+    locked = false,
     // pinned,
     // spam,
-    stickied,
+    stickied = false,
     // removed,
     // edited,
-    quarantine,
-    archived,
-    distinguished,
-    is_original_content: oc,
+    quarantine = false,
+    archived = false,
+    distinguished = false,
+    is_original_content: oc = false,
 
     // can_mod_post,
     // removal_reason,
@@ -192,8 +192,8 @@ const Post = ({
     crosspost_parent_list,
 
     // hide_score: hideScore,
-    over_18: nsfw,
-    spoiler,
+    over_18: nsfw = false,
+    spoiler = false,
 
     link_flair_background_color,
     link_flair_richtext,
@@ -215,8 +215,8 @@ const Post = ({
   } = post;
 
   const [mod, setMod] = useState(likes === true ? 1 : likes === false ? -1 : 0);
-  const [saved, setSaved] = useState(redditSaved);
-  const [hidden, setHidden] = useState(redditHidden);
+  const [saved, setSaved] = useState(redditSaved || false);
+  const [hidden, setHidden] = useState(redditHidden || false);
   const [comments, setComments] = useState(inheritedComments);
 
   if (
@@ -225,12 +225,10 @@ const Post = ({
     inheritedComments.length === 0 &&
     num_comments > 0
   )
-    post
-      .expandReplies({ limit: 50, depth: 5 })
-      .then(
-        (result) => setComments(result.comments),
-        (error) => console.error(error)
-      );
+    post.expandReplies({ limit: 50, depth: 5 }).then(
+      (result) => setComments(result.comments),
+      (error) => console.error(error)
+    );
 
   const save = () =>
     saved
@@ -309,12 +307,10 @@ const Post = ({
   // const toggleExpanded = () => setExpanded(expanded => !expanded);
 
   return (
-
-    // <Expando expanded={expanded}>
     <ThemeProvider theme={theme}>
       <PostWrapper inListing={inListing}>
         <StyledPost id={id} compact={compact} showComments={showComments}>
-          {!compact && (
+          {!compact ? (
             <Left>
               {!inSubreddit ? (
                 <SubredditIcon
@@ -340,16 +336,13 @@ const Post = ({
                 }
                 data-event="click"
               />
-              {stickied ? <Tag.Stickied /> : null}
-              {archived ? <Tag.Archived /> : null}
-              {locked ? <Tag.Locked /> : null}
-              {hidden ? <Tag.Hidden /> : null}
-              {saved ? <Tag.Saved /> : null}
-              {/* <Button onClick={toggleExpanded}>
-                <Icon icon={expanded ? "minimize2" : "maximize2"} />
-              </Button> */}
+              {stickied ? <Tag type="stickied" /> : null}
+              {archived ? <Tag type="archived" /> : null}
+              {locked ? <Tag type="locked" /> : null}
+              {hidden ? <Tag type="hidden" /> : null}
+              {saved ? <Tag type="saved" /> : null}
             </Left>
-          )}
+          ) : null}
           <Tagline>
             {!inSubreddit ? (
               <SubredditName to={"/" + subNamePrefixed}>
@@ -357,10 +350,10 @@ const Post = ({
               </SubredditName>
             ) : null}
             <Flair {...linkFlair} />
-            {quarantine ? <Tag.Quarantine /> : null}
-            {nsfw ? <Tag.NSFW /> : null}
-            {spoiler ? <Tag.Spoiler /> : null}
-            {oc ? <Tag.OC /> : null}
+            {quarantine ? <Tag type="quarantine" /> : null}
+            {nsfw ? <Tag type="nsfw" /> : null}
+            {spoiler ? <Tag type="spoiler" /> : null}
+            {oc ? <Tag type="oc" /> : null}
             {isCrosspost ? (
               <Icon
                 icon="shuffle"
@@ -376,14 +369,13 @@ const Post = ({
             <Timestamp time={created_utc} />
           </Tagline>
           <TitleBox>
-            {showTitle && (
+            {showTitle ? (
               <Title onClick={navigateToPost} to={permalink} compact={compact}>
                 {title}
               </Title>
-            )}
+            ): null}
             {isCrosspost ? null : (
               <GoTo href={domain.startsWith("self.") ? permalink : url}>
-                {/* {displayUrl + " "} */}
                 {domain + " "}
                 {isRedditLink ? null : <Icon icon="externalLink" />}
               </GoTo>
@@ -520,7 +512,6 @@ const Post = ({
         ) : null}
       </PostWrapper>
     </ThemeProvider>
-    // </Expando>
   );
 };
 
@@ -536,10 +527,7 @@ function mapStateToProps(
   };
 }
 
-export default connect(
-  mapStateToProps,
-  { setCurrentPost }
-)(withTheme(Post));
+export default connect(mapStateToProps, { setCurrentPost })(withTheme(Post));
 
 const Block = styled.span`
   display: inline-block;

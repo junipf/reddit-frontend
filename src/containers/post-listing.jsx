@@ -84,6 +84,7 @@ const PostListing = ({
       .then((listing) => {
         setLoading(false);
         setListing(listing);
+        console.log(listing);
       })
       .catch((e) => {
         setLoading(false);

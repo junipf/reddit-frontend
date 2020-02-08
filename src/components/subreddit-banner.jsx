@@ -67,7 +67,7 @@ const SubredditBanner = ({
             ) : null}
           </section>
           <section>
-            {subreddit && subreddit.over18 ? <Tag.NSFW /> : null}
+            {subreddit && subreddit.over18 ? <Tag type="NSFW" /> : null}
           </section>
           <section>
             <Button>

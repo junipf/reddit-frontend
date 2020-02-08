@@ -11,90 +11,82 @@ const StyledTag = styled.span`
   font-weight: 500;
 `;
 
-const Tag = ({ flat, type, children, "data-tip": dataTip }) => (
-  <StyledTag type={type} data-tip={dataTip}>
-    {children}
-  </StyledTag>
-);
+const map = {
+  nsfw: {
+    tip: "Not Safe For Work",
+    icon: null,
+    text: "NSFW",
+    type: "nsfw",
+  },
+  spoiler: {
+    tip: "This post contains spoilers",
+    icon: null,
+    text: "Spoiler",
+    type: "spoiler",
+  },
+  oc: {
+    tip: "Original Content",
+    icon: null,
+    text: "OC",
+    type: "oc",
+  },
+  quarantine: {
+    tip: "This community is quarantined",
+    icon: "alertTriangle",
+    text: "Quarantined",
+    type: "quarantine",
+  },
+  stickied: {
+    tip: "stickied",
+    icon: "pin",
+    text: null,
+    type: "stickied",
+  },
+  hidden: {
+    tip: "Hidden",
+    icon: "eyeOff",
+    text: null,
+    type: "hidden",
+  },
+  archived: {
+    tip: "Archived. You won't be able to reply or vote.",
+    icon: "archive",
+    text: null,
+    type: "restricted",
+  },
+  locked: {
+    tip: "Locked. You won't be able to reply.",
+    icon: "lock",
+    text: null,
+    type: "restricted",
+  },
+  approved: {
+    tip: "Approved",
+    icon: "check",
+    text: null,
+    type: "approved",
+  },
+  removed: {
+    tip: "Removed",
+    icon: "x",
+    text: null,
+    type: "removed",
+  },
+};
 
-Tag.NSFW = ({ flat }) => (
-  <StyledTag type="nsfw" data-tip="Not Safe For Work" key="nsfw" flat={flat ? "true" : undefined}>
-    NSFW
-  </StyledTag>
-);
-
-Tag.Spoiler = ({ flat }) => (
-  <StyledTag
-    type="spoiler"
-    data-tip="This post contains spoilers"
-    key="spoiler"
-    flat={flat ? "true" : undefined}
-  >
-    Spoiler
-  </StyledTag>
-);
-Tag.OC = ({ flat }) => (
-  <StyledTag type="oc" data-tip="Original Content" key="oc" flat={flat ? "true" : undefined}>
-    OC
-  </StyledTag>
-);
-
-Tag.Quarantine = ({ flat = true }) => (
-  <StyledTag
-    flat={flat ? "true" : undefined}
-    type="quarantine"
-    data-tip="This community is quarantined."
-    key="quarantine"
-  >
-    <Icon icon="alertTriangle" />
-    Quarantined
-  </StyledTag>
-);
-
-Tag.Stickied = ({ flat = true }) => (
-  <StyledTag flat={flat ? "true" : undefined} type="stickied" data-tip="stickied" key="stickied">
-    <Icon icon="pin" fill />
-  </StyledTag>
-);
-
-Tag.Hidden = ({ flat = true }) => (
-  <StyledTag flat={flat ? "true" : undefined} type="hidden" data-tip="Hidden" key="locked">
-    <Icon icon="eyeOff" />
-  </StyledTag>
-);
-
-Tag.Archived = ({ flat = true }) => (
-  <StyledTag
-    flat={flat ? "true" : undefined}
-    type="restricted"
-    data-tip="Archived. You won't be able to reply or vote."
-    key="archived"
-  >
-    <Icon icon="archive" fill />
-  </StyledTag>
-);
-
-Tag.Locked = ({ flat = true }) => (
-  <StyledTag
-    flat={flat ? "true" : undefined}
-    type="restricted"
-    data-tip="Locked. You won't be able to reply."
-    key="locked"
-  >
-    <Icon icon="lock" fill />
-  </StyledTag>
-);
-
-Tag.Approved = ({ flat = true }) => (
-  <StyledTag flat={flat ? "true" : undefined} type="approved" data-tip="Approved" key="approved">
-    <Icon icon="check" fill />
-  </StyledTag>
-);
-
-Tag.Removed = ({ flat = true }) => (
-  <StyledTag flat={flat ? "true" : undefined} type="removed" data-tip="Removed" key="removed">
-    <Icon icon="x" fill />
-  </StyledTag>
-);
-
-export default Tag;
+export default ({ flat, type, children, "data-tip": dataTip }) =>
+  map[type] ? (
+    <StyledTag
+      type={map[type].type}
+      data-tip={dataTip || map[type].tip}
+      key={type}
+      flat={flat ? "true" : undefined}
+    >
+      {map[type].icon ? <Icon inline icon={map[type].icon} /> : null}
+      {map[type].text}
+    </StyledTag>
+  ) : (
+    <StyledTag type={type} data-tip={dataTip}>
+      {children}
+    </StyledTag>
+  );
