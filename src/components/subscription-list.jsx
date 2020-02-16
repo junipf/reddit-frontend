@@ -7,7 +7,6 @@ import React, {
   Fragment,
   useRef,
 } from "react";
-// import ReactTooltip from "react-tooltip";
 import { connect } from "react-redux";
 import { setSubscriptions, setDefaults } from "./../store/actions";
 import styled from "styled-components";
@@ -166,45 +165,18 @@ const SubscriptionList = ({
     ReactTooltip.rebuild();
   });
 
-  // const filterSearch = useCallback(
-  //   (searchResults) => {
-  //     if (searchResults !== "{}") {
-  //       return searchResults.reduce((filtered, sub) => {
-  //         if (
-  //           sub &&
-  //           subscriptions[sub.display_name] === undefined &&
-  //           favorites[sub.display_name] === undefined &&
-  //           defaults[sub.display_name] === undefined
-  //         ) {
-  //           filtered.push(sub);
-  //         }
-  //         return filtered;
-  //       }, []);
-  //     } else {
-  //       return null;
-  //     }
-  //   },
-  //   [subscriptions, favorites, defaults]
-  // );
-
   useEffect(() => {
-    if (filter !== "") {
-      r.searchSubreddits({ query: filter }).then((results) => {
-        // console.log(results);
-        // setSearchResults(filterSearch(results));
-        setSearchResults(results);
-      });
-    }
+    const timer = setTimeout(() => {
+      if (filter !== "") {
+        r.searchSubreddits({ query: filter }).then((results) => {
+          setSearchResults(results);
+        });
+      }
+    }, 250);
+    return () => clearTimeout(timer);
   }, [r, filter]);
 
   const $scrollWrapper = useRef(null);
-
-  // console.log(defaults);
-  // r.getDefaultSubreddits().then(setDefaults);
-  // if (entry.isIntersecting && results && !results.isFinished) {
-  // results.fetchMore().then()
-  // }
-  // }, [r, entry.isIntersecting]);
 
   const [last, setLast] = useState(null);
 
@@ -225,13 +197,11 @@ const SubscriptionList = ({
   const fetchMore = useCallback(() => {
     if (fetchingMore) return;
     if (last) {
-      console.log(last);
       setFetchingMore(true);
+      
       last.listing.fetchMore({ amount: 25 }).then((result) => {
         setFetchingMore(false);
-        // console.log(result);
         last.dispatch(result);
-        // setLast(result);
       });
     }
   }, [fetchingMore, last]);
@@ -251,8 +221,8 @@ const SubscriptionList = ({
         {[
           { name: "Favorites", list: filteredFavorites },
           { name: "Collections", list: filteredMultireddits },
-          { name: "Subscriptions", list: filteredSubscriptions },
           { name: "Default subreddits", list: filteredDefaults },
+          { name: "Subscriptions", list: filteredSubscriptions },
           { name: "Search results", list: searchResults },
         ].map(({ list, name, unfiltered }) =>
           list ? (
@@ -298,36 +268,35 @@ const SubscriptionList = ({
             <CategoryTitle key="noResults">No results</CategoryTitle>
           )
         ) : null}
-        {(searchResults && !searchResults.isFinished) ||
-        (defaults && !defaults.isFinished) ||
-        (subscriptions && !subscriptions.isFinished) ? (
-          <LoadMoreSpinner
-            spin={fetchingMore}
-            onIntersect={fetchMore}
-            parent={$scrollWrapper}
-          />
-        ) : (
-          "finished!~"
-        )}
+        <LoadMoreSpinner
+          fetchingMore={fetchingMore}
+          enabled={
+            (searchResults && !searchResults.isFinished) ||
+            (defaults && !defaults.isFinished) ||
+            (subscriptions && !subscriptions.isFinished)
+          }
+          onIntersect={fetchMore}
+          parent={$scrollWrapper}
+        />
       </ScrollWrapper>
     </>
   );
 };
 
-const LoadMoreSpinner = ({ onIntersect, parent, spin }) => {
+const LoadMoreSpinner = ({ onIntersect, parent, fetchingMore, enabled }) => {
   const [$spinner, entry] = useIntersect({
     root: parent.current,
     threshold: 0.1,
   });
 
   useEffect(() => {
-    if (entry.intersectionRatio > 0.1) {
+    if (entry.intersectionRatio > 0.1 && !fetchingMore && enabled) {
       onIntersect();
     }
     return onIntersect();
-  }, [entry, onIntersect]);
+  }, [entry, onIntersect, fetchingMore, enabled]);
 
-return <><Spinner forwardRef={$spinner} />{spin ? "spin" : "____"}</>;
+  return <Spinner forwardRef={$spinner} />;
 };
 
 const Highlight = styled.span`
@@ -346,28 +315,8 @@ const ScrollWrapper = styled.div`
 `;
 
 export default connect(
-  ({
-    subreddits,
-    // subscriptionNames,
-    // favoriteNames,
-    // defaultNames,
-    subscriptions,
-    defaults,
-    multireddits,
-    user,
-  }) => {
-    // const expandNames = (names) => {
-    //   let list = names;
-    //   list.forEach((name, i, array) => {
-    //     array[i] = subreddits[name];
-    //   });
-    //   return list;
-    // };
-
+  ({ subscriptions, defaults, multireddits, user }) => {
     return {
-      // subscriptions: expandNames(subscriptionNames),
-      // favorites: expandNames(favoriteNames),
-      // defaults: expandNames(defaultNames),
       subscriptions,
       defaults,
       multireddits,

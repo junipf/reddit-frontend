@@ -23,6 +23,8 @@ import { formatNumber } from "./../utils/format-number";
 import Icon from "../components/icon";
 // import { Timestamp } from "../components/timestamp";
 
+import useIntersect from "../utils/use-intersect";
+
 const Card = styled.article`
   margin: 1rem;
   background: ${({ theme }) => theme.card.bg};
@@ -117,17 +119,186 @@ const UserPage = ({
   loggedIn,
   ...props
 }) => {
+  // const r = useContext(Requester);
+  // const [error, setError] = useState(null);
+
+  // const [fetchedListing, setFetchedListing] = useState([]);
+
+  // Fetch user-specific non-listing data
+  useEffect(() => {
+    if (path.username === "me") history.replace(`/user/${loggedInUsername}`);
+  }, [path.username, history, loggedIn, loggedInUsername]);
+
+  // Fetch listing
+
+  // useEffect(() => {
+  //   console.info("!!! PATH updated: ", path);
+  // }, [path]);
+
+  // useEffect(() => {
+  //   console.info("location.search updated: ", location.search)
+  // }, [location.search]);
+
+  // useEffect(() => {
+  //   console.info("//////////////////////// defaults updated: ", defaults);
+  // }, [defaults]);
+
+  // useEffect(() => {
+  //   console.info("listing updated: ", fetchedListing);
+  // }, [fetchedListing]);
+
+  // Refresh tooltips
+  useEffect(() => {
+    ReactTooltip.rebuild();
+  }, []);
+
+  return (
+    <Column>
+      <UserCard username={path.username} />
+      <UserPageListing path={path} location={location} />
+      {/* <FetchMoreSpinner
+        listing={fetchedListing}
+        setListing={setFetchedListing}
+      /> */}
+      {/* {error ? <Error {...error} /> : null} */}
+    </Column>
+  );
+};
+
+const UserCard = ({ username }) => {
   const r = useContext(Requester);
+  const [user, setUser] = useState(null);
+  const [trophies, setTrophies] = useState([]);
+
   const [error, setError] = useState(null);
 
-  // const [fetched, setFetched] = useState({
-  //   listing: [],
-  //   trophies: [],
-  // });
+  const fetchUser = useCallback(
+    ({ username }) => {
+      const userRequester = r.getUser(username);
+      if (username && username !== "me" && (!user || username !== user.name)) {
+        userRequester.fetch().then(
+          (user) => {
+            setUser({
+              ...user,
+              cakeday: new Date(user.created * 1000),
+            });
+          },
+          (e) => setError({ e, type: "user", name: username })
+        );
+        userRequester.getTrophies().then(
+          (trophies) => {
+            setTrophies(trophies);
+          },
+          (e) => setError({ e, type: "trophies", name: username })
+        );
+      }
+    },
+    [r, user]
+  );
 
-  const [fetchedUser, setFetchedUser] = useState(null);
-  const [fetchedTrophies, setFetchedTrophies] = useState([]);
-  const [fetchedListing, setFetchedListing] = useState(null);
+  // Fetch user-specific non-listing data
+  useEffect(() => {
+    if (username && username !== "") fetchUser({ username });
+  }, [username, fetchUser]);
+
+  return error ? (
+    <Error {...error} />
+  ) : user !== null ? (
+    <Card>
+      <User>
+        <Avatar src={user.icon_img} alt={user.name} />
+        <Info>
+          <Name
+            data-tip={
+              user.created && !isNaN(user.created)
+                ? `Account created ${Intl.DateTimeFormat().format(
+                    user.created * 1000
+                  )}`
+                : null
+            }
+          >
+            {user.name}
+          </Name>
+
+          <Line
+            data-multiline="true"
+            data-tip={`${Intl.NumberFormat().format(
+              user.comment_karma + user.link_karma
+            )} karma <br />${Intl.NumberFormat().format(
+              user.comment_karma
+            )} comment karma <br /> ${Intl.NumberFormat().format(
+              user.link_karma
+            )} link karma`}
+          >
+            <Icon icon="loader" align="none" />
+            {formatNumber(user.comment_karma + user.link_karma, "point")}
+          </Line>
+          <Line
+            data-multiline="true"
+            data-tip={`Account created <br /> ${user.cakeday.toLocaleString()}`}
+          >
+            <Icon icon="calendar" align="none" />
+            {user.cakeday.toLocaleString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </Line>
+        </Info>
+      </User>
+      {trophies.length > 0 ? (
+        <Trophies>
+          {trophies.map((trophy, i) => {
+            const img = (
+              <img
+                src={trophy.icon_70}
+                alt={trophy.name}
+                key={i}
+                data-tip={trophy.name}
+              />
+            );
+            const url =
+              trophy.url && trophy.url.replace(/https?:\/\/www.reddit.com/, "");
+            return url ? (
+              url.startsWith("http") ? (
+                <a href={url} key={i}>
+                  {img}
+                </a>
+              ) : (
+                <Link to={url} key={i}>
+                  {img}
+                </Link>
+              )
+            ) : (
+              img
+            );
+          })}
+        </Trophies>
+      ) : null}
+      {/* <Actions>
+  <Button onClick={toggleFriend}>
+    {fetchedUser.is_friend ? "Remove Friend" : "Add Friend"}
+  </Button>
+  <Button disabled data-tip="Not yet available">
+    Send message
+  </Button>
+</Actions> */}
+    </Card>
+  ) : (
+    <Card>
+      <SpinnerPage />
+    </Card>
+  );
+};
+
+const UserPageListing = ({ path, location }) => {
+  const r = useContext(Requester);
+  const [fetched, setFetched] = useState({
+    listing: [],
+    type: null,
+  });
+
+  const [error, setError] = useState(null);
 
   const defaults = {
     name: null,
@@ -136,12 +307,16 @@ const UserPage = ({
     type: "overview",
   };
 
-  const fetchListing = useCallback(
-    ({ username, options, type }) => {
+  const fetch = useCallback(
+    ({ username, type, sort, time }) => {
       const user = r.getUser(username);
-      const success = (listing) => setFetchedListing({ listing, type });
+      const options = { sort, time };
+      const success = (listing) => {
+        console.log(listing);
+        setFetched({ listing, username, type, sort, time });
+      };
       const fail = (e) => setError({ e, type, name: username + " " + type });
-      if (fetchedListing === null || fetchedListing.type !== type) {
+      if (fetched.listing.length === 0 || fetched.type !== type) {
         console.info(`fetching new listing: ${username}, ${type}`);
         switch (type) {
           case "posts":
@@ -165,241 +340,90 @@ const UserPage = ({
           default:
             user.getOverview(options).then(success, fail);
         }
-      } else {
-        console.info(
-          `effect triggered, but listing already fetched: ${username}, ${type}`
-        );
       }
     },
-    [fetchedListing, r]
+    [fetched, r]
   );
 
-  const fetchUser = useCallback(
-    ({ username }) => {
-      const user = r.getUser(username);
-      if (
-        username &&
-        username !== "me" &&
-        (!fetchedUser || username !== fetchedUser.name)
-      ) {
-        user.fetch().then(
-          (user) => {
-            setFetchedUser({
-              ...user,
-              cakeday: new Date(user.created * 1000),
-            });
-            // console.log("user", user);
-          },
-          (e) => setError({ e, type: "user", name: username })
-        );
-        user.getTrophies().then(
-          (trophies) => {
-            setFetchedTrophies(trophies);
-            // console.log("Trophies", trophies);
-          },
-          (e) => setError({ e, type: "trophies", name: username })
-        );
-      }
-    },
-    [r, fetchedUser]
-  );
-
-  // Fetch user-specific non-listing data
   useEffect(() => {
     const { username, type } = path;
-
-    if (username === "me") {
-      history.replace(`/user/${loggedInUsername}`);
-    } else if (username) {
-      fetchUser({ username });
-    }
-
     const searchParams = new URLSearchParams(location.search);
 
-    fetchListing({
+    fetch({
       username,
-      options: {
-        sort: searchParams.get("sort") || defaults.sort,
-        time: searchParams.get("t") || defaults.time,
-      },
-      type,
+      sort: searchParams.get("sort") || defaults.sort,
+      time: searchParams.get("t") || defaults.time,
+      type: type || defaults.type,
     });
-  }, [
-    path,
-    location.search,
-    defaults,
-    fetchListing,
-    fetchUser,
-    history,
-    loggedIn,
-    loggedInUsername,
-  ]);
+  }, [path, location.search, defaults, fetch]);
 
-  // Refresh tooltips
-  useEffect(() => {
-    ReactTooltip.rebuild();
-  });
+  return error ? (
+    <Error {...error} />
+  ) : (
+    <MixedListing listing={fetched.listing} />
+  );
+};
 
-  const toggleFriend = () => {
-    // fetchedUser && fetchedUser.is_friend
-    //   ? fetchedUser.unfriend()
-    //   : fetchedUser.friend();
-    // fetchedUser
-    //   .refresh()
-    //   .then(
-    //     (user) => setFetched((fetched) => ({ ...fetched, user })),
-    //     (e) => setError({ e, type: "user", name: path.username })
-    //   );
-  };
-
-  return (
-    <Column>
-      <Card>
-        {fetchedUser ? (
-          <>
-            <User>
-              <Avatar src={fetchedUser.icon_img} alt={fetchedUser.name} />
-              <Info>
-                <Name
-                  data-tip={
-                    fetchedUser.created && !isNaN(fetchedUser.created)
-                      ? `Account created ${Intl.DateTimeFormat().format(
-                          fetchedUser.created * 1000
-                        )}`
-                      : null
-                  }
-                >
-                  {fetchedUser.name}
-                </Name>
-
-                <Line
-                  data-multiline="true"
-                  data-tip={`${Intl.NumberFormat().format(
-                    fetchedUser.comment_karma + fetchedUser.link_karma
-                  )} karma <br />${Intl.NumberFormat().format(
-                    fetchedUser.comment_karma
-                  )} comment karma <br /> ${Intl.NumberFormat().format(
-                    fetchedUser.link_karma
-                  )} link karma`}
-                >
-                  <Icon icon="loader" align="none" />
-                  {formatNumber(
-                    fetchedUser.comment_karma + fetchedUser.link_karma,
-                    "point"
-                  )}
-                </Line>
-                <Line
-                  data-multiline="true"
-                  data-tip={`Account created <br /> ${fetchedUser.cakeday.toLocaleString()}`}
-                >
-                  <Icon icon="calendar" align="none" />
-                  {fetchedUser.cakeday.toLocaleString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </Line>
-              </Info>
-            </User>
-            {fetchedTrophies.length > 0 ? (
-              <Trophies>
-                {fetchedTrophies.map((trophy, i) => {
-                  const img = (
-                    <img
-                      src={trophy.icon_70}
-                      alt={trophy.name}
-                      key={i}
-                      data-tip={trophy.name}
-                    />
-                  );
-                  const url =
-                    trophy.url &&
-                    trophy.url.replace(/https?:\/\/www.reddit.com/, "");
-                  return url ? (
-                    url.startsWith("http") ? (
-                      <a href={url} key={i}>
-                        {img}
-                      </a>
-                    ) : (
-                      <Link to={url} key={i}>
-                        {img}
-                      </Link>
-                    )
-                  ) : (
-                    img
-                  );
-                })}
-              </Trophies>
-            ) : null}
-            <Actions>
-              <Button onClick={toggleFriend}>
-                {fetchedUser.is_friend ? "Remove Friend" : "Add Friend"}
-              </Button>
-              <Button disabled data-tip="Not yet available">
-                Send message
-              </Button>
-            </Actions>
-          </>
+const MixedListing = ({ listing }) => {
+  return listing.length === 0 ? (
+    <SpinnerPage />
+  ) : (
+    <ul>
+      {listing.map((thing, index, array) =>
+        thing.name.startsWith("t1") ? (
+          index === 0 ||
+          (array[index - 1] && thing.link_id !== array[index - 1].link_id) ? (
+            <Card key={thing.name}>
+              <PostLine>
+                Comment
+                {array[index + 1] && array[index + 1].link_id === thing.link_id
+                  ? "s"
+                  : ""}{" "}
+                on <a href={thing.link_permalink}>{thing.link_title}</a>
+                {/* {" by "} */}
+                {/* <a href={`/user/${thing.link_author}`}>u/{thing.link_author}</a> */}
+                {" on "}
+                <a href={"/" + thing.subreddit_name_prefixed}>
+                  {thing.subreddit_name_prefixed}
+                </a>
+              </PostLine>
+              <Comment comment={thing} key={thing.id} compact />
+              <Permalink to={thing.permalink} />
+              {array.slice(index + 1).map((sibling) =>
+                sibling.name.startsWith("t1") &&
+                sibling.link_id === thing.link_id ? (
+                  <Fragment key={sibling.id}>
+                    <Comment comment={sibling} compact />
+                    <Permalink to={sibling.permalink} />
+                  </Fragment>
+                ) : null
+              )}
+            </Card>
+          ) : null
         ) : (
-          <SpinnerPage />
-        )}
-      </Card>
-      {fetchedListing === null ? (
-        <SpinnerPage />
-      ) : (
-        fetchedListing.listing.map((thing, index, array) =>
-          thing.name.startsWith("t1") ? (
-            index === 0 ||
-            (array[index - 1] && thing.link_id !== array[index - 1].link_id) ? (
-              <Card key={thing.name}>
-                <PostLine>
-                  Comment
-                  {array[index + 1] &&
-                  array[index + 1].link_id === thing.link_id
-                    ? "s"
-                    : ""}{" "}
-                  on <a href={thing.link_permalink}>{thing.link_title}</a>
-                  {/* {" by "} */}
-                  {/* <a href={`/user/${thing.link_author}`}>u/{thing.link_author}</a> */}
-                  {" on "}
-                  <a href={"/" + thing.subreddit_name_prefixed}>
-                    {thing.subreddit_name_prefixed}
-                  </a>
-                </PostLine>
-                <Comment
-                  comment={thing}
-                  username={loggedInUsername}
-                  loggedIn={loggedIn}
-                  key={thing.id}
-                  compact
-                />
-                <Permalink to={thing.permalink} />
-                {array.slice(index + 1).map((sibling) =>
-                  sibling.name.startsWith("t1") &&
-                  sibling.link_id === thing.link_id ? (
-                    <Fragment 
-                    key={sibling.id}>
-                      <Comment
-                        comment={sibling}
-                        username={loggedInUsername}
-                        loggedIn={loggedIn}
-                        // key={sibling.id}
-                        compact
-                      />
-                      <Permalink to={sibling.permalink} />
-                    </Fragment>
-                  ) : null
-                )}
-              </Card>
-            ) : null
-          ) : (
-            <Post post={thing} inListing key={thing.id} compact />
-          )
+          <Post post={thing} inListing key={thing.id} compact />
         )
       )}
-      {error ? <Error {...error} /> : null}
-    </Column>
+    </ul>
   );
+};
+
+const FetchMoreSpinner = ({ listing, setListing }) => {
+  const [$spinner, entry] = useIntersect({
+    threshold: 0.1,
+  });
+
+  useEffect(() => {
+    if (
+      listing?.fetched &&
+      entry.intersectionRatio > 0.1 &&
+      !listing?.isFinished
+    ) {
+      listing.fetchMore().then((listing) => setListing(listing));
+    }
+  }, [entry, listing, setListing]);
+
+  return <SpinnerPage forwardRef={$spinner} />;
 };
 
 export default connect(
