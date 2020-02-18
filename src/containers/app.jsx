@@ -171,7 +171,8 @@ class App extends React.Component {
   };
   noUserOauth = () => {
     AppOnlyOAuth().then((requester) => {
-      this.setState({ requester, noUser: true }
+      this.setState(
+        { requester, noUser: true }
         // , () =>console.log(this.state.requester)
       );
       this.interval = setInterval(() => {
@@ -179,9 +180,10 @@ class App extends React.Component {
           console.info("updateRequester ran ...");
           const requester = this.state.requester;
           requester.access_token = r.access_token;
-          this.setState({ requester }, 
+          this.setState(
+            { requester }
             // () => console.log(this.state.requester)
-            );
+          );
         });
       }, 3540000); //59 minutes
     });
@@ -258,7 +260,11 @@ class App extends React.Component {
       `/search/${searchSort}?`,
     ];
 
-    const userPaths = ["/user/:username/:type?", "/u/:username/:type?"];
+    const userPaths = [
+      `/u/:username/:type?/:multi?/`,
+      `/user/:username/:type?/:multi?/${sort}?`,
+      `/user/:username/:type?/:multi?`,
+    ];
 
     return (
       <GlobalThemeProvider>

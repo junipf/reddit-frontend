@@ -373,7 +373,7 @@ const Post = ({
               <Title onClick={navigateToPost} to={permalink} compact={compact}>
                 {title}
               </Title>
-            ): null}
+            ) : null}
             {isCrosspost ? null : (
               <GoTo href={domain.startsWith("self.") ? permalink : url}>
                 {domain + " "}
@@ -406,6 +406,25 @@ const Post = ({
             />
           )}
           <ActionBar>
+            {compact ? (
+              <Votes
+                compact
+                own={own}
+                mod={mod}
+                upvote={upvote}
+                downvote={downvote}
+                score={score}
+                disabled={!loggedIn || archived}
+                data-tip={
+                  !loggedIn
+                    ? "You must be logged in to vote"
+                    : archived
+                    ? "You can't vote on archived posts"
+                    : undefined
+                }
+                data-event="click"
+              />
+            ) : null}
             <Button
               primary
               flat
@@ -443,13 +462,7 @@ const Post = ({
                   onClick={hide}
                   key="3"
                 />
-                <Button
-                  flat
-                  hideLabel
-                  label="report"
-                  icon="flag"
-                  key="4"
-                />
+                <Button flat hideLabel label="report" icon="flag" key="4" />
               </>
             ) : null}
             <Button

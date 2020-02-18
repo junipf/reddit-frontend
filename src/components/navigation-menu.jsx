@@ -24,29 +24,52 @@ const NavigationMenu = ({
 
     const searchParams = new URLSearchParams(search);
 
-    let title = "";
-    title += pathname.includes("/search/")
-      ? searchParams.get("q") + " - search "
-      : "";
-    title += path.subName ? "r/" + path.subName : "";
-    title += path.username ? "u/" + path.username : "";
-    if (title === "") title = "Frontpage";
-    document.title = title;
+    // let title = "";
+    // title += pathname.includes("/search/")
+    //   ? searchParams.get("q") + " - search "
+    //   : "";
+    // title += path.subName ? "r/" + path.subName : "";
+    // title += path.username ? "u/" + path.username : "";
+    // if (title === "") title = "Frontpage";
+    // document.title = title;
+
+    let label = path.subName
+      ? "r/" + path.subName
+      : path.multi
+      ? "m/" + path.multi
+      : path.username
+      ? "u/" + path.username
+      : path.page || "Frontpage";
+
+    document.title = pathname.includes("/search/")
+      ? searchParams.get("q") + " - search " + label
+      : label;
 
     const subname = path.subName ? path.subName.toLowerCase() : null;
 
-    if (subreddits[subname] === undefined) {
-      setFavicon();
-      setLabel(path.subName ? "r/" + path.subName : path.page || "Frontpage");
-    } else {
-      const sub = subreddits[subname];
-      setLabel(
-        <>
+    setLabel(
+      <>
+        {subreddits[subname] ? (
           <SubredditIcon subName={subname} size="small" />
-          {(sub.curator ? " m/" : " r/") + sub.display_name}
-        </>
-      );
-    }
+        ) : null}
+        {label}
+      </>
+    );
+
+    if (!subreddits[subname]) setFavicon();
+
+    // if (subreddits[subname] === undefined) {
+    //   setFavicon();
+    //   setLabel(label);
+    // } else {
+    //   const sub = subreddits[subname];
+    //   setLabel(
+    //     <>
+    //       <SubredditIcon subName={subname} size="small" />
+    //       {(sub.curator ? " m/" : " r/") + sub.display_name}
+    //     </>
+    //   );
+    // }
   }, [
     defaultFavicon,
     search,
@@ -54,6 +77,7 @@ const NavigationMenu = ({
     path.subName,
     path.page,
     path.username,
+    path.multi,
     subreddits,
     theme.primary.base,
   ]);

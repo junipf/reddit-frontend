@@ -4,7 +4,7 @@ import Icon from "./icon";
 import Card from "./card";
 import Button from "./button";
 
-const Error = ({ e, name, type, onClose, ...props }) => {
+const Error = ({ e = {}, name, type, onClose, ...props }) => {
   const message = {
     403: `You aren't allowed to access this ${type}`,
     404: `${name} does not exist.`,
@@ -37,7 +37,7 @@ const Error = ({ e, name, type, onClose, ...props }) => {
       ? "Something went wrong."
       : e.message.charAt(0) === 5
       ? "Something went wrong with reddit."
-      : `Error ${e.message}`;
+      : e.message;
 
   const details =
     type === "subreddit" && e.message === "403"
