@@ -338,7 +338,7 @@ export const LinkEntry = styled(Link)`
   align-items: center;
   align-content: center;
   line-height: 1;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 0.8rem;
   transition: box-shadow 0.15s ease-in-out;
   color: ${({ theme }) => theme.button.text};
   background-color: ${({ theme }) => theme.button.bg};

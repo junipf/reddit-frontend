@@ -6,15 +6,16 @@ import { formatNumber } from "../utils/format-number";
 
 const VotesWrapper = styled.div`
   margin: ${({ size }) => (size === "small" ? "0" : "0.25em")};
-  display: flex;
-  flex-direction: column;
+  display: ${({ compact }) => (compact ? "inline" : "flex")};
+  flex-direction: ${({ compact }) => (compact ? "row" : "column")};
   align-items: center;
-  font-size: 1rem;
+  font-size: ${({ compact }) => (compact ? "1em" : "1rem")};
 `;
 
 const Score = styled.span`
   font-size: 0.85em;
   font-weight: 500;
+  margin: 0 0.5em;
   color: ${({ mod, theme }) =>
     mod === 1 ? theme.votes.up : mod === -1 ? theme.votes.down : null};
   &:hover {

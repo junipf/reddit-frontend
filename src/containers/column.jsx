@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const Column = styled.div`
+export default styled.div`
   scroll-behavior: smooth;
   background-color: ${({ theme }) => theme.bg};
   color: ${({ theme }) => theme.text};

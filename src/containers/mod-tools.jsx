@@ -8,7 +8,7 @@ import React, {
 import styled from "styled-components";
 import { connect } from "react-redux";
 import { setLocationName } from "../store/actions";
-import { Column } from "./column";
+import Column from "./column";
 import { Requester } from "../components/requester";
 import Button from "../components/button";
 import Error from "../components/error";

@@ -1,15 +1,13 @@
 import styled from "styled-components";
 
-const Card = styled.div`
-  width: ${({ width }) => width || "auto" };
-  margin: 0.5rem;
+export default styled.div`
+  width: ${({ width }) => width || "auto"};
+  margin: 1rem;
+  padding: 0.5rem 0.8rem;
   background: ${({ theme }) => theme.card.bg};
   color: ${({ theme }) => theme.text};
-  border-width: 1px;
-  border-style: solid;
-  border-color: ${({ theme }) => theme.card.border};
+  border: 1px solid ${({ theme }) => theme.card.border};
   border-radius: 0.25rem;
-
   transition: border-color 100ms ease;
 
   /* Clickable */
@@ -22,5 +20,3 @@ const Card = styled.div`
       clickable || onClick ? theme.primary.base : null};
   }
 `;
-
-export default Card;

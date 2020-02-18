@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { Switch, Route } from "react-router-dom";
 import { connect } from "react-redux";
 import { setLocation } from "./../store/actions";
-import { Column } from "../containers/column";
+import Column from "../containers/column";
 
 // import pages
 import ComponentsTest from "./components-test";

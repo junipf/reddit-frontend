@@ -8,7 +8,7 @@ import {
 import PostListing from "./post-listing";
 import Thread from "./thread";
 import ReactTooltip from "react-tooltip";
-import { Column } from "./column";
+import Column from "./column";
 import SubredditThemeProvider from "../style/sub-theme-provider";
 
 const SplitView = ({

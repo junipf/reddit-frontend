@@ -27,7 +27,7 @@ import Post, { PostPlaceholder } from "./post";
 import useIntersect from "../utils/use-intersect";
 import Error from "../components/error";
 
-import { Column } from "../containers/column";
+import Column from "../containers/column";
 import { SpinnerPage } from "../components/spinner";
 import { SubredditEntry } from "./../components/subscription-list";
 import Comment from "./comment";

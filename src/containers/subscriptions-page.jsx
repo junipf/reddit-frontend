@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import { Column } from "./column";
+import Column from "./column";
 import SubscriptionList from "../components/subscription-list";
 import { setLocation } from './../store/actions';
 

@@ -3,7 +3,7 @@ import styled from "styled-components";
 import Button from "./button";
 
 const Text = styled.div`
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 0.8rem;
   padding-bottom: ${({ overflow }) => (overflow ? "1.5rem" : null)};
   position: relative;
   overflow: ${({ clip }) => (clip ? "hidden" : null)};

@@ -13,8 +13,7 @@ import { Link } from "react-router-dom";
 import { Requester } from "../components/requester";
 import ReactTooltip from "react-tooltip";
 
-import { Column } from "./column";
-import Button from "../components/button";
+import Column from "./column";
 import Error from "../components/error";
 import Comment from "./comment";
 import Post from "./post";
