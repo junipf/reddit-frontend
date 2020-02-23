@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { PropTypes } from "prop-types";
 import styled, { withTheme } from "styled-components";
+import { withRouter } from "react-router-dom";
 import { genSubIconColor } from "../style/gen-theme";
 import { meetsContrastGuidelines } from "polished";
 
@@ -9,31 +10,32 @@ const SubredditIcon = ({
   subName = "",
   sub,
   sub: {
-    primary_color = null,
-    key_color = null,
-    banner_background_color = null,
-    community_icon = null,
-    icon_img = null,
-    icon_url = null,
+    display_name: displayName = null,
+    primary_color: primaryColor = null,
+    key_color: keyColor = null,
+    banner_background_color: bannerBgColor = null,
+    community_icon: comIcon = null,
+    icon_img: iconImg = null,
+    icon_url: iconUrl = null,
   } = {},
   size,
   flat,
   theme,
   passRef,
+  history,
   ...props
 }) => {
   if (!sub) return null;
 
-  const subColor =
-    primary_color || key_color || banner_background_color || null;
+  const subColor = primaryColor || keyColor || bannerBgColor || null;
 
   const url =
-    community_icon !== ""
-      ? community_icon
-      : icon_img !== ""
-      ? icon_img
-      : icon_url !== ""
-      ? icon_url
+    comIcon !== ""
+      ? comIcon
+      : iconImg !== ""
+      ? iconImg
+      : iconUrl !== ""
+      ? iconUrl
       : null;
 
   const bgColor = subColor
@@ -48,6 +50,8 @@ const SubredditIcon = ({
 
   const letter = url ? null : subName ? subName.charAt(0).toUpperCase() : null;
 
+  const goTo = () => history.push(`/r/${displayName || subName}`);
+
   return (
     <div ref={passRef}>
       <Circle
@@ -56,6 +60,7 @@ const SubredditIcon = ({
         color={color}
         bgColor={bgColor}
         url={url}
+        onClick={goTo}
         {...props}
       >
         {letter}
@@ -69,7 +74,7 @@ export default connect(({ subreddits }, { subName, sub }) => {
   if (subName && subreddits[subName.toLowerCase()])
     return { sub: subreddits[subName.toLowerCase()] };
   return { sub: {} };
-})(withTheme(SubredditIcon));
+})(withTheme(withRouter(SubredditIcon)));
 
 SubredditIcon.propTypes = {
   size: PropTypes.oneOf(["small", "normal", "large", "xl"]),
@@ -84,17 +89,11 @@ const Circle = styled.div.attrs(({ url, bgColor, color }) => {
     },
   };
 })`
+  cursor: pointer;
   user-select: none;
-
-  /* display: flex; */
-  /* flex-flow: row nowrap; */
-  /* align-items: center; */
-  /* justify-content: center; */
-
   height: 1.5em;
   width: 1.5em;
   border-radius: 50%;
-  /* margin-right: 0.25em; */
   flex: 0 0 1.5em;
   text-align: center;
   line-height: 1.618;
@@ -106,7 +105,6 @@ const Circle = styled.div.attrs(({ url, bgColor, color }) => {
       : size === "small"
       ? "0.618rem"
       : "1rem"};
-      
   font-weight: ${({ size }) =>
     size === "xl"
       ? 100
@@ -115,8 +113,6 @@ const Circle = styled.div.attrs(({ url, bgColor, color }) => {
       : size === "small"
       ? 800
       : 400};
-
-  /* line-height: 1.4; */
   overflow: hidden;
   text-align: center;
   background-position: center;
@@ -125,7 +121,6 @@ const Circle = styled.div.attrs(({ url, bgColor, color }) => {
   background-size: 100% auto;
   background-origin: border-box;
   background-clip: border-box;
-  /* border: 0.0625em solid ${({ theme }) => theme.card.innerBorder}; */
   &.square {
     border-radius: 0;
   }

@@ -4,7 +4,6 @@ import styled from "styled-components";
 import SubredditIcon from "./subreddit-icon";
 import html2canvas from "html2canvas";
 import Button from "./button";
-import { withRouter } from "react-router-dom";
 import { formatNumber } from "./../utils/format-number";
 import Tag from "./tags";
 
@@ -14,11 +13,10 @@ const SubredditBanner = ({
     community_icon: communityIcon,
     icon_img: iconImg,
     icon_url: iconUrl,
+    user_is_subscriber: subscribed,
   },
   subName = null,
-  user,
-  subscriptionNames,
-  history,
+  loggedIn,
 }) => {
   const subIcon = useRef(null);
   const [img, setImg] = useState(null);
@@ -37,33 +35,42 @@ const SubredditBanner = ({
       );
   }, [communityIcon, iconImg, iconUrl, subIcon]);
 
-  const goToSub = () => {
-    history.push(`/r/${subName}`);
+  console.info("subBanner:", subreddit);
+
+  const [joined, setJoined] = useState(!loggedIn ? false : subscribed || false);
+
+  const toggleJoined = () => {
+    if (joined) subreddit.unsubscribe().then(setJoined(false));
+    else subreddit.subscribe().then(setJoined(true));
   };
 
   return (
     <>
-      <StyledBanner {...subreddit} onClick={goToSub}>
-        <SubredditIcon passRef={subIcon} subName={subName} size="xl" flat />
+      <StyledBanner {...subreddit}>
+        <SubredditIcon
+          sub={subreddit}
+          passRef={subIcon}
+          subName={subName}
+          size="xl"
+          flat
+        />
       </StyledBanner>
 
       <Bar>
         <BarContent>
           <section>
-            <Button disabled={!user}>
-              {subscriptionNames && subscriptionNames.includes(subName.toLowerCase())
-                ? "Leave"
-                : "Join"}
+            <Button disabled={!loggedIn} onClick={toggleJoined}>
+              {joined ? "Join" : "Leave"}
             </Button>
             {subreddit ? (
-              <span
+              <Info
                 data-tip={
                   Intl.NumberFormat().format(subreddit.subscribers) +
                   " subscribers"
                 }
               >
-                {formatNumber(subreddit.subscribers)}
-              </span>
+                {formatNumber(subreddit.subscribers, "subscriber")}
+              </Info>
             ) : null}
           </section>
           <section>
@@ -102,6 +109,12 @@ const Bar = styled.div`
   color: ${({ theme }) => theme.text};
   padding: 0.25rem;
   z-index: 10;
+  position: sticky;
+  top: 0;
+`;
+
+const Info = styled.span`
+  font-size: 0.85rem;
 `;
 
 const StyledBanner = styled.div.attrs(
@@ -109,7 +122,6 @@ const StyledBanner = styled.div.attrs(
     style: {
       backgroundColor: banner_background_color,
       backgroundImage: "url(" + banner_background_image + ")",
-      // height: props.display_name ? "10rem" : "0" // Detects frontpage/popular/all
     },
   })
 )`
@@ -126,17 +138,12 @@ const StyledBanner = styled.div.attrs(
   cursor: pointer;
 `;
 
-function mapStateToProps(state, { subName = null }) {
-  const { subreddits, user, subscriptionNames } = state;
-
-  if (subName && subreddits[subName.toLowerCase()]) {
+export default connect(
+  ({ subreddits, user, subscriptionNames }, { subreddit, subName = null }) => {
     return {
-      subreddit: subreddits[subName.toLowerCase()],
-      user,
+      subreddit: subreddit || subreddits[subName?.toLowerCase()] || {},
+      loggedIn: !!user,
       subscriptionNames,
     };
   }
-  return { subreddit: {}, user, subscriptionNames };
-}
-
-export default connect(mapStateToProps)(withRouter(SubredditBanner));
+)(SubredditBanner);

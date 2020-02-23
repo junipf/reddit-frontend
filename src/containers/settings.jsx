@@ -3,36 +3,51 @@ import { connect } from "react-redux";
 import Dropdown from "../components/dropdown";
 import Button from "../components/button";
 
-const sorts = {
-  frontpage: ["best", "hot", "new", "rising", "controversial", "top"],
-  subreddit: ["hot", "new", "rising", "controversial", "top"],
-  multi: ["hot", "new", "rising", "controversial", "top"],
-  search: ["relevance", "hot", "new", "comments", "top"],
-  user: ["new", "hot", "top"],
-  userLoggedIn: ["new", "hot", "top"],
+export const map = {
+  sorts: {
+    frontpage: ["best", "hot", "new", "rising", "controversial", "top"],
+    subreddit: ["hot", "new", "rising", "controversial", "top"],
+    multi: ["hot", "new", "rising", "controversial", "top"],
+    search: ["relevance", "hot", "new", "comments", "top"],
+    user: ["new", "hot", "top"],
+    userLoggedIn: ["new", "hot", "top"],
+  },
+  types: {
+    // search: ["global", "subreddit"],
+    frontpage: [],
+    subreddit: [],
+    multi: [],
+    search: [],
+    user: ["overview", "posts", "comments"],
+    userLoggedIn: [
+      "overview",
+      "posts",
+      "comments",
+      "saved",
+      "hidden",
+      "upvoted",
+      "downvoted",
+    ],
+  },
+  timedSorts: ["top", "controversial"],
+  compactModes: ["top", "controversial"],
+  times: ["hour", "day", "week", "month", "year", "all"],
 };
 
-const types = {
-  // search: ["global", "subreddit"],
-  frontpage: [],
-  subreddit: [],
-  multi: [],
-  search: [],
-  user: ["overview", "posts", "comments"],
-  userLoggedIn: [
-    "overview",
-    "posts",
-    "comments",
-    "saved",
-    "hidden",
-    "upvoted",
-    "downvoted",
-  ],
+export const getMode = ({ location, path, loggedIn = null }) => {
+  const searchParams = new URLSearchParams(location.search);
+  return searchParams.has("q")
+    ? "search"
+    : path.multi
+    ? "multi"
+    : path.username
+    ? path.username === loggedIn
+      ? "userLoggedIn"
+      : "user"
+    : path.subName
+    ? "subreddit"
+    : "frontpage";
 };
-
-const timedSorts = ["top", "controversial"];
-
-const times = ["hour", "day", "week", "month", "year", "all"];
 
 const Settings = ({ match: { params: path } = {}, location, loggedIn }) => {
   const [settings, setSettings] = useState({
@@ -45,25 +60,15 @@ const Settings = ({ match: { params: path } = {}, location, loggedIn }) => {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
 
-    const mode = searchParams.has("q")
-      ? "search"
-      : path.multi
-      ? "multi"
-      : path.username
-      ? path.username === loggedIn
-        ? "userLoggedIn"
-        : "user"
-      : path.subName
-      ? "subreddit"
-      : "frontpage";
+    const mode = getMode({ location, path, loggedIn });
 
     const settings = {
-      sort: path.sort || searchParams.get("sort") || sorts[mode][0],
+      sort: path.sort || searchParams.get("sort") || map.sorts[mode][0],
       time: searchParams.get("t") || "all",
-      type: types[mode]?.includes(path.type)
+      type: map.types[mode]?.includes(path.type)
         ? path.type
         : "frontpage"
-        ? types[mode][0]
+        ? map.types[mode][0]
         : null,
       mode,
       username: path.username,
@@ -75,7 +80,7 @@ const Settings = ({ match: { params: path } = {}, location, loggedIn }) => {
     console.info(path, settings);
 
     setSettings(settings);
-  }, [location.search, path, loggedIn]);
+  }, [location, path, loggedIn]);
 
   return <SettingsDropdowns settings={settings} />;
 };
@@ -96,18 +101,17 @@ const SettingsDropdowns = ({ settings }) => {
     if (query) params.append("q", query);
 
     let urlSort = "";
-    if (sort && sort !== sorts[mode][0]) {
+    if (sort && sort !== map.sorts[mode][0]) {
       if (
         (mode === "search" || mode === "user" || mode === "userLoggedIn") &&
-        sort !== sorts[mode][0]
+        sort !== map.sorts[mode][0]
       )
-        // if (sort) {
-        //   if (mode === "search" || mode === "user" || mode === "userLoggedIn")
         params.append("sort", sort);
       else urlSort = "/" + sort;
     }
 
-    if (timedSorts.includes(sort) && time !== "all") params.append("t", time);
+    if (map.timedSorts.includes(sort) && time !== "all")
+      params.append("t", time);
 
     const urlLocation =
       mode === "multi"
@@ -120,22 +124,23 @@ const SettingsDropdowns = ({ settings }) => {
 
     const urlMode = mode === "search" ? "/search" : "";
 
-    const urlType = types[mode] && type !== types[mode][0] ? `/${type}` : "";
-    // const urlType = types[mode] ? `/${type}` : "";
+    const urlType =
+      map.types[mode] && type !== map.types[mode][0] ? `/${type}` : "";
+    // const urlType = map.types[mode] ? `/${type}` : "";
 
     const urlParams =
       params.toString().length > 0 ? `/?${params.toString()}` : "";
 
-    return urlLocation + urlMode + urlSort + urlType + urlParams;
+    return urlLocation + urlMode + urlSort + urlType + urlParams || "/";
   };
   return (
     <>
-      {settings.type && types[settings.mode] ? (
+      {settings.type && map.types[settings.mode] ? (
         <Dropdown
-          label={settings.type || types[settings.mode][0]}
+          label={settings.type || map.types[settings.mode][0]}
           key="type-menu"
         >
-          {types[settings.mode].map((type) => (
+          {map.types[settings.mode].map((type) => (
             <Button
               key={type}
               label={type}
@@ -146,10 +151,10 @@ const SettingsDropdowns = ({ settings }) => {
         </Dropdown>
       ) : null}
       <Dropdown label={settings.sort} key="sort-menu">
-        {sorts[settings.mode].map((sort) =>
+        {map.sorts[settings.mode].map((sort) =>
           sort === "top" || sort === "controversial" ? (
             <Dropdown label={sort} key={sort + "-submenu"}>
-              {times.map((time) => (
+              {map.times.map((time) => (
                 <Button
                   key={time + sort + "0"}
                   label={time}
@@ -168,9 +173,9 @@ const SettingsDropdowns = ({ settings }) => {
           )
         )}
       </Dropdown>
-      {timedSorts.includes(settings.sort) ? (
+      {map.timedSorts.includes(settings.sort) ? (
         <Dropdown label={settings.time} key="times-menu">
-          {times.map((time) => (
+          {map.times.map((time) => (
             <Button
               key={time + settings.sort + "2"}
               label={time}

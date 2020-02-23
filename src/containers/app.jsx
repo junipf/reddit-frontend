@@ -19,26 +19,14 @@ import {
 } from "../store/actions";
 import AppOnlyOAuth from "../utils/app-only-oauth";
 
-// Import pages
-// import MessagesPage from "./messages-page";
+// Import pages;
 import ComponentTestPage from "../test";
 
 // Import components
 import { SpinnerPage } from "../components/spinner";
-import NavigationMenu from "../components/navigation-menu";
-// import QuickNavigation from "../components/quick-navigation";
-import PrefMenu from "../components/pref-menu";
-import SplitView from "./split-view";
-import TestNav from "../test/test-nav";
-import UserPage from "./user-page";
-// import PostListingSettings from "./post-listing-settings";
-// import UserPageSettings from "./user-page-settings";
+import Listing from "./uni-listing";
+import Header from "./header";
 import SubscriptionsPage from "./subscriptions-page";
-import Search from "../components/search";
-import SearchPage from "./search-page";
-// import MessagesMenu from "../components/messages-menu";
-// import SearchSettings from "./search-settings";
-import Settings from "./settings";
 
 // Import Styles and Fonts
 import "normalize.css";
@@ -72,6 +60,30 @@ const scope = [
   "history",
   "flair",
 ];
+
+// Routes
+
+const sort = ":sort(hot||best||new||rising||controversial||top)";
+const searchSort = ":sort(relevance||new||comments||top)";
+
+export const routes = {
+  listing: [
+    "/r/:subName/comments/:id/:title/:commentId?",
+    `/r/:subName/${sort}?`,
+    "/tb/:id",
+    `/${sort}`,
+  ],
+  search: [
+    `/r/:subName/:type(search)/${searchSort}?`,
+    `/:type(search)${searchSort}?`,
+  ],
+  user: [
+    `/u/:username/:type?/:multi?/`,
+    `/user/:username/:type?/:multi?/${sort}?`,
+    `/user/:username/:type?/:multi?`,
+  ],
+  // uni: `/:listing(r||u||user)/:name/:type?`
+};
 
 class App extends React.Component {
   constructor(props) {
@@ -171,19 +183,13 @@ class App extends React.Component {
   };
   noUserOauth = () => {
     AppOnlyOAuth().then((requester) => {
-      this.setState(
-        { requester, noUser: true }
-        // , () =>console.log(this.state.requester)
-      );
+      this.setState({ requester, noUser: true });
       this.interval = setInterval(() => {
         AppOnlyOAuth().then((r) => {
           console.info("updateRequester ran ...");
           const requester = this.state.requester;
           requester.access_token = r.access_token;
-          this.setState(
-            { requester }
-            // () => console.log(this.state.requester)
-          );
+          this.setState({ requester });
         });
       }, 3540000); //59 minutes
     });
@@ -204,68 +210,6 @@ class App extends React.Component {
     });
     if (requester) window.r = requester;
 
-    // const listingSorts = [
-    //   "hot",
-    //   "best",
-    //   "new",
-    //   "rising",
-    //   "controversial",
-    //   "top",
-    // ];
-
-    // const listingPaths = [
-    //   "/r/:subName/comments/:id/:title/:commentId?",
-    //   "/r/:subName/:sort?",
-    //   "/tb/:id",
-    //   "/hot",
-    //   "/best",
-    //   "/new",
-    //   "/rising",
-    //   "/controversial",
-    //   "/top",
-    //   "/",
-    // ];
-    // const searchPaths = [
-    //   "/r/:subName/comments/:id/:title/:commentId?",
-    //   "/r/:subName/:search?/:sort?/:time?",
-    //   "/:search/:sort?/:time?",
-    //   "/:page?",
-    // ];
-    // const userPaths = [
-    //   "/user/:username?",
-    //   "/u/:username?",
-    //   "/u/me",
-    //   "/user/me",
-    // ];
-    // const threadPaths = [
-    //   "/r/:subName/comments/:id/:title/:commentId?",
-    //   "/r/:subName/:sort?",
-    //   "/tb/:id",
-    //   "/:sort?",
-    // ];
-
-    const sort = ":sort(hot||best||new||rising||controversial||top)";
-    const searchSort = ":sort(relevance||new||comments||top)";
-    // const time = ":time(hour||day||week||month||year||all)";
-
-    const listingPaths = [
-      "/r/:subName/comments/:id/:title/:commentId?",
-      `/r/:subName/${sort}?`,
-      "/tb/:id",
-      `/${sort}`,
-    ];
-
-    const searchPaths = [
-      `/r/:subName/search/${searchSort}?`,
-      `/search/${searchSort}?`,
-    ];
-
-    const userPaths = [
-      `/u/:username/:type?/:multi?/`,
-      `/user/:username/:type?/:multi?/${sort}?`,
-      `/user/:username/:type?/:multi?`,
-    ];
-
     return (
       <GlobalThemeProvider>
         <div>
@@ -280,72 +224,26 @@ class App extends React.Component {
                 className="tooltip"
               />
               <AppWrapper>
-                <Header>
-                  <Section>
-                    <Route
-                      path={[
-                        ...userPaths,
-                        ...searchPaths,
-                        ...listingPaths,
-                        "/:page?",
-                      ]}
-                      component={NavigationMenu}
-                    />
-                    {/* <NavigationMenu /> */}
-                    <Switch>
-                      <Route path="/test/:test" component={TestNav} />
-                      <Route
-                        path={[
-                          ...userPaths,
-                          ...searchPaths,
-                          ...listingPaths,
-                          "/:page?",
-                        ]}
-                        component={Settings}
-                      />
-                    </Switch>
-                    {/* <Switch>
-                      <Route
-                        path={searchPaths}
-                        component={SearchSettings}
-                      />
-                      <Route
-                        path={listingPaths}
-                        component={PostListingSettings}
-                      />
-                      <Route path="/test/:test" component={TestNav} />
-                      <Route path={userPaths} component={UserPageSettings} />
-                    </Switch> */}
-                    {/* <QuickNavigation /> */}
-                  </Section>
-                  <Route
-                    path={[
-                      "/r/:subName/comments/:id/:title/:commentId?",
-                      ...searchPaths,
-                      "/:page?",
-                    ]}
-                    component={Search}
-                  />
-                  <Section>
-                    {/* <MessagesMenu /> */}
-                    <PrefMenu authURL={authURL} logout={this.logout} />
-                  </Section>
-                </Header>
+                <Header authURL={authURL} logout={this.logout} />
                 <Columns>
                   <Switch>
-                    <Route path={searchPaths} component={SearchPage} />
                     <Route
                       path="/subscriptions"
                       component={SubscriptionsPage}
                     />
                     <Redirect from="/u/:username" to="/user/:username" />
-                    <Route path={userPaths} component={UserPage} />
-                    {/* <Route path="/message/:sort?" component={MessagesPage} /> */}
+                    <Route
+                      path={[
+                        ...routes.listing,
+                        ...routes.user,
+                        ...routes.search,
+                      ]}
+                      component={Listing}
+                    />
                     <Route
                       path="/test/:subTest?"
                       component={ComponentTestPage}
                     />
-                    <Route path={listingPaths} component={SplitView} />
                   </Switch>
                 </Columns>
               </AppWrapper>
@@ -358,33 +256,6 @@ class App extends React.Component {
     );
   }
 }
-
-const Header = styled.header`
-  width: 100%;
-  color: ${({ theme }) => theme.text};
-  border-bottom: 1px solid ${({ theme }) => theme?.header?.border};
-  background-color: ${({ theme }) => theme?.header?.bg};
-  display: flex;
-  flex-direction: row;
-  align-items: top;
-  justify-content: space-between;
-  flex: 0 0 auto;
-  opacity: 1;
-  position: relative;
-  z-index: 100;
-  font-size: 1.1em;
-  height: 3rem;
-  padding: 0 0.25rem;
-`;
-
-const Section = styled.section`
-  display: flex;
-  flex-direction: inherit;
-  align-items: center;
-  height: inherit;
-  /* margin: 0.25rem; */
-  z-index: 10;
-`;
 
 const AppWrapper = styled.div`
   display: flex;

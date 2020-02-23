@@ -7,7 +7,7 @@ export default styled.div`
   background: ${({ theme }) => theme.card.bg};
   color: ${({ theme }) => theme.text};
   border: 1px solid ${({ theme }) => theme.card.border};
-  border-radius: 0.25rem;
+  border-radius: 0.5rem;
   transition: border-color 100ms ease;
 
   /* Clickable */

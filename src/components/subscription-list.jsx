@@ -18,7 +18,6 @@ import { Requester } from "./requester";
 import { Search, CategoryTitle } from "./dropdown";
 import Input from "./input";
 import Button from "./button";
-import SubredditCard from "./subreddit-card";
 import BasicNavigation from "./basic-navigation";
 import { Spinner } from "./spinner";
 import useIntersect from "../utils/use-intersect";
@@ -110,7 +109,6 @@ const SubscriptionList = ({
   multireddits,
   defaults,
   subscriptions,
-  page,
   setSubscriptions,
   setDefaults,
 }) => {
@@ -198,7 +196,7 @@ const SubscriptionList = ({
     if (fetchingMore) return;
     if (last) {
       setFetchingMore(true);
-      
+
       last.listing.fetchMore({ amount: 25 }).then((result) => {
         setFetchingMore(false);
         last.dispatch(result);
@@ -209,15 +207,10 @@ const SubscriptionList = ({
   return (
     <>
       <Search>
-        <Input
-          placeholder="Search"
-          onChange={handleInput}
-          value={filter}
-          size={page ? "large" : undefined}
-        />
+        <Input placeholder="Search" onChange={handleInput} value={filter} />
       </Search>
-      <ScrollWrapper page={page} ref={$scrollWrapper}>
-        {filter === "" && !page ? <BasicNavigation inList /> : null}
+      <ScrollWrapper ref={$scrollWrapper}>
+        {filter === "" ? <BasicNavigation inList /> : null}
         {[
           { name: "Favorites", list: filteredFavorites },
           { name: "Collections", list: filteredMultireddits },
@@ -228,30 +221,18 @@ const SubscriptionList = ({
           list ? (
             <Fragment key={name}>
               {list.length > 0 ? (
-                page ? (
-                  <h2>{name}</h2>
-                ) : (
-                  <CategoryTitle key={name}>
-                    {name} [{list.length}]
-                  </CategoryTitle>
-                )
+                <CategoryTitle key={name}>
+                  {name} [{list.length}]
+                </CategoryTitle>
               ) : null}
               {list.map((sub) =>
                 sub ? (
-                  page ? (
-                    <SubredditCard
-                      sub={sub}
-                      key={UniqueId(sub.id)}
-                      filter={filter}
-                    />
-                  ) : (
-                    <SubredditEntry
-                      sub={sub}
-                      key={UniqueId(sub.id)}
-                      size="small"
-                      filter={filter}
-                    />
-                  )
+                  <SubredditEntry
+                    sub={sub}
+                    key={UniqueId(sub.id)}
+                    size="small"
+                    filter={filter}
+                  />
                 ) : null
               )}
             </Fragment>
@@ -262,11 +243,7 @@ const SubscriptionList = ({
         filteredDefaults.length === 0 &&
         searchResults &&
         searchResults.length === 0 ? (
-          page ? (
-            <h2 key="noResults">No results</h2>
-          ) : (
-            <CategoryTitle key="noResults">No results</CategoryTitle>
-          )
+          <CategoryTitle key="noResults">No results</CategoryTitle>
         ) : null}
         <LoadMoreSpinner
           fetchingMore={fetchingMore}

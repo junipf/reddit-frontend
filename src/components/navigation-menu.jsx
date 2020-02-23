@@ -6,6 +6,7 @@ import SubscriptionList from "./subscription-list";
 import Button from "./button";
 import SubredditIcon from "./subreddit-icon";
 import Logo from "./logo";
+import Icon from "./icon";
 
 const NavigationMenu = ({
   location,
@@ -33,8 +34,14 @@ const NavigationMenu = ({
     // if (title === "") title = "Frontpage";
     // document.title = title;
 
+    const isSearch = searchParams.get("q");
+
     let label = path.subName
-      ? "r/" + path.subName
+      ? isSearch
+        ? `Search r/${path.subName}`
+        : "r/" + path.subName
+      : isSearch
+      ? "Search"
       : path.multi
       ? "m/" + path.multi
       : path.username
@@ -42,14 +49,18 @@ const NavigationMenu = ({
       : path.page || "Frontpage";
 
     document.title = pathname.includes("/search/")
-      ? searchParams.get("q") + " - search " + label
+      ? `${searchParams.get("q")} - search ${
+          path.subName ? "r/" + path.subName : "reddit"
+        }`
       : label;
 
     const subname = path.subName ? path.subName.toLowerCase() : null;
 
     setLabel(
       <>
-        {subreddits[subname] ? (
+        {isSearch ? (
+          <Icon icon="search" />
+        ) : subreddits[subname] ? (
           <SubredditIcon subName={subname} size="small" />
         ) : null}
         {label}

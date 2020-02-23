@@ -247,11 +247,11 @@ export default ({ history, location, match: { params: path } }) => {
     );
   };
 
-  const handleClear = () => {
-    setSearch((s) => ({ ...s, query: "" }));
-    // setResults([]);
-    // setError(null);
-  };
+  // const handleClear = () => {
+  //   setSearch((s) => ({ ...s, query: "" }));
+  //   // setResults([]);
+  //   // setError(null);
+  // };
 
   // const [autocomplete, setAutocomplete] = useState("");
 
@@ -283,26 +283,23 @@ export default ({ history, location, match: { params: path } }) => {
   // }, [r, search]);
 
   return (
-    <>
-      <Wrapper ref={$wrapper}>
-        <Input
-          placeholder={`Search ${
-            path.subName ? "r/" + path.subName : "reddit"
-          }`}
-          forwardRef={$input}
-          onChange={handleInput}
-          onSubmit={submit}
-          // onFocus={handleFocus}
-          // onBlur={handleBlur}
-          onClear={handleClear}
-          value={search.value}
-          // autocomplete={autocomplete}
-          type="search"
-          clear
-          submit
-          wide
-        >
-          {/* {search.subreddit ? (
+    <Wrapper ref={$wrapper}>
+      <Input
+        placeholder={`Search ${path.subName ? "r/" + path.subName : "reddit"}`}
+        forwardRef={$input}
+        onChange={handleInput}
+        onSubmit={submit}
+        // onFocus={handleFocus}
+        // onBlur={handleBlur}
+        // onClear={handleClear}
+        value={search.value}
+        // autocomplete={autocomplete}
+        type="search"
+        clear
+        submit
+        wide
+      >
+        {/* {search.subreddit ? (
         <SubSearch
           query={search.subreddit}
           nsfw={search.nsfw}
@@ -310,16 +307,15 @@ export default ({ history, location, match: { params: path } }) => {
           focus={focus}
         />
       ) : null} */}
-        </Input>
-        {/* <Expando focus={focus} pos={pos}>
+      </Input>
+      {/* <Expando focus={focus} pos={pos}>
         <Content focus={focus}>
           <Button>Button</Button>
           <Button>Button</Button>
           <Button>Button</Button>
         </Content>
       </Expando> */}
-      </Wrapper>
-    </>
+    </Wrapper>
   );
   // return (
   //   // <Wrapper ref={$wrapper}>
@@ -387,14 +383,14 @@ export default ({ history, location, match: { params: path } }) => {
 };
 
 const Wrapper = styled.div`
-  border: 1px solid ${({ focus, theme }) => (focus ? "pink" : "transparent")};
-  border-radius: 0.25rem;
-  background: ${({ focus, theme }) => (focus ? "grey" : "transparent")};
-  padding: 0.125rem 0.5rem 0.5rem 0.5rem;
   width: 100%;
-  max-width: 75rem;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  max-width: 73.5rem;
   overflow: visible;
-  /* top: 0; */
   & > input {
     margin: 0;
   }
