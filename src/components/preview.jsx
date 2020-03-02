@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import styled, { css } from "styled-components";
-// import useIntersect from "../utils/use-intersect";
 import { connect } from "react-redux";
 import { toggleLightboxIsOpen } from "../store/actions";
 import Button from "./button";
-import { Body } from "./body";
+import Body from "./body";
 import RedditVideo, { Gif } from "./reddit-video";
-// import Gif from "./gif";
 import Tweet from "./tweet";
 
 const previewMaxHeight = 512;
@@ -187,24 +185,6 @@ const Preview = ({
     title,
   ]);
 
-  // const showMedia = Preview ? visible : false;
-  // const [ratio, setRatio] = useState(
-  //   Preview ? (Preview.props.height / Preview.props.width) * 100 : null
-  // );
-  // const [placeholderHeight, setPlaceholderHeight] = useState(
-  // Preview ? Preview.props.height : previewMaxHeight
-  // );
-  // const updatePlaceholder = ({ height, width }) => {
-  // console.log(`Ratio updated from ${ratio} to ${(height / width) * 100}`);
-  // setRatio((height / width) * 100);
-  // setPlaceholderHeight(height);
-  // };
-
-  // const ratio = Preview
-  //   ? (Preview.props.height / Preview.props.width) * 100
-  //   : null;
-  // const placeholderHeight = Preview ? Preview.props.height : previewMaxHeight;
-
   const obscureLabel =
     nsfw && spoiler
       ? "NSFW and Spoiler"
@@ -253,26 +233,6 @@ const Preview = ({
           {...Preview.props}
           blur={!showObscured}
         />
-        {/* {Preview.Component === Body || Preview.Component === Tweet ? (
-          <Preview.Component {...Preview.props} blur={!showObscured} />
-        ) : Preview.Component === Image ? (
-          <StyledMediaWrapper height={Preview.props.height}>
-            <Preview.Component {...Preview.props} blur={!showObscured} />
-          </StyledMediaWrapper>
-        ) : (
-          <MediaWrapper ratio={ratio} blur={blur}>
-            <Preview.Component
-              {...Preview.props}
-              blur={!showObscured}
-              // visible={visible}
-            />
-          </MediaWrapper>
-        )} */}
-        {/* <DebugControls>
-          <Button onClick={toggleObscured}>
-            {showObscured ? "Obscure" : "Unobscure"}
-          </Button>
-        </DebugControls> */}
       </PreviewWrapper>
     </>
   );
@@ -282,54 +242,9 @@ export default connect(
   null,
   { toggleLightboxIsOpen }
 )(Preview);
-
-// const DebugControls = styled.div`
-  /* position: absolute; */
-  /* top: 0;
-  right: 0; */
-  /* grid-area: actions; */
-// `;
-
 export const blur = css`
   filter: ${({ blur }) => (blur ? "blur(30px)  grayscale(30%)" : null)};
 `;
-
-// const MediaWrapper = ({ children, ...props }) => {
-//   const [ref, entry] = useIntersect({
-//     rootMargin: "500px 500px 500px 500px",
-//     threshold: 0.1,
-//   });
-
-//   // const visible = entry.isIntersecting;
-
-//   console.log(entry);
-
-//   return (
-//     <StyledMediaWrapper ref={ref} {...props}>
-//       {entry.isIntersecting ? children : null}
-//     </StyledMediaWrapper>
-//   );
-// };
-
-// const StyledMediaWrapper = styled.div.attrs(({ height }) => ({
-//   style: {
-//     maxHeight: height
-//       ? height < previewMaxHeight
-//         ? height
-//         : previewMaxHeight
-//       : null,
-//   },
-// }))`
-//   width: 100%;
-//   height: 100%;
-//   display: flex;
-//   justify-content: center;
-//   position: ${({ ratio }) => (ratio ? "absolute" : null)};
-//   top: 0;
-//   right: 0;
-//   bottom: 0;
-//   left: 0;
-// `;
 
 const PreviewWrapper = styled.div`
   grid-area: media;
@@ -341,30 +256,9 @@ const PreviewWrapper = styled.div`
     restrictHeight ? previewMaxHeight + "px" : null};
 `;
 
-// const Placeholder = styled.div.attrs(({ grow, ratio, height, width }) =>
-//   grow
-//     ? {
-//         style: {
-//           height,
-//           width,
-//         },
-//       }
-//     : {
-//         style: {
-//           paddingBottom: grow ? ratio + "%" : null,
-//           maxHeight: height,
-//           maxWidth: width,
-//         },
-//       }
-// )`
-//   max-width: inherit;
-// `;
-
 const ObscurePlaceholder = styled.div`
   width: 100%;
   height: 100%;
-  /* background-color: ${({ nsfw }) =>
-    nsfw ? "hsla(0, 100%, 30%, 0.5)" : "hsla(0, 0%, 30%, 0.5)"}; */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -383,8 +277,6 @@ const Image = (props) => (
 );
 
 const ImageWrapper = styled.div`
-  /* position: absolute; */
-  /* top: 0; */
   max-width: 100%;
   max-height: ${previewMaxHeight}px;
   margin: 0 auto;
@@ -392,7 +284,6 @@ const ImageWrapper = styled.div`
   justify-content: center;
 `;
 
-// const Image = styled.img`
 const StyledImage = styled.img`
   max-height: ${previewMaxHeight}px;
   max-width: 100%;
@@ -404,8 +295,6 @@ const StyledImage = styled.img`
 `;
 
 const Embed = styled.div`
-  /* height: ${({ height }) => height}px; */
-  /* width: ${({ width }) => width}px; */
   height: 100%;
   width: 100%;
   max-height: ${previewMaxHeight}px;
@@ -415,5 +304,4 @@ const Embed = styled.div`
     width: inherit;
     height: inherit;
   }
-  /* ${blur} */
 `;

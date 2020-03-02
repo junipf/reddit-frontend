@@ -1,110 +1,131 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useContext } from "react";
 import { connect } from "react-redux";
+import { Requester } from "../components/requester";
 import {
-  setLocation,
-  setPostListingSettings,
-  setThreadSettings,
+  addSubreddit,
+  addSubredditTheme,
+  addColorTheme,
 } from "../store/actions";
-import PostListing from "./post-listing";
+import { withRouter } from "react-router";
+import Listing from "./uni-listing";
 import Thread from "./thread";
 import ReactTooltip from "react-tooltip";
 import Column from "./column";
 import SubredditThemeProvider from "../style/sub-theme-provider";
+import genTheme from "../style/gen-theme";
+import SubredditBanner from "../components/subreddit-banner";
 
 const SplitView = ({
   match: { params: path } = {},
-  location: { search },
-  setLocation,
-  layoutPrefs: { split },
-  setPostListingSettings,
-  setThreadSettings,
+  location,
+  location: { search, pathname },
+  split,
+  subreddits,
+  addSubreddit,
+  addSubredditTheme,
+  addColorTheme,
+  themesBySubreddit,
+  themesByColor,
+  history,
 }) => {
-  const searchParams = useMemo(() => {
-    return new URLSearchParams(search);
-  }, [search]);
+  const r = useContext(Requester);
 
   const [state, setState] = useState({
-    postListing: {
-      controlsPath: path.id === undefined,
-      visible: path.id === undefined,
-      subName: path.subName,
+    listing: {
+      path: path.id ? {} : path,
+      search: path.id ? {} : search,
     },
     thread: {
-      visible: path.id !== undefined,
+      path: path.id ? path : {},
+      search: path.id ? search : {},
     },
+    return: location,
   });
-
-  // const [visible, setVisible] = useState({
-  //   postListing: !path.id,
-  //   thread: !!path.id,
-  // });
 
   useEffect(() => {
     if (path.id === undefined) {
-      // setVisible({
-      //   postListing: true,
-      //   thread: false,
-      // });
-      setLocation({
-        name: path.subName || "Frontpage",
-        type: path.subName ? "subreddit" : "listing",
-      });
-      setPostListingSettings({
-        subName: path.subName,
-        sort: path.sort || "hot",
-        time: searchParams.get("t") || "all",
-      });
-      setState((state) => ({
-        ...state,
-        postListing: {
-          ...state.postListing,
-          subName: path.subName,
+      setState((s) => ({
+        ...s,
+        listing: {
+          path,
+          search,
         },
+        thread: {
+          path: {},
+          search: {},
+        },
+        return: location,
       }));
     } else {
-      setThreadSettings({
-        id: path.id,
-        subName: path.subName,
-        sort: searchParams.get("sort") || "best",
-      });
+      setState((s) => ({
+        ...s,
+        thread: {
+          path,
+          search,
+        },
+      }));
+    }
+  }, [path, location, search]);
+
+  useEffect(() => {
+    if (path.subName && subreddits[path.subName.toLowerCase()] === undefined) {
+      r.getSubreddit(path.subName)
+        .refresh()
+        .then((subreddit) => {
+          // Stores subreddit info.
+          addSubreddit(subreddit);
+
+          // Generate a new subredditTheme if there isn't one, or if
+          // the subreddit has updated their primary_color. Additionally,
+          // we set the theme to null if they don't have one ("")
+          if (
+            (themesBySubreddit[subreddit.display_name] === undefined &&
+              subreddit.primary_color !== "") ||
+            themesBySubreddit[subreddit.display_name].color !==
+              subreddit.primary_color
+          )
+            genTheme({
+              color: subreddit.primary_color,
+              name: subreddit.display_name,
+            }).then((themes) =>
+              addSubredditTheme(subreddit.display_name, themes)
+            );
+        });
     }
   }, [
-    path,
-    searchParams,
-    setLocation,
-    setPostListingSettings,
-    setThreadSettings,
+    path.subName,
+    r,
+    subreddits,
+    addSubreddit,
+    addSubredditTheme,
+    themesBySubreddit,
   ]);
 
-  const togglePostListing = () => {
-    setState((state) => ({
-      ...state,
-      postListing: {
-        ...state.postListing,
-        visible: !state.postListing.visible,
-        controlsPath: !state.thread.visible,
-      },
-      thread: {
-        ...state.thread,
-        // If postListing is hidden, enable thread
-        visible: state.postListing.visible ? true : state.thread.visible,
-      },
-    }));
-  };
+  // const toggleListing = () => {
+  //   setPaths((p) => ({
+  //     ...p,
+  //     listing: {
+  //       ...p.listing,
+  //       visible: !p.listing.visible,
+  //       controlsPath: !p.thread.visible,
+  //     },
+  //     thread: {
+  //       ...p.thread,
+  //       // If listing is hidden, enable thread
+  //       visible: p.listing.visible ? true : p.thread.visible,
+  //     },
+  //   }));
+  // };
 
-  const togglethread = () => {
-    setState((state) => ({
-      ...state,
+  const closeThread = () => {
+    setState((s) => ({
+      ...s,
       thread: {
-        ...state.thread,
-        visible: !state.thread.visible,
-      },
-      postListing: {
-        ...state.postListing,
-        visible: state.thread.visible ? true : state.postListing.visible,
-        controlsPath: state.thread.visible ? true : false,
+        path: {},
+        search: {},
       },
     }));
+    history.push(state.return);
   };
 
   // Refresh tooltips
@@ -112,22 +133,46 @@ const SplitView = ({
     ReactTooltip.rebuild();
   });
 
+  // State changes:
+
+  // Listing -> Thread   (/r/sub -> /r/sub/comments/id)
+  // Listing only        (/r/sub)
+  // Thread only         (/r/sub/comments/id)
+  // Thread -> Listing   (/r/sub/comments/id -> /r/sub)
+  // Listing, id -> id   (/r/sub/comments/id... -> .../comments/id)
+
   return (
     <>
-      <SubredditThemeProvider subName={state.postListing.subName}>
+      <SubredditThemeProvider subName={state.listing.path.subName} key="left">
         <Column
           type={split === "even" || split === "left" ? "primary" : "secondary"}
-          className={state.postListing.visible ? "shown" : "hidden"}
+          // className={
+          //   paths?.listing?.subName || !paths?.thread?.id ? "shown" : "hidden"
+          // }
         >
-          <PostListing {...state.postListing} hideSelf={togglePostListing} />
+          {state?.listing?.subName ? (
+            <SubredditBanner subName={state.listing.path.subName} />
+          ) : null}
+
+          <Listing {...state.listing} />
         </Column>
       </SubredditThemeProvider>
-      <SubredditThemeProvider subName={state.thread.subName}>
+      <SubredditThemeProvider subName={state.thread.path.subName} key="right">
         <Column
-          type={split === "even" || split === "right" ? "primary" : "secondary"}
-          className={state.thread.visible ? "shown" : "hidden"}
+          type={
+            split === "none"
+              ? "floating"
+              : split === "even" || split === "right"
+              ? "primary"
+              : "secondary"
+          }
+          className={state?.thread?.path.id ? "shown" : "hidden"}
         >
-          <Thread {...state.thread} hideSelf={togglethread} />
+          {state?.listing?.path.subName !== state?.thread?.path.subName &&
+          state?.thead?.path.subName ? (
+            <SubredditBanner subName={state?.thread?.path.subName} />
+          ) : null}
+          <Thread {...state.thread} hideSelf={closeThread} />
         </Column>
       </SubredditThemeProvider>
     </>
@@ -135,6 +180,20 @@ const SplitView = ({
 };
 
 export default connect(
-  ({ layoutPrefs }) => ({ layoutPrefs }),
-  { setLocation, setThreadSettings, setPostListingSettings }
-)(SplitView);
+  ({
+    subreddits,
+    themesBySubreddit,
+    themesByColor,
+    layoutPrefs: { split },
+  }) => ({
+    subreddits,
+    themesBySubreddit,
+    themesByColor,
+    split,
+  }),
+  {
+    addSubreddit,
+    addSubredditTheme,
+    addColorTheme,
+  }
+)(withRouter(SplitView));

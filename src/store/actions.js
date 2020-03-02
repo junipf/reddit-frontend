@@ -11,11 +11,12 @@ export const setUser = (user) => ({
 export const setThemePrefs = (prefs) => ({
   type: "SET_THEME_PREFS",
   prefs,
-})
+});
+
 export const setLayoutPrefs = (prefs) => ({
   type: "SET_LAYOUT_PREFS",
   prefs,
-})
+});
 
 export const setUserPrefs = (prefs) => ({
   type: "SET_USER_PREFS",
@@ -36,23 +37,6 @@ export const setDefaults = (defaults) => ({
   type: "SET_DEFAULTS",
   defaults,
 });
-
-export const setPostListingSettings = (settings) => ({
-  type: "SET_POST_LISTING_SETTINGS",
-  settings,
-});
-
-export const setThreadSettings = (settings) => ({
-  type: "SET_THREAD_SETTINGS",
-  settings,
-});
-
-export const setLocation = (location) => {
-  return {
-    type: "SET_LOCATION",
-    location,
-  };
-};
 
 export const addSubreddit = (subredditInfo) => ({
   type: "ADD_SUBREDDIT",
@@ -76,3 +60,8 @@ export const addColorTheme = (color, theme) => ({
 });
 
 export const logout = () => ({ type: "LOGOUT" });
+
+export const setSplitPaths = (paths) => ({
+  type: "SET_SPLIT_PATHS",
+  paths,
+})

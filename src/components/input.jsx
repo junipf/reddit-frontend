@@ -116,6 +116,7 @@ export default ({
           />
         </Text>
         <Controls>
+          {children}
           {clear && value.length > 0 ? (
             <Button onClick={handleClear} flat fill label="Clear" hideLabel>
               <Icon icon="x" />
@@ -140,9 +141,9 @@ export default ({
         <Suggestions focused={focused}>
           {suggestions.map(({ name }) => (
             <Line>
-            <Button fill flat>
-              {name}
-            </Button>
+              <Button fill flat>
+                {name}
+              </Button>
             </Line>
           ))}
         </Suggestions>
@@ -217,7 +218,8 @@ export const StyledInput = styled.div`
   border-radius: 0.35rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   width: ${({ wide }) => (wide ? "100%" : "auto")};
-  max-width: 75rem;
+  max-width: ${({ wide }) => (wide ? null : "20rem")};
+  flex: 1 1 5rem;
   & > button {
     width: auto;
     height: auto;

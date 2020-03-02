@@ -24,9 +24,10 @@ import ComponentTestPage from "../test";
 
 // Import components
 import { SpinnerPage } from "../components/spinner";
-import Listing from "./uni-listing";
+// import Listing from "./uni-listing";
+import SplitView from "./split-view";
+// import Thread from "./thread";
 import Header from "./header";
-import SubscriptionsPage from "./subscriptions-page";
 
 // Import Styles and Fonts
 import "normalize.css";
@@ -67,6 +68,7 @@ const sort = ":sort(hot||best||new||rising||controversial||top)";
 const searchSort = ":sort(relevance||new||comments||top)";
 
 export const routes = {
+  thread: "/r/:subName/comments/:id/:title/:commentId?",
   listing: [
     "/r/:subName/comments/:id/:title/:commentId?",
     `/r/:subName/${sort}?`,
@@ -210,6 +212,8 @@ class App extends React.Component {
     });
     if (requester) window.r = requester;
 
+    if (!this.state.initialized) return <SpinnerPage />;
+
     return (
       <GlobalThemeProvider>
         <div>
@@ -227,24 +231,23 @@ class App extends React.Component {
                 <Header authURL={authURL} logout={this.logout} />
                 <Columns>
                   <Switch>
-                    <Route
-                      path="/subscriptions"
-                      component={SubscriptionsPage}
-                    />
                     <Redirect from="/u/:username" to="/user/:username" />
+                    <Route
+                      path="/test/:subTest?"
+                      component={ComponentTestPage}
+                    />
                     <Route
                       path={[
                         ...routes.listing,
                         ...routes.user,
                         ...routes.search,
+                        ...routes.thread,
                       ]}
-                      component={Listing}
-                    />
-                    <Route
-                      path="/test/:subTest?"
-                      component={ComponentTestPage}
+                      // component={Listing}
+                      component={SplitView}
                     />
                   </Switch>
+                  {/* <Route path={routes.thread} component={Thread} /> */}
                 </Columns>
               </AppWrapper>
             </Requester.Provider>

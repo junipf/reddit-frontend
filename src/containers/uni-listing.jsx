@@ -1,77 +1,27 @@
-import React, {
-  useState,
-  useContext,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
-import styled from "styled-components";
+import React, { useState, useContext, useEffect, useCallback } from "react";
 import { connect } from "react-redux";
-import { setLocation } from "../store/actions";
-import { Link } from "react-router-dom";
 import { Requester } from "../components/requester";
 import ReactTooltip from "react-tooltip";
-
-import Column from "./column";
 import Error from "../components/error";
-import Icon from "../components/icon";
 import { UserCard, MultiCard, SearchCard } from "../components/info-card";
-import SubredditBanner from "../components/subreddit-banner";
 import { SpinnerPage } from "../components/spinner";
 import { map, getMode } from "./settings";
-import SubredditThemeProvider from "../style/sub-theme-provider";
 
 import MixedListing from "./mixed-listing";
 
-const StyledPermalink = styled.span`
-  font-size: 0.8em;
-  height: 1em;
-  display: inline-block;
-  font-style: italic;
-  margin-top: 0.5em;
-  a {
-    color: ${({ theme }) => theme.link};
-  }
-`;
-
-export const Center = styled.span`
-  padding: 0.5rem;
-  text-align: center;
-  display: block;
-`;
-
-export const PostLine = styled.div`
-  font-size: 0.75rem;
-  /* margin: 0.25rem; */
-  /* background: ${({ theme }) => theme.card.innerBg}; */
-  border-bottom: 1px solid ${({ theme }) => theme.card.innerBorder};
-  padding: 0.5rem;
-  margin: -0.65rem;
-  & a {
-    color: ${({ theme }) => theme.link};
-  }
-`;
-
-export const Permalink = ({ to }) => (
-  <StyledPermalink>
-    <Link to={to}>
-      View Comment <Icon inline icon="externalLink" />
-    </Link>
-  </StyledPermalink>
-);
-
 const Page = ({
   history,
-  match: { params: path } = {},
-  location,
-  setLocation,
+  path,
+  search,
   loggedIn,
+  hideSelf,
+  visible,
   ...props
 }) => {
   const [error, setError] = useState(null);
   // Fetch user-specific non-listing data
   useEffect(() => {
-    if (path.username === "me")
+    if (path?.username === "me")
       if (loggedIn) history.replace(`/user/${loggedIn}`);
       else
         setError({
@@ -79,27 +29,28 @@ const Page = ({
             message: "You are not logged in, so we can't redirect from u/me",
           },
         });
-  }, [path.username, history, loggedIn]);
+  }, [path, history, loggedIn]);
 
   // Refresh tooltips
   useEffect(() => {
     ReactTooltip.rebuild();
   }, []);
 
+
   return (
-    <Column>
+    <>
       {error ? (
         <Error {...error} />
-      ) : path.username === "me" ? (
+      ) : path?.username === "me" ? (
         <SpinnerPage />
       ) : (
-        <Listing path={path} location={location} />
+        <Listing path={path} search={search} />
       )}
-    </Column>
+    </>
   );
 };
 
-const Listing = ({ path, location, loggedIn }) => {
+const Listing = ({ path, search, loggedIn }) => {
   const r = useContext(Requester);
   const [fetched, setFetched] = useState({
     listing: [],
@@ -111,8 +62,20 @@ const Listing = ({ path, location, loggedIn }) => {
 
   const fetch = useCallback(
     (
-      options,
-      {
+      options = {
+        mode: null,
+        type: null,
+        username: null,
+        subName: null,
+        multi: null,
+        sort: null,
+        time: null,
+        query: null,
+        nsfw: null,
+        quarantine: null,
+      }
+    ) => {
+      const {
         mode,
         type,
         username,
@@ -123,9 +86,10 @@ const Listing = ({ path, location, loggedIn }) => {
         query,
         nsfw,
         quarantine,
-      }
-    ) => {
-      console.info("MODE:", mode, "TYPE:", type);
+      } = options;
+
+      console.info(options);
+
       const success = ({ listing, m, sub, user }) => {
         console.log(mode, listing);
         setFetched({
@@ -136,20 +100,19 @@ const Listing = ({ path, location, loggedIn }) => {
           user,
         });
       };
-
       const fail = (e) =>
         setError({ e, type, name: username || subName || multi });
-      if (
-        !fetched.listing._method ||
-        fetched.options.username !== username ||
-        fetched.options.sort !== sort ||
-        fetched.options.t !== time ||
-        fetched.options.multi !== multi ||
-        fetched.options.query !== query ||
-        fetched.options.nsfw !== nsfw ||
-        fetched.options.subName !== subName ||
-        fetched.options.mode !== mode
-      ) {
+
+      const hasChanged = Object.keys(options).some((key) => {
+        const change = options[key] !== fetched.options[key];
+        if (change)
+          console.info(
+            `UniListing: ${key} changed from ${fetched.options[key]} to ${options[key]}`
+          );
+        return change;
+      });
+
+      if (!fetched.listing._method || hasChanged) {
         console.info("UniListing fetching new listing with options:", options);
         switch (mode) {
           case "search":
@@ -215,37 +178,37 @@ const Listing = ({ path, location, loggedIn }) => {
               case "posts":
                 user
                   .getSubmissions(options)
-                  .then((listing) => success({ listing }), fail);
+                  .then((listing) => success({ listing, user }), fail);
                 break;
               case "saved":
                 user
                   .getSavedContent(options)
-                  .then((listing) => success({ listing }), fail);
+                  .then((listing) => success({ listing, user }), fail);
                 break;
               case "hidden":
                 user
                   .getHiddenContent(options)
-                  .then((listing) => success({ listing }), fail);
+                  .then((listing) => success({ listing, user }), fail);
                 break;
               case "upvoted":
                 user
                   .getUpvotedContent(options)
-                  .then((listing) => success({ listing }), fail);
+                  .then((listing) => success({ listing, user }), fail);
                 break;
               case "downvoted":
                 user
                   .getDownvotedContent(options)
-                  .then((listing) => success({ listing }), fail);
+                  .then((listing) => success({ listing, user }), fail);
                 break;
               case "comments":
                 user
                   .getComments(options)
-                  .then((listing) => success({ listing }), fail);
+                  .then((listing) => success({ listing, user }), fail);
                 break;
               default:
                 user
                   .getOverview(options)
-                  .then((listing) => success({ listing }), fail);
+                  .then((listing) => success({ listing, user }), fail);
             }
             break;
           case "subreddit":
@@ -271,91 +234,56 @@ const Listing = ({ path, location, loggedIn }) => {
     [fetched, r]
   );
 
-  const options = useMemo(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const mode = getMode({ location, path, loggedIn });
-    const { username, subName, multi, sort, type } = path;
-
-    return {
-      mode,
-      type: map.types[mode]?.includes(type)
-        ? path.type
-        : "frontpage"
-        ? map.types[mode][0]
-        : null,
-      username,
-      subName,
-      multi,
-      query: searchParams.get("q"),
-      sort: sort || searchParams.get("sort") || map.sorts[mode][0],
-      time: searchParams.get("t") || "all",
-      nsfw: searchParams.get("nsfw"),
-      quarantine: searchParams.get("quarantine"),
-    };
-  }, [path, location, loggedIn])
-
-  // useEffect(() => {
-  //   console.info(path);
-  //   const searchParams = new URLSearchParams(location.search);
-
-  //   const mode = getMode({ location, path, loggedIn });
-
-  //   const { username, subName, multi, sort, type } = path;
-
-  //   const options = {
-  //     mode,
-  //     type: map.types[mode]?.includes(type)
-  //       ? path.type
-  //       : "frontpage"
-  //       ? map.types[mode][0]
-  //       : null,
-  //     username,
-  //     subName,
-  //     multi,
-  //     query: searchParams.get("q"),
-  //     sort: sort || searchParams.get("sort") || map.sorts[mode][0],
-  //     time: searchParams.get("t") || "all",
-  //     nsfw: searchParams.get("nsfw"),
-  //     quarantine: searchParams.get("quarantine"),
-  //   };
-
-  //   if (
-  //     fetched?.listing?._method || // Listing has not fetched!
-  //     Object.keys(options).some((key) => fetched?.options[key] !== options[key])
-  //   ) {
-  //     fetch(options);
-  //   }
-  // }, [path, location, loggedIn, fetch, fetched]);
-
   useEffect(() => {
-    fetch(options);
-  }, [options, fetch]);
+    const searchParams = new URLSearchParams(search);
+    console.log(path);
+    if (path && !path.id) {
+      const mode = getMode({ search, path, loggedIn });
+      const {
+        username = null,
+        subName = null,
+        multi = null,
+        sort = null,
+        type = null,
+      } = path;
+      fetch({
+        mode,
+        type: map.types[mode]?.includes(type)
+          ? path.type
+          : "frontpage"
+          ? map.types[mode][0]
+          : null,
+        username,
+        subName,
+        multi: multi,
+        query: searchParams.get("q"),
+        sort: sort || searchParams.get("sort") || map.sorts[mode][0],
+        time: searchParams.get("t") || "all",
+        nsfw: searchParams.get("nsfw"),
+        quarantine: searchParams.get("quarantine"),
+      });
+    }
+  }, [path, search, loggedIn, fetch]);
 
   return error ? (
     <Error {...error} />
   ) : (
-    <SubredditThemeProvider sub={fetched.sub} subName={fetched.options.subName}>
-      {fetched.sub ? <SubredditBanner subreddit={fetched.sub} /> : null}
-      <MixedListing
-        listing={fetched.listing}
-        inSubreddit={!!fetched.options.subName}
-        compact={map.compactModes.includes(fetched.options.mode)}
-      >
-        {fetched.user ? (
-          <UserCard user={fetched.user} username={fetched.username} />
-        ) : null}
-        {fetched.m ? <MultiCard m={fetched.m} /> : null}
-        {fetched.options.query ? (
-          <SearchCard query={fetched.options.query} />
-        ) : null}
-      </MixedListing>
-    </SubredditThemeProvider>
+    <MixedListing
+      listing={fetched.listing}
+      inSubreddit={!!fetched.options.subName}
+      compact={map.compactModes.includes(fetched.options.mode)}
+    >
+      {fetched.user ? (
+        <UserCard user={fetched.user} username={fetched.options.username} />
+      ) : null}
+      {fetched.m ? <MultiCard m={fetched.m} /> : null}
+      {fetched.options.query ? (
+        <SearchCard query={fetched.options.query} />
+      ) : null}
+    </MixedListing>
   );
 };
 
-export default connect(
-  (state) => ({
-    loggedIn: state?.user?.name,
-  }),
-  { setLocation }
-)(Page);
+export default connect((state) => ({
+  loggedIn: state?.user?.name,
+}))(Page);

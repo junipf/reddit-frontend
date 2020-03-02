@@ -2,9 +2,9 @@ import React from "react";
 import styled from "styled-components";
 import { Route, Switch } from "react-router-dom";
 import NavigationMenu from "../components/navigation-menu";
-import PrefMenu from "../components/pref-menu";
+import PrefMenu from "./pref-menu";
 import TestNav from "../test/test-nav";
-import Search from "../components/search";
+import SearchBar from "./search-bar";
 import Settings from "./settings";
 import { routes } from "./app";
 
@@ -32,8 +32,8 @@ export default ({ authURL, logout, ...props }) => {
           />
         </Switch>
       </Section>
-      <Route path={allRoutes} component={Search} />
       <Section>
+        <Route path={allRoutes} component={SearchBar} />
         <PrefMenu authURL={authURL} logout={logout} />
       </Section>
     </Header>
@@ -46,7 +46,8 @@ const Section = styled.section`
   align-items: center;
   height: inherit;
   z-index: 10;
-  flex: 1 1 300px;
+  flex: 1 1 50%;
+  position: relative;
 `;
 
 const Header = styled.header`

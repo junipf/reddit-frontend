@@ -1,8 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 import styled from "styled-components";
 import { Switch, Route } from "react-router-dom";
-import { connect } from "react-redux";
-import { setLocation } from "./../store/actions";
 import Column from "../containers/column";
 
 // import pages
@@ -61,28 +59,18 @@ export const tests = {
   tweet: { name: "Tweet", Component: TwitterPost, icon: "twitter" },
 };
 
-const TestPage = ({ setLocation }) => {
-  useEffect(() => {
-    setLocation({ name: "Test", type: "other" });
-  }, [setLocation]);
-  return (
-    <Column>
-      <Page>
-        <Switch>
-          {Object.entries(tests).map(([key, { name, Component }]) => (
-            <Route
-              path={`/test/${name.toLowerCase().replace(/ /g, "-")}`}
-              component={Component}
-              key={name}
-            />
-          ))}
-        </Switch>
-      </Page>
-    </Column>
-  );
-};
-
-export default connect(
-  null,
-  { setLocation }
-)(TestPage);
+export default () => (
+  <Column>
+    <Page>
+      <Switch>
+        {Object.entries(tests).map(([key, { name, Component }]) => (
+          <Route
+            path={`/test/${name.toLowerCase().replace(/ /g, "-")}`}
+            component={Component}
+            key={name}
+          />
+        ))}
+      </Switch>
+    </Page>
+  </Column>
+);

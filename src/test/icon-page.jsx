@@ -209,17 +209,17 @@ const IconFlex = styled.div`
 const Card = styled.div`
   margin: 0.75rem;
   /* margin-bottom: 0; */
-  background: ${({theme}) => theme.card.bg};
-  border: 1px solid ${({theme}) => theme.card.border};
-  color: ${({theme}) => theme.text};
+  background: ${({ theme }) => theme.card.bg};
+  border: 1px solid ${({ theme }) => theme.card.border};
+  color: ${({ theme }) => theme.text};
   border-radius: 0.5rem;
   flex: 1 1 auto;
 `;
 
 const Sticky = styled.div`
-  background: ${({theme}) => theme.card.bg};
-  border-bottom: 1px solid ${({theme}) => theme.card.border};
-  color: ${({theme}) => theme.text};
+  background: ${({ theme }) => theme.card.bg};
+  border-bottom: 1px solid ${({ theme }) => theme.card.border};
+  color: ${({ theme }) => theme.text};
   position: sticky;
   top: 0;
   z-index: 2;
@@ -243,7 +243,7 @@ const Tags = styled.div`
 `;
 
 const Highlight = styled.span`
-  background-color: ${({theme}) => theme.highlight};
+  background-color: ${({ theme }) => theme.highlight};
 `;
 
 const StyleSettings = styled.div`
@@ -265,23 +265,26 @@ const IconPage = (props) => {
   const toggleFill = () => setFill((f) => !f);
   const [thin, setThin] = useState(false);
   const toggleThin = () => setThin((t) => !t);
-  const [size, setSize] = useState("xl");
+  const [large, setLarge] = useState(true);
+  const toggleLarge = () => setLarge((l) => !l);
+  const [labels, setLabels] = useState(true);
+  const toggleLabels = () => setLabels((l) => !l);
 
   const [value, setValue] = useState("");
   const [terms, setTerms] = useState([]);
   const [filters, setFilters] = useState([]);
 
   const handleInput = (e) => {
-    const value = e.target.value;
-    if (value.endsWith(" ") && value.length > 1) {
+    const newValue = e.target.value;
+    if (newValue.endsWith(" ") && newValue.length > 1) {
       // addTerm(value.split(" "));
-      const truncatedValue = value.replace(" ", "");
+      const truncatedValue = newValue.replace(" ", "");
       setTerms((terms) => [...terms, truncatedValue]);
-      if (value.startsWith("-") && !(truncatedValue in filters))
+      if (newValue.startsWith("-") && !(truncatedValue in filters))
         setFilters((filters) => [...filters, truncatedValue]);
       setValue(" ");
     } else {
-      setValue(value);
+      setValue(newValue);
     }
   };
   const handleKeyPress = (e) => {
@@ -335,16 +338,23 @@ const IconPage = (props) => {
       ) {
         filtered.push(
           <figure key={key}>
-            <Icon icon={key} size={size} thin={thin} fill={fill} />
-            {term !== "" ? (
-              <figcaption>
-                {key.slice(0, key.indexOf(term))}
-                <Highlight>{term}</Highlight>
-                {key.slice(key.indexOf(term) + term.length, key.length)}
-              </figcaption>
-            ) : (
-              <figcaption>{key}</figcaption>
-            )}
+            <Icon
+              icon={key}
+              size={large ? "xl" : "normal"}
+              thin={thin}
+              fill={fill}
+            />
+            {labels ? (
+              term !== "" ? (
+                <figcaption>
+                  {key.slice(0, key.indexOf(term))}
+                  <Highlight>{term}</Highlight>
+                  {key.slice(key.indexOf(term) + term.length, key.length)}
+                </figcaption>
+              ) : (
+                <figcaption>{key}</figcaption>
+              )
+            ) : null}
           </figure>
         );
       } else if (i === array.length - 1 && filtered.length === 0) {
@@ -441,18 +451,17 @@ const IconPage = (props) => {
           ) : null}
         </Search>
         <StyleSettings>
-          <Button onClick={toggleFill}>
-            {fill ? "Disable fill" : "Enable fill"}
-          </Button>
-          <Button onClick={toggleThin}>
-            {thin ? "Disable thin" : "Enable thin"}
-          </Button>
-          <Dropdown label={size} onSelect={setSize}>
-            <Button value={"small"}>small</Button>
-            <Button value={"normal"}>normal</Button>
-            <Button value={"large"}>large</Button>
-            <Button value={"xl"}>xl</Button>
-          </Dropdown>
+          {[
+            { toggle: fill, onClick: toggleFill, desc: "Fill" },
+            { toggle: thin, onClick: toggleThin, desc: "Thin" },
+            { toggle: large, onClick: toggleLarge, desc: "Large" },
+            { toggle: labels, onClick: toggleLabels, desc: "Labels" },
+          ].map(({ toggle, onClick, desc }) => (
+            <Button onClick={onClick} key={desc}>
+              <Icon icon={toggle ? "checkSquare" : "square"} />
+              {desc}
+            </Button>
+          ))}
         </StyleSettings>
       </Sticky>
       <Content>

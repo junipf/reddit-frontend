@@ -41,6 +41,7 @@ export const Author = ({
       <ColoredIcon
         type="moderator"
         icon="shield"
+        inline
         data-tip="Moderator speaking officially"
       />
     ) : null}
@@ -48,11 +49,17 @@ export const Author = ({
       <ColoredIcon
         type="moderator"
         icon="hexagon"
+        inline
         data-tip="Reddit employee speaking officially"
       />
     ) : null}
     {is_submitter ? (
-      <ColoredIcon type="submitter" icon="user" data-tip="Original Poster" />
+      <ColoredIcon
+        type="submitter"
+        icon="user"
+        inline
+        data-tip="Original Poster"
+      />
     ) : null}
   </span>
 );

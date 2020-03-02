@@ -11,6 +11,7 @@ export const map = {
     search: ["relevance", "hot", "new", "comments", "top"],
     user: ["new", "hot", "top"],
     userLoggedIn: ["new", "hot", "top"],
+    thread: ["best", "top", "new", "controversial", "old", "q&a"],
   },
   types: {
     // search: ["global", "subreddit"],
@@ -34,8 +35,8 @@ export const map = {
   times: ["hour", "day", "week", "month", "year", "all"],
 };
 
-export const getMode = ({ location, path, loggedIn = null }) => {
-  const searchParams = new URLSearchParams(location.search);
+export const getMode = ({ search, path, loggedIn = null }) => {
+  const searchParams = new URLSearchParams(search);
   return searchParams.has("q")
     ? "search"
     : path.multi
@@ -49,7 +50,11 @@ export const getMode = ({ location, path, loggedIn = null }) => {
     : "frontpage";
 };
 
-const Settings = ({ match: { params: path } = {}, location, loggedIn }) => {
+const Settings = ({
+  match: { params: path } = {},
+  location: { search } = {},
+  loggedIn,
+}) => {
   const [settings, setSettings] = useState({
     sort: "best",
     time: "all",
@@ -58,9 +63,10 @@ const Settings = ({ match: { params: path } = {}, location, loggedIn }) => {
   });
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
+    if (path.id) return;
+    const searchParams = new URLSearchParams(search);
 
-    const mode = getMode({ location, path, loggedIn });
+    const mode = getMode({ search, path, loggedIn });
 
     const settings = {
       sort: path.sort || searchParams.get("sort") || map.sorts[mode][0],
@@ -80,7 +86,7 @@ const Settings = ({ match: { params: path } = {}, location, loggedIn }) => {
     console.info(path, settings);
 
     setSettings(settings);
-  }, [location, path, loggedIn]);
+  }, [search, path, loggedIn]);
 
   return <SettingsDropdowns settings={settings} />;
 };

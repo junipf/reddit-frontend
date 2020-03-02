@@ -20,6 +20,7 @@ const NavigationMenu = ({
   const defaultFavicon = require("../icons/favicon.png");
 
   useEffect(() => {
+    if (path.id) return;
     const setFavicon = (href = defaultFavicon) =>
       (document.querySelector('link[rel="shortcut icon"]').href = href);
 
@@ -68,19 +69,6 @@ const NavigationMenu = ({
     );
 
     if (!subreddits[subname]) setFavicon();
-
-    // if (subreddits[subname] === undefined) {
-    //   setFavicon();
-    //   setLabel(label);
-    // } else {
-    //   const sub = subreddits[subname];
-    //   setLabel(
-    //     <>
-    //       <SubredditIcon subName={subname} size="small" />
-    //       {(sub.curator ? " m/" : " r/") + sub.display_name}
-    //     </>
-    //   );
-    // }
   }, [
     defaultFavicon,
     search,
@@ -88,6 +76,7 @@ const NavigationMenu = ({
     path.subName,
     path.page,
     path.username,
+    path.id,
     path.multi,
     subreddits,
     theme.primary.base,

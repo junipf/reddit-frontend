@@ -41,7 +41,7 @@ const StyledButton = styled.button`
   user-select: none;
   padding: ${({ wide }) => wide ? "0 0.25em" : 0};
   border: none;
-  border-radius: ${({ fill }) => (fill ? "0" : "0.2em")};
+  border-radius: ${({ fill }) => (fill ? "0" : "0.3em")};
   width: ${({ fill }) => (fill ? "100%" : null)};
   height: ${({ fill }) => (fill ? "100%" : "1.5em")};
   line-height: 1.25;
@@ -142,7 +142,7 @@ const Button = ({
   onSelect,
   onShiftClick,
   to = null,
-  value,
+  value = null,
   wide,
   align = "center",
   fill,

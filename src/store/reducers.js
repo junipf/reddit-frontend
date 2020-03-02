@@ -114,15 +114,15 @@ const store = (state = initialState, action) => {
         subreddits[subName] = sub;
       });
       return { ...state, subreddits, subscriptions: action.subscriptions };
-      // let favoriteNames = [];
-      // let subscriptionNames = action.subscriptions;
-      // subscriptionNames.forEach((sub, i, array) => {
-      //   const subName = sub.display_name.toLowerCase();
-      //   subreddits[subName] = sub;
-      //   array[i] = subName;
-      //   if (sub.user_has_favorited) favoriteNames.push(subName);
-      // });
-      // return { ...state, subreddits, subscriptionNames, favoriteNames };
+    // let favoriteNames = [];
+    // let subscriptionNames = action.subscriptions;
+    // subscriptionNames.forEach((sub, i, array) => {
+    //   const subName = sub.display_name.toLowerCase();
+    //   subreddits[subName] = sub;
+    //   array[i] = subName;
+    //   if (sub.user_has_favorited) favoriteNames.push(subName);
+    // });
+    // return { ...state, subreddits, subscriptionNames, favoriteNames };
     case "SET_DEFAULTS":
       action.defaults.forEach((sub) => {
         const subName = sub.display_name.toLowerCase();
@@ -166,6 +166,14 @@ const store = (state = initialState, action) => {
         postListingSettings: {
           ...state.postListingSettings,
           ...action.settings,
+        },
+      };
+    case "SET_SPLIT_PATHS":
+      return {
+        ...state,
+        splitPaths: {
+          ...state.splitPaths,
+          ...action.paths,
         },
       };
     default:

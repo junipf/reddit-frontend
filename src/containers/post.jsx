@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import styled, { ThemeProvider, withTheme } from "styled-components";
 import { connect } from "react-redux";
-import { setCurrentPost } from "../store/actions";
 
 import Button from "../components/button";
 import { formatNumber } from "../utils/format-number";
@@ -146,7 +145,7 @@ const Post = ({
   themes,
   showComments = false,
   showTitle = true,
-  setCurrentPost,
+  // setCurrentPost,
   user,
   themesByColor,
 }) => {
@@ -242,7 +241,7 @@ const Post = ({
     mod > 0 ? post.unvote().then(setMod(0)) : post.upvote().then(setMod(1));
   const downvote = () =>
     mod < 0 ? post.unvote().then(setMod(0)) : post.downvote().then(setMod(-1));
-  const navigateToPost = () => setCurrentPost(post);
+  // const navigateToPost = () => setCurrentPost(post);
 
   const reply = (value) => {
     post.reply(value).then(
@@ -370,7 +369,9 @@ const Post = ({
           </Tagline>
           <TitleBox>
             {showTitle ? (
-              <Title onClick={navigateToPost} to={permalink} compact={compact}>
+              <Title 
+              // onClick={navigateToPost}
+              to={permalink} compact={compact}>
                 {title}
               </Title>
             ) : null}
@@ -384,7 +385,7 @@ const Post = ({
           {showThumbnail ? null : isCrosspost ? (
             <Crosspost
               crosspost={crosspost_parent_list}
-              setCurrentPost={setCurrentPost}
+              // setCurrentPost={setCurrentPost}
             />
           ) : (
             <Preview
@@ -394,7 +395,7 @@ const Post = ({
               preview={preview}
               media={media}
               mediaEmbed={mediaEmbed}
-              navigateToPost={navigateToPost}
+              // navigateToPost={navigateToPost}
               url={url}
               permalink={permalink}
               nsfw={nsfw}
@@ -430,7 +431,7 @@ const Post = ({
               flat
               label={numComments}
               to={permalink}
-              onClick={navigateToPost}
+              // onClick={navigateToPost}
               data-tip={
                 Intl.NumberFormat().format(num_comments) +
                 (num_comments === 1 ? " comment" : " comments")
@@ -462,7 +463,7 @@ const Post = ({
                   onClick={hide}
                   key="3"
                 />
-                <Button flat hideLabel label="report" icon="flag" key="4" />
+                {/* <Button flat hideLabel label="report" icon="flag" key="4" /> */}
               </>
             ) : null}
             <Button
@@ -540,7 +541,9 @@ function mapStateToProps(
   };
 }
 
-export default connect(mapStateToProps, { setCurrentPost })(withTheme(Post));
+export default connect(mapStateToProps, 
+  // { setCurrentPost }
+  )(withTheme(Post));
 
 const Block = styled.span`
   display: inline-block;

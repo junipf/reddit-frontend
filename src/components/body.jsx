@@ -39,7 +39,7 @@ const Actions = styled.div`
   overflow: visible;
 `;
 
-export const Body = ({ inListing, html, title, ...rest }) => {
+export default ({ inListing, html, title, ...rest }) => {
   const [overflow, setOverflow] = useState(undefined);
   const [showAll, setShowAll] = useState(!inListing || undefined);
   const toggleShowAll = () => setShowAll(!showAll);

@@ -24,8 +24,6 @@ const Error = ({ e = {}, name, type, onClose, ...props }) => {
 
   console.error(e);
 
-  // console.log(`${type} error ${e.message} on ${name}`);
-
   const title =
     type === "subreddit" && e.message === "403"
       ? `${name} is private`
@@ -98,9 +96,6 @@ export default Error;
 const Actions = styled.div`
   margin-left: auto;
   float: right;
-  /* display: flex; */
-  /* flex-flow: row wrap; */
-  /* justify-content: space-between; */
 `;
 
 const Title = styled.h1`

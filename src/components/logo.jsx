@@ -6,7 +6,7 @@ const LogoWrapper = styled.span`
   height: ${({large}) => large ? "2rem" : "1em"};
 `;
 
-const Logo = ({ color = "#24A0ED", large }) => (
+export default ({ color = "#24A0ED", large }) => (
   <LogoWrapper>
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -36,5 +36,3 @@ const Logo = ({ color = "#24A0ED", large }) => (
     </svg>
   </LogoWrapper>
 );
-
-export default Logo;

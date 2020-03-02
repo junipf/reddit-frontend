@@ -45,7 +45,6 @@ const Icon = ({ icon = "info", fill, label, "data-tip": data_tip, ...props }) =>
       {icons[icon.toLowerCase()]}
     </IconWrapper>
   ) : null;
-export default Icon;
 
 Icon.propTypes = {
   icon: (props, propName) => {
@@ -60,3 +59,5 @@ Icon.propTypes = {
   size: PropTypes.oneOf(["small", "normal", "large", "xl"]),
   inline: PropTypes.bool,
 };
+
+export default Icon;

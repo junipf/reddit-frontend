@@ -25,7 +25,7 @@ const Dropdown = ({
   right,
   center,
   noMargin,
-  closeOnSelect,
+  closeOnSelect = false,
   fill,
   preRender,
   ...rest
@@ -105,7 +105,7 @@ const Dropdown = ({
           wrapper={wrapper}
           dir={dir}
           toggle={useToggle}
-          items={children}
+          // items={children}
           label={hideLabel && label}
           fill={fill || sub ? "true" : null}
         >
@@ -206,24 +206,24 @@ const Menu = ({
     };
   });
 
-  const selectAndClose = (value) => {
-    onSelect && onSelect(value);
+  const handleSelect = (value) => {
+    if (onSelect) onSelect(value);
     if (closeOnSelect) closeDropdown();
   };
 
   useEffect(() => {
     ReactTooltip.rebuild();
-  }, [])
+  }, []);
 
   // const [focus, setFocus] = useState(0);
 
+  // TODO: Dropdown keyboard nav
   useEffect(() => {
     const handleKeyDown = (e) => {
       // console.log(e);
       if (e.key === "ArrowDown") {
         // console.log("🔽");
         if ($menu.current && $menu.current.contains(e.target)) {
-
         }
         // setFocus(f => f + 1)
       }
@@ -231,27 +231,27 @@ const Menu = ({
         // console.log("🔼");
         // setFocus(f => f - 1)
       }
-    }
+    };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  })
+  });
 
   // useEffect(() => {
-    // if (!$menu.current || $menu.current.children) return;
-    // const items = $menu.current.children;
-    // const map = [];
-    // const unwrap = (el) => {
-    //   if (el.tabIndex !== -1) return el;
-    //   if (el.children.length > 0) return unwrap(el);
-    //   return null;
-    // }
-    // items.map((el, i) => map[i] = unwrap(el));
+  // if (!$menu.current || $menu.current.children) return;
+  // const items = $menu.current.children;
+  // const map = [];
+  // const unwrap = (el) => {
+  //   if (el.tabIndex !== -1) return el;
+  //   if (el.children.length > 0) return unwrap(el);
+  //   return null;
+  // }
+  // items.map((el, i) => map[i] = unwrap(el));
 
-    // console.log(map);
+  // console.log(map);
 
-    // if (focus > items.length - 1) items[0].firstChild.focus()
-    // else if (focus < 0) items[items.length - 1 ].firstChild.focus()
-    // else items[focus].firstChild.focus()
+  // if (focus > items.length - 1) items[0].firstChild.focus()
+  // else if (focus < 0) items[items.length - 1 ].firstChild.focus()
+  // else items[focus].firstChild.focus()
   // }, [focus])
 
   const mapChildrenByType = (childrenToMap) =>
@@ -264,11 +264,10 @@ const Menu = ({
             <li>
               {React.cloneElement(child, {
                 fill: true,
-                // type: child.props.type === "primary" ? "primary" : "flat",
                 flat: true,
                 hideLabel: false,
                 align: "left",
-                onSelect: selectAndClose,
+                onSelect: handleSelect,
               })}
             </li>
           );
@@ -283,7 +282,7 @@ const Menu = ({
                 sub: true,
                 left: subMenuPositioning === "left",
                 right: subMenuPositioning === "right",
-                onSelect: selectAndClose,
+                onSelect: handleSelect,
                 hideLabel: false,
               })}
             </li>
@@ -300,7 +299,14 @@ const Menu = ({
     });
 
   return (
-    <StyledMenu pos={pos} sub={sub} ref={$menu} expand={expand} open={open || showDropdown} preRender={preRender}>
+    <StyledMenu
+      pos={pos}
+      sub={sub}
+      ref={$menu}
+      expand={expand}
+      open={open || showDropdown}
+      preRender={preRender}
+    >
       {label ? (
         <li>
           <CategoryTitle>{label}</CategoryTitle>
@@ -404,8 +410,8 @@ export const Search = styled.div`
 `;
 
 export const CategoryTitle = styled.div`
-  padding: 0 1em ${menuPadding}em 1em;
-  margin-bottom: ${menuPadding}em;
+  padding: ${menuPadding}em 1em;
+  margin: ${menuPadding}em 0;
   background: ${({ theme }) => theme.card.bg};
   border-bottom: 1px solid ${({ theme }) => theme.card.innerBorder};
   font-size: 0.75em;

@@ -1,13 +1,8 @@
 import React, {
   useState,
   useContext,
-  useEffect,
-  // useCallback,
-  // useMemo,
 } from "react";
 import styled from "styled-components";
-import { connect } from "react-redux";
-import { setLocationName } from "../store/actions";
 import Column from "./column";
 import { Requester } from "../components/requester";
 import Button from "../components/button";
@@ -22,7 +17,7 @@ export const Card = styled.section`
   border-radius: 0.5rem;
 `;
 
-const ModTools = ({ setLocationName, ...props }) => {
+export default ({ ...props }) => {
   const r = useContext(Requester);
   const [error, setError] = useState(null);
 
@@ -57,10 +52,6 @@ const ModTools = ({ setLocationName, ...props }) => {
       .getMyFlair()
       .then((result) => console.log(result), (e) => console.log(e));
   };
-
-  useEffect(() => {
-    setLocationName("Mod tools");
-  }, [setLocationName]);
 
   return (
     <Column>
@@ -119,8 +110,3 @@ const ModTools = ({ setLocationName, ...props }) => {
     </Column>
   );
 };
-
-export default connect(
-  null,
-  { setLocationName }
-)(ModTools);

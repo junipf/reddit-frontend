@@ -3,13 +3,51 @@ import Comment from "./comment";
 import Post from "./post";
 import { SpinnerPage } from "../components/spinner";
 import Card from "../components/card";
-import { Center, PostLine, Permalink } from "./uni-listing";
 import styled from "styled-components";
+import { Link } from "react-router-dom";
+import Icon from "../components/icon";
 
 const Listing = styled.div`
   max-width: 73.5rem;
   margin: 1rem auto;
 `;
+
+const StyledPermalink = styled.span`
+  font-size: 0.8em;
+  height: 1em;
+  display: inline-block;
+  font-style: italic;
+  margin-top: 0.5em;
+  a {
+    color: ${({ theme }) => theme.link};
+  }
+`;
+
+const Center = styled.span`
+  padding: 0.5rem;
+  text-align: center;
+  display: block;
+`;
+
+const PostLine = styled.div`
+  font-size: 0.75rem;
+  /* margin: 0.25rem; */
+  /* background: ${({ theme }) => theme.card.innerBg}; */
+  border-bottom: 1px solid ${({ theme }) => theme.card.innerBorder};
+  padding: 0.5rem;
+  margin: -0.65rem;
+  & a {
+    color: ${({ theme }) => theme.link};
+  }
+`;
+
+export const Permalink = ({ to }) => (
+  <StyledPermalink>
+    <Link to={to}>
+      View Comment <Icon inline icon="externalLink" />
+    </Link>
+  </StyledPermalink>
+);
 
 export default ({ listing, compact, inSubreddit, children, ...props }) => (
   <Listing>

@@ -8,12 +8,7 @@ import React, {
 import { withRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import { Requester } from "../components/requester";
-import {
-  addSubreddit,
-  addSubredditTheme,
-  addColorTheme,
-  setLocation,
-} from "../store/actions";
+import { addColorTheme } from "../store/actions";
 import styled, { withTheme } from "styled-components";
 
 import Icon from "../components/icon";
@@ -23,121 +18,68 @@ import Dropdown from "../components/dropdown";
 import { ProgressUnderline } from "../components/progress-bar";
 import genTheme from "../style/gen-theme";
 import ReactTooltip from "react-tooltip";
-import SubredditBanner from "../components/subreddit-banner";
 import Post from "./post";
 import Error from "../components/error";
+import { map } from "./settings";
 
 const Thread = ({
-  subreddits,
-  location: { search },
+  search,
   history,
-  lightboxIsOpen,
-  addSubreddit,
-  themesBySubreddit,
-  addSubredditTheme,
   themesByColor,
-  theme,
-  username,
   addColorTheme,
-  currentPost,
-  // subName,
-  // id,
-  // sort,
-  settings: { subName, id, sort },
+  path,
   hideSelf,
-  visible,
-  setLocation,
-  // setLocName,
 }) => {
   const r = useContext(Requester);
+  const [fetched, setFetched] = useState({ post: null, id: null });
   const [error, setError] = useState(null);
-  const [post, setPost] = useState(currentPost);
-  const fetching = useMemo(() => post === null && id, [post, id]);
 
-  const fetchPost = useCallback(
+  const fetch = useCallback(
     (id) => {
-      if (subName)
-        setLocation({ name: subName, title: `r/${subName}`, type: "thread" });
-      if (!visible || (post && post.id === id)) return;
-      // if (post && post.id)
-      //   console.log(`Post id updated from ${post.id}, fetching ${id}`);
-      // else console.log(`cL got first post Id! Fetching ${id}`);
-      if (error) setError(null);
-      if (post) setPost(null);
-      r.getSubmission(id)
-        .refresh()
-        .then(
-          (post) => {
-            setPost(post);
-            setLocation({
-              name: post.subreddit.display_name,
-              title: post.title,
-              type: "thread",
-            });
-          },
-          (e) => {
-            setError((error) =>
-              error ? error : { name: "this post", e, type: "post" }
-            );
-          }
-        );
-    },
-    [r, visible, post, error, setLocation, subName]
-  );
-
-  const fetchSubreddit = useCallback(
-    (subName) => {
-      if (!visible) return;
-      if (subreddits[subName.toLowerCase()] === undefined) {
-        r.getSubreddit(subName)
+      if (id && fetched.id !== id)
+        r.getSubmission(id)
           .refresh()
           .then(
-            (subreddit) => {
-              // Stores subreddit info.
-              addSubreddit(subreddit);
-
-              // Generate a new subredditTheme if there isn't one, or if
-              // the subreddit has updated their primary_color. Additionally,
-              // we set the theme to null if they don't have one ("")
-              if (
-                (themesBySubreddit[subreddit.display_name] === undefined &&
-                  subreddit.primary_color !== "") ||
-                themesBySubreddit[subreddit.display_name].color !==
-                  subreddit.primary_color
-              )
-                genTheme({
-                  color: subreddit.primary_color,
-                  name: subreddit.display_name,
-                }).then((themes) =>
-                  addSubredditTheme(subreddit.display_name, themes)
-                );
+            (post) => {
+              document.title = post.title;
+              setFetched({
+                post,
+                id,
+              });
             },
             (e) => {
-              setError({ name: `r/${subName}`, e, type: "subreddit" });
+              setError((error) =>
+                error ? error : { name: "this post", e, type: "post" }
+              );
             }
           );
-      }
     },
-    [addSubreddit, r, visible, addSubredditTheme, subreddits, themesBySubreddit]
+    [r, fetched]
   );
 
   useEffect(() => {
-    if (id) fetchPost(id);
-  }, [id, fetchPost]);
+    // const searchParams = new URLSearchParams(search);
+    // const options = {
+    // id: path.id,
+    // sort: searchParams.get("sort") || map.sorts.thread[0],
+    // time: searchParams.get("t") || "all",
+    // };
+    if (path && path.id) {
+      fetch(path.id);
+    }
+  }, [path, search, fetch]);
 
-  useEffect(() => {
-    if (subName) fetchSubreddit(subName);
-  }, [subName, fetchSubreddit]);
+  // useEffect(() => {
+  //   if (path.subName) fetchSubreddit(path.subName);
+  // }, [path.subName, fetchSubreddit]);
 
   // Redirects from e.g. /td/[threadId] to the appropriate path
-  useEffect(() => {
-    if (post && subName === null) {
-      history.replace(post.permalink);
-      fetchSubreddit(post.subreddit.display_name);
-      setLocation({ title: post.title, type: "thread" });
-      // setLocName(`r/${post.subreddit.display_name}`);
-    }
-  }, [post, subName, history, fetchSubreddit, setLocation]);
+  // useEffect(() => {
+  //   if (post && path.subName === null) {
+  //     history.replace(post.permalink);
+  //     fetchSubreddit(post.subreddit.display_name);
+  //   }
+  // }, [post, path.subName, history, fetchSubreddit]);
 
   // Generates themes from flair color if theme does not
   // already exist.
@@ -151,8 +93,9 @@ const Thread = ({
 
   // Fetches subreddit and generates flair theme.
   useEffect(() => {
-    if (post) generateFlairTheme(post.link_flair_background_color);
-  }, [post, generateFlairTheme]);
+    if (fetched.post)
+      generateFlairTheme(fetched.post.link_flair_background_color);
+  }, [fetched.post, generateFlairTheme]);
 
   // Refresh tooltips
   useEffect(() => {
@@ -164,14 +107,10 @@ const Thread = ({
   };
   return (
     <>
-      {subreddits && subName && subreddits[subName.toLowerCase()] ? (
-        <SubredditBanner subName={subName} />
-      ) : null}
       <ViewSettings>
         <VSContents>
-          {subName}
           <Button label="Close" hideLabel icon="x" onClick={hideSelf} />
-          <Dropdown label={sort}>
+          <Dropdown label={fetched.sort}>
             <Button label="best" onClick={setSort} value="best" />
             <Button label="top" onClick={setSort} value="top" />
             <Button label="new" onClick={setSort} value="new" />
@@ -184,24 +123,24 @@ const Thread = ({
             <Button label="Q&amp;A" onClick={setSort} value="QA" />
           </Dropdown>
         </VSContents>
-        {!error && fetching ? <ProgressUnderline /> : null}
+        {/* {!error && fetching ? <ProgressUnderline /> : null} */}
       </ViewSettings>
       {error ? (
         <Error {...error} />
       ) : (
         <ScrollWrapper>
           <Listing>
-            {post ? (
+            {fetched.post ? (
               <Post
-                post={post}
-                key={post.id}
-                id={post.id}
+                post={fetched.post}
+                key={fetched.post?.id}
+                id={fetched.post?.id}
                 showComments
-                sort={sort}
+                sort={path.sort}
                 inSubreddit={true}
                 inListing={false}
               />
-            ) : id ? (
+            ) : path.id ? (
               <SpinnerPage />
             ) : (
               <Placeholder>
@@ -252,25 +191,10 @@ const VSContents = styled.div`
 `;
 
 export default connect(
-  ({
-    subreddits,
-    lightboxIsOpen,
-    themesBySubreddit,
+  ({ themesByColor }) => ({
     themesByColor,
-    currentPost,
-    threadSettings,
-  }) => ({
-    subreddits,
-    lightboxIsOpen,
-    themesBySubreddit,
-    themesByColor,
-    currentPost,
-    settings: threadSettings,
   }),
   {
-    addSubreddit,
-    addSubredditTheme,
     addColorTheme,
-    setLocation,
   }
 )(withRouter(withTheme(Thread)));
