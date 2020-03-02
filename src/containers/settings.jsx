@@ -83,7 +83,7 @@ const Settings = ({
       multi: path.multi,
     };
 
-    console.info(path, settings);
+    // console.info(path, settings);
 
     setSettings(settings);
   }, [search, path, loggedIn]);

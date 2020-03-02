@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { connect } from "react-redux";
 import { Requester } from "../components/requester";
 import {
@@ -78,11 +78,11 @@ const SplitView = ({
           // Generate a new subredditTheme if there isn't one, or if
           // the subreddit has updated their primary_color. Additionally,
           // we set the theme to null if they don't have one ("")
+          const subTheme =
+            themesBySubreddit?.[subreddit?.display_name.toLowerCase()] || false;
           if (
-            (themesBySubreddit[subreddit.display_name] === undefined &&
-              subreddit.primary_color !== "") ||
-            themesBySubreddit[subreddit.display_name].color !==
-              subreddit.primary_color
+            (subTheme && subreddit.primary_color !== "") ||
+            subTheme.color !== subreddit.primary_color
           )
             genTheme({
               color: subreddit.primary_color,
@@ -150,7 +150,7 @@ const SplitView = ({
           //   paths?.listing?.subName || !paths?.thread?.id ? "shown" : "hidden"
           // }
         >
-          {state?.listing?.subName ? (
+          {state?.listing?.path.subName ? (
             <SubredditBanner subName={state.listing.path.subName} />
           ) : null}
 

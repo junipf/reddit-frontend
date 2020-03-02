@@ -35,7 +35,7 @@ const SubredditBanner = ({
       );
   }, [communityIcon, iconImg, iconUrl, subIcon]);
 
-  console.info("subBanner:", subreddit);
+  // console.info("subBanner:", subreddit);
 
   const [joined, setJoined] = useState(!loggedIn ? false : subscribed || false);
 

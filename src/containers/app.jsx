@@ -188,7 +188,7 @@ class App extends React.Component {
       this.setState({ requester, noUser: true });
       this.interval = setInterval(() => {
         AppOnlyOAuth().then((r) => {
-          console.info("updateRequester ran ...");
+          // console.info("updateRequester ran ...");
           const requester = this.state.requester;
           requester.access_token = r.access_token;
           this.setState({ requester });

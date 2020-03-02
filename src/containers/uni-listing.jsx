@@ -1,4 +1,10 @@
-import React, { useState, useContext, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { connect } from "react-redux";
 import { Requester } from "../components/requester";
 import ReactTooltip from "react-tooltip";
@@ -6,8 +12,10 @@ import Error from "../components/error";
 import { UserCard, MultiCard, SearchCard } from "../components/info-card";
 import { SpinnerPage } from "../components/spinner";
 import { map, getMode } from "./settings";
+import { ProgressUnderline } from "../components/progress-bar";
 
 import MixedListing from "./mixed-listing";
+import FetchMoreSpinner from "../components/fetch-more-spinner";
 
 const Page = ({
   history,
@@ -36,7 +44,6 @@ const Page = ({
     ReactTooltip.rebuild();
   }, []);
 
-
   return (
     <>
       {error ? (
@@ -53,12 +60,12 @@ const Page = ({
 const Listing = ({ path, search, loggedIn }) => {
   const r = useContext(Requester);
   const [fetched, setFetched] = useState({
-    listing: [],
+    listing: { isFinished: true },
     type: null,
     options: {},
   });
-
   const [error, setError] = useState(null);
+  const loading = useMemo(() => fetched.listing === [], [fetched]);
 
   const fetch = useCallback(
     (
@@ -88,10 +95,10 @@ const Listing = ({ path, search, loggedIn }) => {
         quarantine,
       } = options;
 
-      console.info(options);
+      // console.info(options);
 
       const success = ({ listing, m, sub, user }) => {
-        console.log(mode, listing);
+        // console.log(mode, listing);
         setFetched({
           listing,
           options,
@@ -103,17 +110,17 @@ const Listing = ({ path, search, loggedIn }) => {
       const fail = (e) =>
         setError({ e, type, name: username || subName || multi });
 
-      const hasChanged = Object.keys(options).some((key) => {
-        const change = options[key] !== fetched.options[key];
-        if (change)
-          console.info(
-            `UniListing: ${key} changed from ${fetched.options[key]} to ${options[key]}`
-          );
-        return change;
-      });
+      const hasChanged = Object.keys(options).some(
+        (key) => options[key] !== fetched.options[key]
+      );
 
       if (!fetched.listing._method || hasChanged) {
-        console.info("UniListing fetching new listing with options:", options);
+        // console.info("UniListing fetching new listing with options:", options);
+        // setFetched({
+        //   listing: [],
+        //   type: null,
+        //   options: {},
+        // });
         switch (mode) {
           case "search":
             const search = {
@@ -236,7 +243,7 @@ const Listing = ({ path, search, loggedIn }) => {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(search);
-    console.log(path);
+    // console.log(path);
     if (path && !path.id) {
       const mode = getMode({ search, path, loggedIn });
       const {
@@ -265,22 +272,35 @@ const Listing = ({ path, search, loggedIn }) => {
     }
   }, [path, search, loggedIn, fetch]);
 
+  const handleFetchMore = useCallback((listing) => {
+    setFetched((f) => ({ ...f, listing }));
+  }, []);
+
   return error ? (
     <Error {...error} />
   ) : (
-    <MixedListing
-      listing={fetched.listing}
-      inSubreddit={!!fetched.options.subName}
-      compact={map.compactModes.includes(fetched.options.mode)}
-    >
-      {fetched.user ? (
-        <UserCard user={fetched.user} username={fetched.options.username} />
-      ) : null}
-      {fetched.m ? <MultiCard m={fetched.m} /> : null}
-      {fetched.options.query ? (
-        <SearchCard query={fetched.options.query} />
-      ) : null}
-    </MixedListing>
+    <>
+      <MixedListing
+        listing={fetched.listing}
+        inSubreddit={!!fetched.options.subName}
+        compact={map.compactModes.includes(fetched.options.mode)}
+      >
+        {!error && loading ? <ProgressUnderline /> : null}
+        {fetched.user ? (
+          <UserCard user={fetched.user} username={fetched.options.username} />
+        ) : null}
+        {fetched.m ? <MultiCard m={fetched.m} /> : null}
+        {fetched.options.query ? (
+          <SearchCard query={fetched.options.query} />
+        ) : null}
+      </MixedListing>
+      {fetched.listing.isFinished ? null : (
+        <FetchMoreSpinner
+          listing={fetched.listing}
+          setListing={handleFetchMore}
+        />
+      )}
+    </>
   );
 };
 

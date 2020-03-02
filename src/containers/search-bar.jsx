@@ -48,7 +48,7 @@ export default ({ history, location, match: { params: path } }) => {
 
   const submit = (e) => {
     const { subreddit, sort, time, query } = search;
-    console.log(search);
+    // console.log(search);
     history.push(
       (subreddit ? "/r/" + subreddit : "") +
         "/search/" +

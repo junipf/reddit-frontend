@@ -42,7 +42,7 @@ const PrefMenu = ({
   setLayoutPrefs,
 }) => {
   const handleLayoutPrefs = (value) => {
-    console.log("layout prefs", value);
+    // console.log("layout prefs", value);
     setLayoutPrefs(value);
   };
 

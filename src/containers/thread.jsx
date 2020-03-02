@@ -20,7 +20,7 @@ import genTheme from "../style/gen-theme";
 import ReactTooltip from "react-tooltip";
 import Post from "./post";
 import Error from "../components/error";
-import { map } from "./settings";
+// import { map } from "./settings";
 
 const Thread = ({
   search,
@@ -33,6 +33,10 @@ const Thread = ({
   const r = useContext(Requester);
   const [fetched, setFetched] = useState({ post: null, id: null });
   const [error, setError] = useState(null);
+  const loading = useMemo(
+    () => fetched?.post === null || fetched?.post?.id !== path.id,
+    [fetched, path.id]
+  );
 
   const fetch = useCallback(
     (id) => {
@@ -123,7 +127,7 @@ const Thread = ({
             <Button label="Q&amp;A" onClick={setSort} value="QA" />
           </Dropdown>
         </VSContents>
-        {/* {!error && fetching ? <ProgressUnderline /> : null} */}
+        {!error && loading ? <ProgressUnderline /> : null}
       </ViewSettings>
       {error ? (
         <Error {...error} />

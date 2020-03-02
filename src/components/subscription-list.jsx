@@ -19,8 +19,6 @@ import { Search, CategoryTitle } from "./dropdown";
 import Input from "./input";
 import Button from "./button";
 import BasicNavigation from "./basic-navigation";
-import { Spinner } from "./spinner";
-import useIntersect from "../utils/use-intersect";
 
 const HighlightSpan = ({ string, highlight, prefix = "" }) => {
   if (
@@ -245,36 +243,30 @@ const SubscriptionList = ({
         searchResults.length === 0 ? (
           <CategoryTitle key="noResults">No results</CategoryTitle>
         ) : null}
-        <LoadMoreSpinner
-          fetchingMore={fetchingMore}
-          enabled={
-            (searchResults && !searchResults.isFinished) ||
-            (defaults && !defaults.isFinished) ||
-            (subscriptions && !subscriptions.isFinished)
-          }
-          onIntersect={fetchMore}
-          parent={$scrollWrapper}
-        />
+        {/* <FetchMoreSpinner
+          listing={listing}
+
+        /> */}
       </ScrollWrapper>
     </>
   );
 };
 
-const LoadMoreSpinner = ({ onIntersect, parent, fetchingMore, enabled }) => {
-  const [$spinner, entry] = useIntersect({
-    root: parent.current,
-    threshold: 0.1,
-  });
+// const LoadMoreSpinner = ({ onIntersect, parent, fetchingMore, enabled }) => {
+//   const [$spinner, entry] = useIntersect({
+//     root: parent.current,
+//     threshold: 0.1,
+//   });
 
-  useEffect(() => {
-    if (entry.intersectionRatio > 0.1 && !fetchingMore && enabled) {
-      onIntersect();
-    }
-    return onIntersect();
-  }, [entry, onIntersect, fetchingMore, enabled]);
+//   useEffect(() => {
+//     if (entry.intersectionRatio > 0.1 && !fetchingMore && enabled) {
+//       onIntersect();
+//     }
+//     return onIntersect();
+//   }, [entry, onIntersect, fetchingMore, enabled]);
 
-  return <Spinner forwardRef={$spinner} />;
-};
+//   return <Spinner forwardRef={$spinner} />;
+// };
 
 const Highlight = styled.span`
   background-color: ${({ theme }) => theme.highlight};

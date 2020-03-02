@@ -94,7 +94,7 @@ export const UserCard = ({ username }) => {
     ({ username }) => {
       const userRequester = r.getUser(username);
       if (username != null && username !== "me" && user === null) {
-        console.log(username, username === "me", !username);
+        // console.log(username, username === "me", !username);
         userRequester.fetch().then(
           (user) =>
             setUser({
