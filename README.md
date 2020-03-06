@@ -1,6 +1,12 @@
+>This is a portfolio project to demonstrate my skills and abilities in modern frontend web development.
+
+> \- *JuniPF*
+
+---
+
 # junipf/reddit-frontend ![MPL 2.0](https://img.shields.io/github/license/junipf/reddit-frontend.svg)
 
-This project aims to be a complete reddit front-end written in React. At the moment it supports most of reddit's browsing features, but lacks certain features for user interaction, such as private messages or wiki pages.
+This project aims to be a complete reddit frontend written in React. At the moment it supports most of reddit's browsing features, but lacks certain features for user interaction, such as private messages or wiki pages.
 
 ## [View live build](https://jpf-reddit.netlify.com/) [![Netlify Status](https://api.netlify.com/api/v1/badges/d54858e6-3ea1-4e12-8a57-a134bf430d5d/deploy-status)](https://app.netlify.com/sites/jpf-reddit/deploys)
 
