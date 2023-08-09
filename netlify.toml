@@ -1,6 +1,7 @@
 [build]
   build = "react-scripts build"
   publish = "build"
+  CI=""
 [[redirects]]
   from = "/*"
   to = "/index.html"
