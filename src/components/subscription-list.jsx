@@ -190,17 +190,17 @@ const SubscriptionList = ({
 
   const [fetchingMore, setFetchingMore] = useState(false);
 
-  // const fetchMore = useCallback(() => {
-  //   if (fetchingMore) return;
-  //   if (last) {
-  //     setFetchingMore(true);
+  const fetchMore = useCallback(() => {
+    if (fetchingMore) return;
+    if (last) {
+      setFetchingMore(true);
 
-  //     last.listing.fetchMore({ amount: 25 }).then((result) => {
-  //       setFetchingMore(false);
-  //       last.dispatch(result);
-  //     });
-  //   }
-  // }, [fetchingMore, last]);
+      last.listing.fetchMore({ amount: 25 }).then((result) => {
+        setFetchingMore(false);
+        last.dispatch(result);
+      });
+    }
+  }, [fetchingMore, last]);
 
   return (
     <>
